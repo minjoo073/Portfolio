@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────── Reset & Base ───────────────────────── */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    background-color: theme('colors.canvas');
+    color: theme('colors.ink.primary');
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-inter), var(--font-pretendard), system-ui, sans-serif;
+    overscroll-behavior: none;
+  }
+
+  /* Desktop에서는 시스템 커서 숨김 (CustomCursor가 대체) */
+  @media (hover: hover) and (pointer: fine) {
+    body {
+      cursor: none;
+    }
+    a,
+    button,
+    [role='button'] {
+      cursor: none;
+    }
+  }
+
+  /* iOS dvh fallback */
+  :where(.h-screen-dvh) {
+    height: 100vh;
+    height: 100dvh;
+  }
+}
+
+/* ───────────────────────── SVG Filter (Browser Frame 굴절) ───────────────────────── */
+/* Hidden SVG는 layout.tsx에서 inline 정의. CSS 측 alias만 보관 */
+
+/* ───────────────────────── Reduced Motion ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
