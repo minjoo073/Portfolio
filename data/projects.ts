@@ -23,7 +23,7 @@ export const projects: Project[] = [
     category: 'Brand · UX/UI Web',
     thumbnail: '/images/projects/01/thumbnail.webp',
     detailAnchor: '#project01',
-    studyHref: '/projects/lunare/study/'
+    studyHref: '/work/lunare'
   },
   {
     id: 'project02',
@@ -34,7 +34,7 @@ export const projects: Project[] = [
     category: 'Brand · UX/UI · Front-end',
     thumbnail: '/images/projects/02/thumbnail.webp',
     detailAnchor: '#project02',
-    studyHref: '/projects/fancive/study/'
+    studyHref: '/work/fancive'
   },
   {
     id: 'project03',
@@ -45,7 +45,7 @@ export const projects: Project[] = [
     category: 'UX/UI Web',
     thumbnail: '/images/projects/03/thumbnail.webp',
     detailAnchor: '#project03',
-    studyHref: '/projects/lp/study/'
+    studyHref: '/work/lp'
   },
   {
     id: 'project04',
@@ -56,7 +56,7 @@ export const projects: Project[] = [
     category: 'UX/UI Web · Redesign',
     thumbnail: '/images/projects/04/thumbnail.webp',
     detailAnchor: '#project04',
-    studyHref: '/projects/buja/study/'
+    studyHref: '/work/buja'
   },
   {
     id: 'project05',
@@ -67,7 +67,7 @@ export const projects: Project[] = [
     category: 'UX/UI · Product Design',
     thumbnail: '/images/projects/05/thumbnail.webp',
     detailAnchor: '#project05',
-    studyHref: '/projects/mathhub/study/'
+    studyHref: '/work/mathhub'
   },
   {
     id: 'project06',

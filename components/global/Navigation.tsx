@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { navUtilityLeft, navUtilityCenter, navLinks } from '@/data/nav'
 import { cn } from '@/lib/utils/cn'
 
@@ -12,6 +13,10 @@ import { cn } from '@/lib/utils/cn'
  */
 export function Navigation() {
   const ref = useRef<HTMLElement>(null)
+  const pathname = usePathname()
+
+  // /work/* 경로에서는 케이스스터디 뷰어 자체 헤더를 쓰므로 숨김
+  if (pathname.startsWith('/work')) return null
 
   return (
     <nav
