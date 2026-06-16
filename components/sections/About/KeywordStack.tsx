@@ -12,7 +12,7 @@ export function KeywordStack({ keywords }: KeywordStackProps) {
       {keywords.map(word => (
         <span
           key={word}
-          className="text-display-l font-medium leading-[0.92] tracking-tight text-ink-inverse"
+          className="text-display-m font-medium leading-[0.92] tracking-tight text-ink-inverse"
           data-keyword={word}
         >
           {word}

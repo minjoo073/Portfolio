@@ -11,6 +11,8 @@ const config: Config = {
       colors: {
         canvas: '#F8F7F4',
         dark: '#0A0A0A',
+        // 다크 위 카드·이미지 placeholder용 (약간 밝은 다크). 사진 들어가기 전 임시 톤.
+        'dark-soft': '#1A1A1A',
         ink: {
           primary: '#111111',
           muted: '#6B6B6B',
@@ -28,9 +30,12 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'sans-serif'],
-        display: ['var(--font-display)', 'sans-serif'],
+        // PP Editorial New 영문 → Pretendard 한글 폴백 (글자별 자동 fallback)
+        display: ['var(--font-display)', 'var(--font-pretendard)', 'sans-serif'],
         kr: ['var(--font-pretendard)', 'sans-serif'],
+        // IBM Plex Mono 우선 — cross-platform 통일, PP Editorial 에디토리얼 톤 완성
         mono: [
+          'var(--font-mono)',
           'ui-monospace',
           'SFMono-Regular',
           'Menlo',

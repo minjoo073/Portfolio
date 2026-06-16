@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { LERP } from '@/lib/gsap/tokens'
 import { useReducedMotionContext } from './ReducedMotionProvider'
 import { useHasHover } from '@/lib/hooks/useMediaQuery'
@@ -20,6 +21,7 @@ type CursorState = 'default' | 'hover-card' | 'hover-link' | 'copy' | 'view-disa
 export function CustomCursor() {
   const hasHover = useHasHover()
   const reduced = useReducedMotionContext()
+  const pathname = usePathname()
   const cursorRef = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<CursorState>('default')
 
@@ -71,7 +73,8 @@ export function CustomCursor() {
     }
   }, [hasHover, reduced])
 
-  if (!hasHover) return null
+  // /work/* 케이스스터디 페이지에서는 iframe 내부 케이스 자체 커서와 충돌하므로 렌더 안 함
+  if (!hasHover || pathname?.startsWith('/work')) return null
 
   const sizes: Record<CursorState, string> = {
     default: 'w-3 h-3',

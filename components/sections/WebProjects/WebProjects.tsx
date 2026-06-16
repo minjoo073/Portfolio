@@ -148,16 +148,19 @@ export function WebProjects() {
           )
         }
 
-        // title: clip-path L→R reveal · enter-soft (one-shot)
+        // title: 가벼운 translateX + opacity reveal (transform 기반 → GPU 친화적)
+        // ease 를 'sine.out' 로 → power3.out 의 첫 0.1s 빠른 opacity 상승이 "번쩍" 으로 인지되던 문제 완화
+        // duration 더 길게 → 부드러운 진입
         if (titleEl) {
           gsap.from(titleEl, {
-            clipPath: 'inset(0 100% 0 0)',
-            duration: DURATION.enterSoft,
-            ease: EASE.enter,
+            x: -40,
+            opacity: 0,
+            duration: 1.4,
+            ease: 'sine.out',
             scrollTrigger: {
-              trigger: card,
-              start: 'top 75%',
-              toggleActions: 'play none none reverse',
+              trigger: titleEl,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
             },
           })
         }
@@ -177,11 +180,10 @@ export function WebProjects() {
           })
         }
 
-        // exit parallax — title y 0 → -20px, opacity 1 → 0.6
+        // exit parallax — title y 0 → -20px (opacity 변경 제거: 다음 카드 enter 와 시각 충돌 차단)
         if (titleEl) {
           gsap.to(titleEl, {
             y: -20,
-            opacity: 0.6,
             ease: 'none',
             scrollTrigger: {
               trigger: card,
@@ -202,7 +204,7 @@ export function WebProjects() {
     <section
       ref={rootRef}
       id="work"
-      className="relative w-full bg-canvas"
+      className="relative w-full bg-dark text-ink-inverse"
       data-section="web-projects"
     >
       {/* ── 라벨 구간 60vh ────────────────────────────────────────── */}

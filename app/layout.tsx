@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { inter, display, pretendard } from './fonts'
+import { inter, display, pretendard, mono } from './fonts'
 import { ReducedMotionProvider } from '@/components/global/ReducedMotionProvider'
 import { SmoothScrollProvider } from '@/components/global/SmoothScrollProvider'
 import { Navigation } from '@/components/global/Navigation'
@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="ko"
-      className={`${inter.variable} ${display.variable} ${pretendard.variable}`}
+      className={`${inter.variable} ${display.variable} ${pretendard.variable} ${mono.variable}`}
     >
       <body className="bg-canvas text-ink-primary font-sans antialiased">
         <ReducedMotionProvider>

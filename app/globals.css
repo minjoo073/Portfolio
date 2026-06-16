@@ -44,6 +44,16 @@
 /* ───────────────────────── SVG Filter (Browser Frame 굴절) ───────────────────────── */
 /* Hidden SVG는 layout.tsx에서 inline 정의. CSS 측 alias만 보관 */
 
+/* ───────────────────────── Hide Scrollbar (utility) ───────────────────────── */
+/* PreviewArea 같은 내부 스크롤 영역에서 스크롤바 숨김. 스크롤 동작은 유지. */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome / Safari / Edge Chromium */
+}
+
 /* ───────────────────────── Reduced Motion ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,

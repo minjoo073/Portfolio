@@ -35,7 +35,7 @@ export function VisualItem({ item, total }: VisualItemProps) {
       <Placeholder
         label={indexLabel}
         aspect={aspect}
-        className="h-auto bg-[#1A1A1A]"
+        className="h-auto bg-dark-soft"
       />
 
       {/* 메타 — 평소 인덱스만, 호버 시 카테고리 라벨 fade in */}
