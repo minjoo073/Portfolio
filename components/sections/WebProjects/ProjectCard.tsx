@@ -2,67 +2,103 @@ import type { Project } from '@/lib/types/project'
 
 interface ProjectCardProps {
   project: Project
+  total: number
 }
 
 /**
- * Web Project 카드 — 세로(portrait) 카드, 풀-바디 visual.
- * 가로 트랙 안에서 shrink-0 으로 배치.
+ * Web Project 카드 — fullwidth landscape, 세로 스택 전용.
+ * 카드 1장 = 70vh. Visual은 true fullbleed (좌우 side margin 없음).
+ * GSAP 애니메이션은 WebProjects.tsx의 useGsapContext에서 주입.
  *
- * 구조:
- *   - 풀카드 visual placeholder (cover)
- *   - 상단 중앙 title overlay
- *   - 하단 중앙 date + category overlay
+ * 데이터 속성 구조 (GSAP 셀렉터 타깃):
+ *   [data-card]           — 카드 루트 (ScrollTrigger trigger)
+ *   [data-meta]           — 메타 행 (date, category children)
+ *   [data-index]          — "01 / 07" 인덱스
+ *   [data-visual-wrapper] — clip-path 애니메이션 컨테이너
+ *   [data-visual]         — scale 애니메이션 내부 요소
+ *   [data-title]          — 타이틀 (clip-path L→R, 이탈 parallax)
  *
- * Phase 3에서:
- *   - clip-path reveal (R→L 또는 B→T)
- *   - hover 시 scale 1.02
- *   - 카드 진입/이탈 parallax
- *   - 클릭 → /projects#projectN 페이지 전환
+ * studyHref 없는 카드: pointer-events-none, aria-disabled, tabIndex -1.
  */
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, total }: ProjectCardProps) {
+  const href = project.studyHref
+  const isDisabled = !href
+
+  const totalStr = String(total).padStart(2, '0')
+
   return (
     <article
-      className="relative shrink-0"
-      style={{
-        width: 'clamp(280px, 26vw, 460px)',
-        height: '76vh'
-      }}
+      className="relative h-[70vh] w-full"
       data-card
       data-project-id={project.id}
     >
       <a
-        href={`/projects${project.detailAnchor}`}
-        className="group relative block h-full w-full overflow-hidden"
+        href={href ?? '#'}
+        className={`group relative block h-full w-full${isDisabled ? ' pointer-events-none' : ''}`}
+        aria-disabled={isDisabled || undefined}
+        tabIndex={isDisabled ? -1 : undefined}
         data-card-link
       >
-        {/* Full-card visual placeholder */}
+        {/* ── Meta — 좌상단 grid margin, top 4vh ── */}
         <div
-          className="absolute inset-0 bg-[#1A1A1A] transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-          data-visual
-          aria-label={`Visual placeholder for ${project.title}`}
+          className="absolute left-side-m top-[4vh] z-10 flex items-center gap-6 md:left-side-t xl:left-side-d"
+          data-meta
         >
-          {/* placeholder 인덱스 (이미지 자리) */}
-          <span className="absolute inset-0 flex items-center justify-center font-mono text-display-m font-medium uppercase tracking-[0.06em] text-ink-inverse/15">
-            {project.index}
+          <span className="font-mono text-label uppercase tracking-[0.06em] text-ink-muted">
+            {project.date}
+          </span>
+          <span className="font-mono text-label uppercase tracking-[0.06em] text-ink-muted">
+            {project.category}
           </span>
         </div>
 
-        {/* Title overlay — 상단 중앙 */}
+        {/* ── Index — 우상단 grid margin, top 4vh ── */}
+        <div
+          className="absolute right-side-m top-[4vh] z-10 md:right-side-t xl:right-side-d"
+          data-index
+        >
+          <span className="font-mono text-label uppercase tracking-[0.06em] text-ink-muted opacity-60">
+            {project.index} / {totalStr}
+          </span>
+        </div>
+
+        {/* ── Visual — fullbleed (side margin 없음), top 8vh, 56vh ── */}
+        {/* clip-path 는 wrapper에, scale 은 inner에 적용 */}
+        <div
+          className="absolute inset-x-0 top-[8vh] h-[56vh]"
+          data-visual-wrapper
+        >
+          {/* will-change: transform — GPU 가속 (hover scale도 여기서) */}
+          <div
+            className="h-full w-full bg-[#E8E6E0] transition-[filter] duration-300 group-hover:brightness-[1.04]"
+            style={{ willChange: 'transform' }}
+            data-visual
+          >
+            {/* 이미지 자리 placeholder — 인덱스 워터마크 */}
+            <span className="absolute inset-0 flex items-center justify-center font-mono text-display-m font-medium uppercase tracking-[0.06em] text-ink-primary/[0.12]">
+              {project.index}
+            </span>
+          </div>
+        </div>
+
+        {/* ── Title — 좌하단 grid margin, bottom 4vh, display-L ── */}
+        {/* hover: x +12px (Tailwind group-hover translate) */}
         <h3
-          className="absolute left-1/2 top-[6vh] -translate-x-1/2 font-display text-heading font-medium tracking-tight text-ink-inverse"
+          className="absolute bottom-[4vh] left-side-m z-10 font-display text-display-l font-medium tracking-tight text-ink-primary transition-transform duration-300 ease-out group-hover:translate-x-3 md:left-side-t xl:left-side-d"
           data-title
         >
           {project.title}
         </h3>
 
-        {/* Meta overlay — 하단 중앙 */}
-        <div
-          className="absolute bottom-[5vh] left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-center font-mono text-label uppercase tracking-[0.06em] text-ink-inverse"
-          data-meta
-        >
-          <span>{project.date}</span>
-          <span>{project.category}</span>
-        </div>
+        {/* ── Disabled overlay (no studyHref) ── */}
+        {isDisabled && (
+          <div
+            className="absolute right-side-m bottom-[4vh] z-10 font-mono text-label uppercase tracking-[0.06em] text-ink-muted/40 md:right-side-t xl:right-side-d"
+            aria-hidden
+          >
+            Coming soon
+          </div>
+        )}
       </a>
     </article>
   )

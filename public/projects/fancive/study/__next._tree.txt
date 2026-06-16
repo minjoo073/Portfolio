@@ -1,0 +1,5 @@
+:HL["/projects/fancive/study/_next/static/chunks/3ar49sx5hm7es.css","style"]
+:HL["/projects/fancive/study/_next/static/media/Switzer_Variable-s.p.2cv8cnme15iov.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/images/hero_bg.webp","image"]
+:HL["/images/hero_logo.webp","image"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"soaqZ-L35lKo5XLOVdX0b"}

@@ -29,7 +29,17 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-inter)', 'sans-serif'],
         display: ['var(--font-display)', 'sans-serif'],
-        kr: ['var(--font-pretendard)', 'sans-serif']
+        kr: ['var(--font-pretendard)', 'sans-serif'],
+        mono: [
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          'Liberation Mono',
+          'Courier New',
+          'monospace'
+        ]
       },
       fontSize: {
         /* 거대 좌측 타이포 — viewport 가로 80~90% 점유 (스크린샷 비율 기준) */
@@ -53,6 +63,9 @@ const config: Config = {
       },
       maxWidth: {
         container: '1440px'
+      },
+      minHeight: {
+        'screen-dvh': '100dvh'
       },
       transitionTimingFunction: {
         'out-soft': 'cubic-bezier(0.16, 1, 0.3, 1)',
