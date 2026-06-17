@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 import { usePathname } from 'next/navigation'
-import { navUtilityLeft, navUtilityCenter, navLinks } from '@/data/nav'
+import { navUtilityCenter, navLinks } from '@/data/nav'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -29,21 +29,17 @@ export function Navigation() {
       )}
       aria-label="Primary"
     >
-      {/* 좌측 utility */}
+      {/* 좌측 — brand 라벨 (이전 navUtilityLeft © copyright 폐기) */}
       <div className="justify-self-start">
-        <span className="font-mono text-label uppercase tracking-[0.08em]">
-          {navUtilityLeft}
-        </span>
-      </div>
-
-      {/* 중앙 라벨 (비어있을 수 있음) */}
-      <div className="justify-self-center">
         {navUtilityCenter ? (
           <span className="font-mono text-label uppercase tracking-[0.08em]">
             {navUtilityCenter}
           </span>
         ) : null}
       </div>
+
+      {/* 중앙 — 비움 */}
+      <div className="justify-self-center" />
 
       {/* 우측 메뉴 */}
       <ul className="flex items-center gap-6 justify-self-end md:gap-8">

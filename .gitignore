@@ -27,6 +27,9 @@ yarn-error.log*
 .env*.local
 .env
 
+# work-in-progress assets (refs, mockups, drafts)
+/.work/
+
 # vercel
 .vercel
 
