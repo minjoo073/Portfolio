@@ -10,32 +10,57 @@ interface BrowserFrameFieldProps {
 }
 
 interface FrameLayout {
-  width: string // CSS unit ('92vw' 또는 '680px')
+  width: string
   height: string
   top: string
-  left: string
-  rotate: number // deg
+  left?: string
+  right?: string
+  rotate: number
 }
 
-/**
- * 단일 거대 frame이 viewport 거의 전체 차지 (Blob 위치/역할 1:1 대체).
- * 사이즈는 vw/vh 비율 — 모든 viewport에서 자동 가득.
- * 미세 잔향 1개는 외곽 (시각 무게 거의 0).
- */
+/* 강디 스펙 2026-06-17: 타이틀 우측 1/3~1/2 만 덮는 크기 */
 const DESKTOP_LAYOUT: FrameLayout[] = [
-  // [0] 거대 메인 — viewport 가로 92%, 세로 84%
-  { width: '92vw', height: '84vh', top: '6vh', left: '4vw', rotate: -1 },
-  // [1] 잔향 1개 — viewport 우상단 외곽
-  { width: '140px', height: '95px', top: '4vh', left: '90vw', rotate: -3 }
+  {
+    width:  'clamp(300px, 38vw, 560px)',
+    height: 'clamp(200px, 38vh, 440px)',
+    top:    '18%',
+    right:  '8vw',
+    rotate: -1
+  },
+  {
+    width:  'clamp(100px, 12vw, 180px)',
+    height: 'clamp(70px, 8vh, 120px)',
+    top:    '5%',
+    right:  '2vw',
+    rotate: -3
+  }
 ]
 
 const TABLET_LAYOUT: FrameLayout[] = [
-  { width: '94vw', height: '82vh', top: '7vh', left: '3vw', rotate: -1 },
-  { width: '110px', height: '75px', top: '5vh', left: '86vw', rotate: -3 }
+  {
+    width:  'clamp(260px, 40vw, 420px)',
+    height: 'clamp(180px, 36vh, 360px)',
+    top:    '18%',
+    right:  '6vw',
+    rotate: -1
+  },
+  {
+    width:  'clamp(90px, 11vw, 150px)',
+    height: 'clamp(60px, 8vh, 100px)',
+    top:    '5%',
+    right:  '2vw',
+    rotate: -3
+  }
 ]
 
 const MOBILE_LAYOUT: FrameLayout[] = [
-  { width: '96vw', height: '76vh', top: '10vh', left: '2vw', rotate: -1 }
+  {
+    width:  'clamp(180px, 65vw, 280px)',
+    height: 'clamp(130px, 40vh, 200px)',
+    top:    '20%',
+    right:  '4vw',
+    rotate: -1
+  }
 ]
 
 function pickLayout(isMobile: boolean, isTablet: boolean, count: number): FrameLayout[] {
@@ -45,162 +70,134 @@ function pickLayout(isMobile: boolean, isTablet: boolean, count: number): FrameL
 }
 
 /**
- * 전역 Browser Frame Field — 3차 §2.2 재설계.
+ * BrowserFrameField — Hero 글라스 프레임.
  *
- * 핵심:
- *   ✓ Frame이 공간의 주인공 (배경 장식 ❌)
- *   ✓ 2~3배 확대된 사이즈 (600~1280px)
- *   ✓ 일부 viewport 밖으로 의도된 cropping
- *   ✓ 명시된 외곽선 + 상단 chrome bar + dot 3개
- *   ✓ 라운드 코너 12~16px
- *   ✓ body 영역에만 backdrop-filter + SVG displacement — 겹치는 영역만 굴절
- *   ✓ 각자 다른 위상의 부유 모션 (절대 동기화 안 됨)
+ * 글라스 토큰(강디 2026-06-17):
+ *   --glass-border: rgba(255,255,255,0.32)  프레임 외곽선
+ *   --glass-fill:   rgba(255,255,255,0.07)  프레임 배경
+ *   --glass-inset:  rgba(255,255,255,0.18)  내부 인셋 하이라이트
+ *   --glass-shadow: rgba(0,0,0,0.14)        그림자
+ *   --glass-blur:   8px                     backdrop-filter
+ *
+ * 구조 (2층):
+ *   mouseWrapperRefs[i] — absolute 위치 + 마우스 추종 (gsap.quickTo x/y)
+ *     └─ frameRefs[i]   — 시각 프레임 + idle float (gsap x/y/rotation sine)
  */
 export function BrowserFrameField({ count = 5 }: BrowserFrameFieldProps) {
-  const reduced = useReducedMotionContext()
+  const reduced  = useReducedMotionContext()
   const isMobile = useIsMobile()
   const isTablet = useIsTablet()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const frameRefs = useRef<Array<HTMLDivElement | null>>([])
+  const containerRef      = useRef<HTMLDivElement>(null)
+  const frameRefs         = useRef<Array<HTMLDivElement | null>>([])
+  const mouseWrapperRefs  = useRef<Array<HTMLDivElement | null>>([])
 
   const layout = pickLayout(isMobile, isTablet, count)
-
-  // backdrop blur — 매우 미세 (큰 타이포에서만 굴절 인지, 작은 텍스트는 영향 없음)
-  const blurAmount = isMobile ? 1.5 : isTablet ? 1.8 : 2
-  // body opacity — frame이 거의 투명한 유리
-  const bodyOpacity = 0.22
 
   useEffect(() => {
     registerGsap()
     if (!containerRef.current) return
 
     const ctx = gsap.context(() => {
-      frameRefs.current.forEach((el, i) => {
-        if (!el) return
-        const c = layout[i]
-        if (!c) return
+      /* ── idle float — frameRefs (inner) ────────────────────────── */
+      if (!reduced) {
+        frameRefs.current.forEach((el, i) => {
+          if (!el) return
+          const c = layout[i]
+          if (!c) return
 
-        // 부유 모션 — 사이즈가 커진 만큼 범위도 비례 확대
-        // 각자 다른 duration → 절대 동기화 안 됨
-        if (reduced) return
+          const phase  = i * 0.37
+          const xRange = 22 + i * 6
+          const yRange = 16 + i * 4
+          const rRange = 1  + (i % 3) * 0.4
+          const durX   = 9  + i * 0.7
+          const durY   = 8  + i * 0.5
+          const durR   = 11 + i * 0.4
 
-        // RayRayLab Blob 톤 — 미세하고 느린 부유. frame 작아진 만큼 범위도 축소.
-        const phase = i * 0.37 // 각자 다른 시작 위상
-        const xRange = 22 + i * 6 // 22~46px
-        const yRange = 16 + i * 4 // 16~32px
-        const rRange = 1 + (i % 3) * 0.4 // ±1~1.8°
-        const durX = 9 + i * 0.7
-        const durY = 8 + i * 0.5
-        const durR = 11 + i * 0.4
+          gsap.to(el, { x: `+=${xRange}`, duration: durX, ease: 'sine.inOut', repeat: -1, yoyo: true, delay: phase })
+          gsap.to(el, { y: `+=${yRange}`, duration: durY, ease: 'sine.inOut', repeat: -1, yoyo: true, delay: phase * 0.7 })
+          gsap.to(el, { rotation: `+=${rRange}`, duration: durR, ease: 'sine.inOut', repeat: -1, yoyo: true, delay: phase * 1.3 })
+        })
+      }
 
-        gsap.to(el, {
-          x: `+=${xRange}`,
-          duration: durX,
-          ease: 'sine.inOut',
-          repeat: -1,
-          yoyo: true,
-          delay: phase
+      /* ── 마우스 추종 — mouseWrapperRefs (outer) ─────────────────── */
+      if (!reduced && !isMobile) {
+        type QuickFn = (value: number, start?: number) => gsap.core.Tween
+        const quickToX: QuickFn[] = []
+        const quickToY: QuickFn[] = []
+
+        mouseWrapperRefs.current.forEach((el, i) => {
+          if (!el) return
+          const dur = i === 0 ? 1.4 : 0.9
+          quickToX[i] = gsap.quickTo(el, 'x', { duration: dur,        ease: 'power2.out' })
+          quickToY[i] = gsap.quickTo(el, 'y', { duration: dur * 0.7,  ease: 'power2.out' })
         })
-        gsap.to(el, {
-          y: `+=${yRange}`,
-          duration: durY,
-          ease: 'sine.inOut',
-          repeat: -1,
-          yoyo: true,
-          delay: phase * 0.7
-        })
-        gsap.to(el, {
-          rotation: `+=${rRange}`,
-          duration: durR,
-          ease: 'sine.inOut',
-          repeat: -1,
-          yoyo: true,
-          delay: phase * 1.3
-        })
-      })
+
+        const handlePointer = (e: PointerEvent) => {
+          const cx = window.innerWidth  / 2
+          const cy = window.innerHeight / 2
+          mouseWrapperRefs.current.forEach((_, i) => {
+            if (!quickToX[i] || !quickToY[i]) return
+            const factor = i === 0 ? 0.06 : 0.1
+            quickToX[i]((e.clientX - cx) * factor)
+            quickToY[i]((e.clientY - cy) * factor * 0.55)
+          })
+        }
+
+        window.addEventListener('pointermove', handlePointer, { passive: true })
+        return () => { window.removeEventListener('pointermove', handlePointer) }
+      }
     }, containerRef)
 
     return () => ctx.revert()
-  }, [reduced, isMobile, isTablet, count])
+  }, [reduced, isMobile, isTablet, count]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div
       ref={containerRef}
       aria-hidden="true"
+      data-hero-frames
       className="pointer-events-none absolute inset-0 z-frame overflow-hidden"
     >
       {layout.map((c, i) => (
         <div
           key={i}
-          ref={el => {
-            frameRefs.current[i] = el
-          }}
-          className="absolute rounded-xl border overflow-hidden"
+          ref={el => { mouseWrapperRefs.current[i] = el }}
+          className="absolute will-change-transform"
           style={{
-            width: c.width,
-            height: c.height,
-            top: c.top,
-            left: c.left,
-            transform: `rotate(${c.rotate}deg)`,
-            borderColor: 'rgba(17, 17, 17, 0.16)',
-            borderWidth: '1px',
-            willChange: 'transform',
-            boxShadow:
-              '0 1px 0 rgba(255,255,255,0.4) inset, 0 24px 60px rgba(0,0,0,0.05)'
-          }}
+              top: c.top,
+              ...(c.right !== undefined ? { right: c.right } : { left: c.left ?? '0' })
+            }}
         >
-          {/* ── Chrome bar (상단 32px) ───────────────────────────
-              PORTFOLIO 위에 갔을 때도 글자가 비치도록 더 투명하게.
-              outline·dot은 또렷이 유지. */}
           <div
-            className="absolute left-0 right-0 top-0 z-10 flex items-center gap-[6px] border-b px-[14px]"
+            ref={el => { frameRefs.current[i] = el }}
+            className="rounded-xl overflow-hidden will-change-transform"
             style={{
-              height: 32,
-              backgroundColor: 'rgba(248, 247, 244, 0.4)',
-              borderBottomColor: 'rgba(17, 17, 17, 0.08)',
-              backdropFilter: 'blur(3px)',
-              WebkitBackdropFilter: 'blur(3px)'
+              width:     c.width,
+              height:    c.height,
+              transform: `rotate(${c.rotate}deg)`,
+              /* backdrop-filter 완전 제거 — 굴절은 WebGL 렌즈 전담 */
+              border:     '1px solid rgba(255,255,255,0.20)',
+              background: 'rgba(255,255,255,0.06)',
+              boxShadow:  'inset 0 0 0 0.5px rgba(255,255,255,0.12), 0 8px 32px rgba(0,0,0,0.10)'
             }}
           >
-            <span
-              className="block rounded-full"
+            {/* Chrome bar */}
+            <div
+              className="absolute left-0 right-0 top-0 z-10 flex items-center gap-[6px] border-b px-[14px]"
               style={{
-                width: 8,
-                height: 8,
-                backgroundColor: 'rgba(17, 17, 17, 0.22)'
+                height:            32,
+                backgroundColor:   'rgba(255,255,255,0.10)',
+                borderBottomColor: 'rgba(255,255,255,0.20)'
               }}
-            />
-            <span
-              className="block rounded-full"
-              style={{
-                width: 8,
-                height: 8,
-                backgroundColor: 'rgba(17, 17, 17, 0.22)'
-              }}
-            />
-            <span
-              className="block rounded-full"
-              style={{
-                width: 8,
-                height: 8,
-                backgroundColor: 'rgba(17, 17, 17, 0.22)'
-              }}
-            />
-          </div>
+            >
+              {/* 닷 3개 — opacity ≥ 0.7 (강디 스펙) */}
+              <span className="block rounded-full" style={{ width: 8, height: 8, backgroundColor: 'rgba(255,255,255,0.72)' }} />
+              <span className="block rounded-full" style={{ width: 8, height: 8, backgroundColor: 'rgba(255,255,255,0.72)' }} />
+              <span className="block rounded-full" style={{ width: 8, height: 8, backgroundColor: 'rgba(255,255,255,0.72)' }} />
+            </div>
 
-          {/* ── Body 영역 (chrome 아래) ────────────────────────
-              반투명 유리 — opacity 0.5로 underneath PORTFOLIO이 비침.
-              backdrop blur는 미세 (4~7px) → 글자가 흐려지지 않고 살짝 휘는 굴절감만. */}
-          <div
-            className="absolute left-0 right-0 bottom-0"
-            style={{
-              top: 32,
-              opacity: bodyOpacity,
-              backdropFilter: `blur(${blurAmount}px) saturate(105%)`,
-              WebkitBackdropFilter: `blur(${blurAmount}px) saturate(105%)`,
-              filter: 'url(#refraction)'
-            }}
-          />
+            {/* Body 영역 — backdrop-filter 제거, WebGL 렌즈가 굴절 전담 */}
+          </div>
         </div>
       ))}
     </div>

@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ───────────────────────── Glass Tokens (강디 2026-06-17) ────────────────────── */
+:root {
+  --glass-border: rgba(255, 255, 255, 0.32);
+  --glass-fill:   rgba(255, 255, 255, 0.07);
+  --glass-inset:  rgba(255, 255, 255, 0.18);
+  --glass-shadow: rgba(0, 0, 0, 0.14);
+  --glass-blur:   8px;
+}
+
 /* ───────────────────────── Reset & Base ───────────────────────── */
 @layer base {
   :root {
@@ -22,17 +31,7 @@
     overscroll-behavior: none;
   }
 
-  /* Desktop에서는 시스템 커서 숨김 (CustomCursor가 대체) */
-  @media (hover: hover) and (pointer: fine) {
-    body {
-      cursor: none;
-    }
-    a,
-    button,
-    [role='button'] {
-      cursor: none;
-    }
-  }
+  /* 커스텀 커서 제거(CEO 2026-06-17) — lerp 지연이 "마우스 막힘" 느낌 유발. 네이티브 커서 복원. */
 
   /* iOS dvh fallback */
   :where(.h-screen-dvh) {

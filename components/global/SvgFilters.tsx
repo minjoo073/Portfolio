@@ -22,6 +22,45 @@ export function SvgFilters() {
           <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="3" />
           <feDisplacementMap in="SourceGraphic" scale="1.4" xChannelSelector="R" yChannelSelector="G" />
         </filter>
+
+        {/*
+          타이틀 liquid 번짐 — Hero "MINJOO" h1 에 직접 적용.
+          마우스 X 위치 → feDisplacementMap scale (18~40) 을 RAF lerp 로 조정.
+          idle: feTurbulence baseFrequency 를 SVG <animate> 로 미세 진동 (GSAP 충돌 없음).
+          bloom: displaced 를 feGaussianBlur 0.8 로 살짝 번진 뒤 feMerge (아래 = bloom, 위 = sharp).
+          filter region 충분히 크게 — 대형 디스플레이 폰트 displacement 클리핑 방지.
+        */}
+        <filter id="title-liquid" x="-15%" y="-15%" width="130%" height="130%">
+          <feTurbulence
+            id="title-turb"
+            type="fractalNoise"
+            baseFrequency="0.002 0.009"
+            numOctaves="2"
+            seed="7"
+            result="noise"
+          >
+            <animate
+              attributeName="baseFrequency"
+              values="0.002 0.009;0.003 0.011;0.002 0.009"
+              dur="5s"
+              repeatCount="indefinite"
+            />
+          </feTurbulence>
+          <feDisplacementMap
+            id="title-disp-map"
+            in="SourceGraphic"
+            in2="noise"
+            scale="20"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="displaced"
+          />
+          <feGaussianBlur in="displaced" stdDeviation="0.8" result="bloom" />
+          <feMerge>
+            <feMergeNode in="bloom" />
+            <feMergeNode in="displaced" />
+          </feMerge>
+        </filter>
       </defs>
     </svg>
   )

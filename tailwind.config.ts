@@ -13,6 +13,8 @@ const config: Config = {
         dark: '#0A0A0A',
         // 다크 위 카드·이미지 placeholder용 (약간 밝은 다크). 사진 들어가기 전 임시 톤.
         'dark-soft': '#1A1A1A',
+        // Hero 전용 배경 — 쿨 라이트 그레이. canvas(#F8F7F4 웜톤)와 구분, RayRayLab 레퍼런스 톤 근사.
+        'hero-bg': '#EBEBEB',
         ink: {
           primary: '#111111',
           muted: '#6B6B6B',

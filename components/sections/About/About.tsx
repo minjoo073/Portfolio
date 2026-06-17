@@ -3,6 +3,7 @@ import { SectionLabel } from '@/components/primitives/SectionLabel'
 import { KeywordStack } from './KeywordStack'
 import { CareerSnapshot } from './CareerSnapshot'
 import { ToolsList } from './ToolsList'
+import { StatementText } from './StatementText'
 
 /**
  * About Me — 3단 viewport 구조 (다크 배경):
@@ -19,20 +20,14 @@ export function About() {
     >
       {/* [1] 라벨 + 거대 statement + 한글 paragraph — 상단 큰 여백 + viewport 중앙~하단 배치 */}
       <div
-        className="flex h-screen-dvh flex-col px-side-m md:px-side-t xl:px-side-d"
-        style={{ paddingTop: '40vh', paddingBottom: '6vh', rowGap: '4vh' }}
+        className="flex min-h-screen-dvh flex-col px-side-m md:px-side-t xl:px-side-d"
+        style={{ paddingTop: '95vh', paddingBottom: '6vh', rowGap: '4vh' }}
       >
         {/* 라벨 — statement 바로 위 중앙 */}
         <SectionLabel className="self-center text-ink-inverse/70">About Me</SectionLabel>
 
-        {/* statement — justify spread */}
-        <h2
-          className="font-display text-statement font-medium uppercase text-ink-inverse"
-          style={{ textAlign: 'justify', textAlignLast: 'left' }}
-          data-statement
-        >
-          {about.statement.join(' ')}
-        </h2>
+        {/* statement — 단어 퍼짐 애니메이션 (StatementText client component) */}
+        <StatementText text={about.statement.join(' ')} />
 
         {/* 한글 paragraph — statement 아래 좌측 */}
         <p className="max-w-[720px] font-kr text-body-l leading-relaxed text-ink-inverse/65">

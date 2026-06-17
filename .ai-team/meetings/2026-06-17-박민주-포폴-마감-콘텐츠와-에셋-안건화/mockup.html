@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>목업 — 박민주 포폴 마감 콘텐츠와 에셋 안건화</title>
+<style>
+  /* 엄청 심플 베이스 — 색 3, 그림자 0, 장식 0, 타이포 3단 */
+  :root {
+    --bg: #fafafa; --panel: #fff; --line: #e5e7eb;
+    --fg: #111827; --muted: #6b7280; --accent: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 16px; }
+  .screen { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .screen h3 { margin: 0 0 8px; font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .screen .desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  /* 9:16 phone frame — 화면 비율을 모바일 기본으로 */
+  .frame { aspect-ratio: 9 / 16; background: white; border: 1px solid var(--line); border-radius: 6px; padding: 16px; overflow: hidden; font-size: 14px; }
+  /* 목업 안에서 자주 쓸 패턴 — 강디가 인라인으로 더 정의 가능 */
+  .frame .topbar { display: flex; justify-content: space-between; align-items: center; padding: 4px 0 12px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+  .frame .title { font-size: 18px; font-weight: 700; margin: 16px 0 8px; }
+  .frame .body { font-size: 13px; line-height: 1.55; }
+  .frame .cta { display: block; background: var(--accent); color: white; text-align: center; padding: 12px; border-radius: 8px; font-weight: 600; margin-top: 16px; text-decoration: none; }
+  .frame .input { display: block; border: 1px solid var(--line); padding: 10px 12px; border-radius: 6px; margin: 8px 0; font-size: 13px; }
+  .frame .row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>목업 — 박민주 포폴 마감 콘텐츠와 에셋 안건화</h1>
+  <div class="meta">강디 빠른 스케치 · 엄청 심플 베이스 · 클릭 동작 없음 (보기 전용)</div>
+</header>
+
+<div class="screens">
+  <!-- 강디가 안건별 화면을 여기 채움. 화면당 article.screen 한 개.
+       빠르게 — 색 ≤ 3, 그림자 X, 장식 0. 위계는 크기·여백·굵기로만.
+
+  예시:
+  <article class="screen">
+    <h3>1. 진입</h3>
+    <div class="desc">사용자가 처음 보는 화면</div>
+    <div class="frame">
+      <div class="topbar"><span>9:41</span><span>●●●</span></div>
+      <div class="title">한 줄 카피</div>
+      <div class="body">보조 한 줄.</div>
+      <a class="cta">시작하기</a>
+    </div>
+  </article>
+  -->
+
+  <!-- SCREENS_START -->
+
+  <article class="screen">
+    <h3>1. Editorial Placeholder — 상태별</h3>
+    <div class="desc">빈 박스가 404가 아니라 "의도된 여백"으로 읽히게. thin border + mono 캡션이 의도 신호.</div>
+    <div class="frame" style="aspect-ratio:4/3; display:flex; flex-direction:column; gap:10px; padding:14px;">
+      <!-- default empty -->
+      <div style="background:#E8E6E0; border:1px solid rgba(17,24,39,0.1); border-radius:4px; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;">
+        <span style="font-family:monospace; font-size:12px; color:#6b7280; letter-spacing:0.08em; text-transform:uppercase;">Asset Incoming</span>
+        <span style="font-family:monospace; font-size:11px; color:#9ca3af;">01</span>
+        <span style="font-size:10px; color:#9ca3af; margin-top:2px;">← default empty</span>
+      </div>
+      <!-- image 404 fallback -->
+      <div style="background:#E8E6E0; border:1px solid rgba(17,24,39,0.1); border-radius:4px; height:48px; display:flex; align-items:center; padding:0 12px; gap:8px;">
+        <span style="font-size:10px; font-family:monospace; color:#9ca3af;">img onError →</span>
+        <span style="font-size:12px; font-family:monospace; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Asset Incoming</span>
+        <span style="font-size:10px; color:#9ca3af; margin-left:auto;">← 404 fallback</span>
+      </div>
+      <!-- video missing -->
+      <div style="background:#E8E6E0; border:1px solid rgba(17,24,39,0.1); border-radius:4px; height:48px; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="10,8.5 16,12 10,15.5" fill="none" stroke="#6b7280" stroke-width="1.5"/></svg>
+        <span style="font-family:monospace; font-size:12px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Video — Coming</span>
+        <span style="font-size:10px; color:#9ca3af; margin-left:auto; margin-right:8px;">← video missing</span>
+      </div>
+    </div>
+  </article>
+
+  <article class="screen">
+    <h3>2. Archive Card 06/07 — default / hover</h3>
+    <div class="desc">케이스 없음 = 결함 아닌 아카이브. badge + 서브라인이 기대치를 교정.</div>
+    <div class="frame" style="aspect-ratio:4/3; display:flex; gap:10px; padding:14px;">
+      <!-- default state -->
+      <div style="flex:1; background:#1c1c1c; border-radius:6px; display:flex; flex-direction:column; justify-content:flex-end; padding:10px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:10px; left:10px; border:1px solid rgba(255,255,255,0.2); border-radius:3px; padding:3px 7px;">
+          <span style="font-family:monospace; font-size:11px; color:rgba(255,255,255,0.6); letter-spacing:0.08em; text-transform:uppercase;">In Archive</span>
+        </div>
+        <div>
+          <div style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.85); margin-bottom:3px;">Project 06</div>
+          <div style="font-size:11px; font-family:monospace; color:rgba(255,255,255,0.35); cursor:not-allowed;">View Site — SOON</div>
+        </div>
+        <div style="position:absolute; bottom:-14px; left:0; right:0; text-align:center; font-size:10px; color:#6b7280;">default</div>
+      </div>
+      <!-- hover state -->
+      <div style="flex:1; background:#272727; border-radius:6px; display:flex; flex-direction:column; justify-content:flex-end; padding:10px; position:relative; overflow:hidden; outline:1px solid rgba(255,255,255,0.1);">
+        <div style="position:absolute; top:10px; left:10px; border:1px solid rgba(255,255,255,0.2); border-radius:3px; padding:3px 7px;">
+          <span style="font-family:monospace; font-size:11px; color:rgba(255,255,255,0.6); letter-spacing:0.08em; text-transform:uppercase;">In Archive</span>
+        </div>
+        <div>
+          <div style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.9); margin-bottom:2px;">Project 07</div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.65); margin-bottom:3px; letter-spacing:0.02em;">Case in Archive</div>
+          <div style="font-size:11px; font-family:monospace; color:rgba(255,255,255,0.35); cursor:not-allowed;">View Site — SOON</div>
+        </div>
+        <div style="position:absolute; bottom:-14px; left:0; right:0; text-align:center; font-size:10px; color:#6b7280;">hover (brightness +, 서브라인 fade in)</div>
+      </div>
+    </div>
+  </article>
+
+  <article class="screen">
+    <h3>3. Footer 연락처 — fallback 상태</h3>
+    <div class="desc">실값 없는 행은 display:none (gap 소멸). resume disabled. GitHub/Notion active.</div>
+    <div class="frame" style="aspect-ratio:4/3; padding:14px; display:flex; flex-direction:column; justify-content:center; gap:0;">
+      <!-- email row: hidden (placeholder 값) -->
+      <div style="padding:7px 0; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; gap:8px; opacity:0.28;">
+        <span style="font-size:11px; font-family:monospace; color:#9ca3af; width:54px;">email</span>
+        <span style="font-size:12px; color:#9ca3af; text-decoration:line-through;">hello@parkminjoo.com</span>
+        <span style="font-size:10px; font-family:monospace; color:#9ca3af; margin-left:auto;">display:none</span>
+      </div>
+      <!-- resume row: disabled -->
+      <div style="padding:7px 0; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:11px; font-family:monospace; color:#9ca3af; width:54px;">resume</span>
+        <span style="font-size:13px; color:rgba(17,24,39,0.35); cursor:not-allowed; user-select:none;">Resume.pdf</span>
+        <span style="font-size:10px; font-family:monospace; color:#9ca3af; margin-left:auto;">aria-disabled · opacity/40</span>
+      </div>
+      <!-- GitHub row: active -->
+      <div style="padding:7px 0; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:11px; font-family:monospace; color:#9ca3af; width:54px;">github</span>
+        <span style="font-size:13px; color:#111827; text-decoration:underline;">github.com/parkminjoo</span>
+        <span style="font-size:10px; font-family:monospace; color:#6b7280; margin-left:auto;">active</span>
+      </div>
+      <!-- Notion row: active -->
+      <div style="padding:7px 0; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:11px; font-family:monospace; color:#9ca3af; width:54px;">notion</span>
+        <span style="font-size:13px; color:#111827; text-decoration:underline;">notion.so/parkminjoo</span>
+        <span style="font-size:10px; font-family:monospace; color:#6b7280; margin-left:auto;">active</span>
+      </div>
+      <div style="margin-top:10px; padding:7px 10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:4px;">
+        <span style="font-size:10px; font-family:monospace; color:#9ca3af; line-height:1.5;">email → display:none (gap 소멸, 레이아웃 변동 없음)<br>resume → download attr 제거 · aria-disabled · text-ink-primary/40</span>
+      </div>
+    </div>
+  </article>
+
+  <!-- SCREENS_END -->
+</div>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
-import { heroCategories, heroBody } from '@/data/nav'
-import { BrowserFrameField } from '@/components/global/BrowserFrameField'
+import { Intro } from '@/components/sections/Hero/Intro'
+import { Hero } from '@/components/sections/Hero/Hero'
 import { About } from '@/components/sections/About/About'
 import { WebProjects } from '@/components/sections/WebProjects/WebProjects'
 import { MobileProjects } from '@/components/sections/MobileProjects/MobileProjects'
@@ -18,65 +18,26 @@ import { Footer } from '@/components/sections/Footer/Footer'
 export default function Home() {
   return (
     <>
+      {/* 균열(Fissure) 인트로 — Hero 위 오버레이. 애니 완료 후 자동 언마운트. */}
+      <Intro />
+
+      <Hero />
+
       {/*
-        Hero — 4단 정보 계층 (editorial 레이아웃):
-          [1] Nav 3분할 (전역, layout.tsx)
-          [2] 거대 좌측 타이포
-          [3] 5단 카테고리 grid
-          [4] 본문 paragraph (중앙 정렬)
-          [5] scroll cue (하단 중앙)
+        About 래퍼: position relative + z-10 + -mt-[30vh].
+        Hero(z-[1]) 위에 쌓여 Hero overflow-visible 로 돌출된
+        타이틀 그룹을 불투명 다크 배경으로 덮음.
+
+        -mt-[30vh]: About 상단을 히어로 하단보다 30vh 위에서 시작.
+        → About 시작 페이지 위치 = 130vh.
+        → 스크롤 130vh 시점: About 상단 vp=0, PORTFOLIO 텍스트 vp≈+1.75vh.
+        → About 다크 배경이 PORTFOLIO 위를 정확히 슬라이드하며 덮음.
+        → "PORTFOLIO 가 About 뒤로 들어가는" 리빌 효과.
       */}
-      <section
-        id="intro"
-        className="relative h-screen-dvh overflow-hidden"
-        data-section="intro"
-      >
-        {/* Browser Frame은 Hero 안에서만 — overflow-hidden으로 외부 노출 차단 */}
-        <BrowserFrameField count={5} />
-
-        <div className="relative flex h-full flex-col px-side-m md:px-side-t xl:px-side-d">
-          {/* [2] 거대 좌측 타이포 — 상단 영역 */}
-          <h1 className="font-display select-none pt-[12vh] text-display-xl font-medium tracking-tight text-ink-primary">
-            PORTFOLIO
-          </h1>
-
-          {/* [3] 키워드 spread — 가로로 균등 분산 (좌→우 끝까지) */}
-          <div className="mt-[3vh] border-t border-ink-primary/15 pt-3">
-            <div className="flex w-full justify-between gap-4 font-mono text-label uppercase tracking-[0.06em]">
-              {heroCategories.map(cat => (
-                <div key={cat.top} className="flex flex-col">
-                  <span className="text-ink-primary">{cat.top}</span>
-                  <span className="text-ink-muted mt-0.5 self-end whitespace-nowrap">
-                    {cat.bottom}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* [4] 본문 paragraph — 중앙 정렬 */}
-          <p className="mt-[10vh] mx-auto max-w-[640px] text-center font-mono text-label uppercase leading-relaxed tracking-[0.08em] text-ink-primary">
-            {heroBody[0]}
-            <br />
-            {heroBody[1]}
-          </p>
-        </div>
-
-        {/* [5] scroll cue */}
-        <div className="text-ink-primary absolute bottom-10 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 animate-bounce-slow">
-          <span className="font-mono text-label uppercase tracking-[0.1em]">please scroll down</span>
-          <svg width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden="true">
-            <path
-              d="M5 0V13M5 13L1 9M5 13L9 9"
-              stroke="currentColor"
-              strokeWidth="1"
-              strokeLinecap="square"
-            />
-          </svg>
-        </div>
-      </section>
-
-      <About />
+      <div className="relative z-10 -mt-[30vh]">
+        {/* 솔리드 블랙이 위로 슬라이드하며 타이틀을 덮음 → 검정 여백(About paddingTop)이 "쉼" → statement 등장. */}
+        <About />
+      </div>
       <WebProjects />
       <MobileProjects />
       <ContentMarketing />

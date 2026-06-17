@@ -13,7 +13,7 @@
 |---|---|---|
 | **1조** | 프로젝트가 주인공, 모션은 조연. 모든 모션은 "콘텐츠를 더 잘 읽히게 하는 이유"가 있어야 함. | 폐기 |
 | **2조** | RayRayLab 수준의 인터랙션 밀도를 유지 (ScrollTrigger 30~50개, hover/scrub/pin/parallax/marquee 다 사용). 단, 각 인터랙션은 1조에 종속됨. | 폐기 |
-| **3조** | WebGL · 3D · 파티클 · 물리 시뮬레이션 사용 안 함. 모든 모션은 CSS + GSAP + SVG filter 범위 내에서. | 폐기 |
+| **3조** | WebGL · 3D · 파티클 · 물리 시뮬레이션 사용 안 함. 모든 모션은 CSS + GSAP + SVG filter 범위 내에서. **예외: Hero 타이틀(MINJOO) 한정 Three.js WebGL 허용 (CEO 승인 2026-06-17).** | 폐기 |
 | **4조** | Quiet luxury · editorial · technical · premium 톤. 빠른/작은/tech-feel 인터랙션 회피. duration ≥ 600ms 기본. | 폐기 |
 | **5조** | 모든 모션은 `prefers-reduced-motion: reduce` 환경에서 비활성 또는 단순화. | 폐기 |
 

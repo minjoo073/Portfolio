@@ -36,3 +36,16 @@ next-env.d.ts
 
 # AI team agent working memory (not portfolio content)
 .claude/
+
+# Playwright/agent verification artifacts (not portfolio content)
+.test-captures/
+playwright-shots/
+screenshots/
+public/playwright-hero/
+
+# Agent-created Playwright verification scripts (not portfolio content)
+scripts/capture-about-transition.mjs
+scripts/pw-statement-capture.js
+scripts/test-statement.js
+scripts/verify-parallax-reveal.mjs
+scripts/verify2.mjs

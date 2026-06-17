@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>강팀 회의 — 박민주 포폴 마감 콘텐츠와 에셋 안건화</title>
+<style>
+  /* 회의록 문서 자체의 표시 스타일 — 산출물용 Crowny Class 디자인 시스템과는 별개. */
+  :root {
+    --bg: #fafafa; --panel: #fff; --line: #e5e7eb;
+    --fg: #111827; --muted: #6b7280;
+    --c-decision: #1f2937;  /* 강팀장·CEO */
+    --c-hub:      #2563eb;  /* 강팀장 */
+    --c-exec:     #0f766e;  /* 강디·강개발·강체크 */
+    --c-guard:    #7c3aed;  /* 아뱅·강체크 */
+    --c-wild:     #b45309;  /* 아뱅 */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 24px 32px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { margin: 0; font-size: 20px; }
+  header .meta { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
+  .turn { margin: 20px 0; }
+  .who { display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 6px; }
+  .who .emoji { font-size: 18px; }
+  .bubble { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+  .bubble :first-child { margin-top: 0; }
+  .bubble :last-child { margin-bottom: 0; }
+  .bubble pre { background: #f3f4f6; padding: 10px 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; }
+  .bubble code { background: #f3f4f6; padding: 2px 5px; border-radius: 4px; font-size: 0.9em; }
+  .bubble img, .bubble svg { max-width: 100%; height: auto; display: block; margin: 8px 0; }
+  .bubble table { border-collapse: collapse; margin: 8px 0; }
+  .bubble th, .bubble td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; font-size: 14px; }
+  .bubble th { background: #f9fafb; }
+  /* 5인 체제 (2026-05): pm·designer·dev·qa·marketer */
+  .turn.pm .who { color: var(--c-hub); }
+  .turn.designer .who, .turn.dev .who, .turn.qa .who { color: var(--c-exec); }
+  .turn.marketer .who { color: var(--c-wild); }
+  /* 하위호환 (옛 회의록 렌더용) */
+  .turn.ceo .who, .turn.advisor .who { color: var(--c-decision); }
+  .turn.ux .who, .turn.ui .who { color: var(--c-exec); }
+  .turn.security .who { color: var(--c-guard); }
+  .turn.abang .who { color: var(--c-wild); }
+  section.closing, section.summary { margin-top: 48px; border-top: 2px solid var(--line); padding-top: 32px; }
+  section.closing h2, section.summary h2 { margin: 0 0 16px; font-size: 18px; }
+  section.closing iframe { width: 100%; height: 600px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+  section.summary .block { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
+  section.summary .block h3 { margin: 0 0 8px; font-size: 15px; color: var(--c-hub); }
+  section.summary ul { margin: 0; padding-left: 20px; }
+  .final-comments { margin-top: 24px; }
+  .final-comments .comment { padding: 10px 14px; border-left: 3px solid var(--line); margin: 8px 0; }
+  .final-comments .comment.ceo, .final-comments .comment.advisor { border-color: var(--c-decision); }
+  .final-comments .comment.pm { border-color: var(--c-hub); }
+  .final-comments .comment.ux, .final-comments .comment.ui, .final-comments .comment.dev, .final-comments .comment.qa { border-color: var(--c-exec); }
+  .final-comments .comment.marketer, .final-comments .comment.security { border-color: var(--c-guard); }
+  .final-comments .comment.abang { border-color: var(--c-wild); }
+  .final-comments .comment .who { font-weight: 600; margin-right: 8px; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 32px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>강팀 회의 — 박민주 포폴 마감 콘텐츠와 에셋 안건화</h1>
+  <div class="meta">날짜: 2026-06-17  ·  안건: 박민주 포폴 마감 콘텐츠와 에셋 안건화  ·  진행: 🎯 강팀장</div>
+</header>
+
+<main>
+
+<!-- 턴 블록 복사용 (각 멤버가 자기 턴을 여기에 append):
+<div class="turn pm">       <-- 클래스: ceo / advisor / pm / ux / ui / dev / qa / marketer / security / abang
+  <div class="who"><span class="emoji">🎯</span> 강팀장</div>
+  <div class="bubble">
+    여기에 마크다운 → HTML 또는 직접 HTML.
+    SVG·표·코드블록·이미지 자유롭게.
+  </div>
+</div>
+-->
+
+<!-- TURNS_START -->
+<div class="turn pm">
+  <div class="who"><span class="emoji">🎯</span> 강팀장</div>
+  <div class="bubble">
+    <p><strong>현황</strong>: 박민주 포폴 — 코드 골격 완성(메인 7섹션, Web 케이스 5개 통합, GSAP·SmoothScroll 인프라). 남은 건 거의 전부 <strong>콘텐츠 placeholder + 빠진 에셋 파일</strong>. 채용 담당자가 스크롤하면 빈 박스로 보이는 곳을 닫는 회의.</p>
+    <p><strong>확정(CEO)</strong>: Web 06·07 = 실명+썸네일로 <em>archive 노출</em>(케이스스터디는 없이). <strong>범위 제한(CEO)</strong>: 포폴 제작에 직접 필요한 영역만 — 텔레그램 발송·마케팅 레버·보안 안건 제외.</p>
+    <p><strong>안건</strong> (4개) — CEO 입력 의존 vs 강팀 즉시 가능 분리:</p>
+    <ol>
+      <li>🧪 [UX] 에셋 채워지기 전 빈 박스(404 썸네일·없는 영상)가 <em>의도된 editorial placeholder</em>로 보이게 + 06/07 archive 카드(케이스 없음) 클릭/hover 처리 — 지금 코드로 가능</li>
+      <li>🎨 [UI] About statement(generic 영문)·Footer 연락처(<code>hello@parkminjoo.com</code> 가짜, resume.pdf 없음) 실값 게이트 + 비어도 티 안 나게</li>
+      <li>🧭 [우선순위] 빈 6곳(Web06/07·Mobile·Content&Marketing·Visual 10컷) 중 <em>채용 담당자 30초 스캔에 가장 효과 큰 1곳</em>부터. CEO 에셋 준비 순서 확정</li>
+      <li>🔍 [품질] CEO 준비물 <em>정확한 규격 리스트</em>(파일 경로·비율·개수)를 표로 — 받는 즉시 1:1 교체 + <code>next build</code> 통과 확인</li>
+    </ol>
+    <p><strong>참석</strong>: 강팀장·강디(UX/UI)·강개발(코드)·강체크(품질). <em>아뱅(마케팅)은 이번 범위 제외.</em></p>
+    <p><strong>목표</strong>: 한 회의 = 한 결정. "강팀이 오늘 칠 코드 작업"과 "CEO 에셋 준비물 리스트" 분리 확정. <em>텔레그램 발송 없이 회의록만 마감.</em></p>
+  </div>
+</div>
+<div class="turn designer">
+  <div class="who"><span class="emoji">🎨</span> 강디</div>
+  <div class="bubble">
+    <p><strong>현재 활성 디자인 스타일: #1 — Crowny Class</strong> (출처: styles/01-crowny-class.md)</p>
+
+    <p><strong>사용자 목표</strong>: 에셋 미확보 상태에서도 채용 담당자 30초 스캔 시 포폴이 결함이 아닌 <em>편집 의도물</em>로 읽히는 것.</p>
+
+    <p><strong>흐름</strong> (분기 2개, 이탈 포인트 3곳)</p>
+    <pre>
+방문 → 빈 박스 조우
+  ├─ editorial로 읽힘 → 스크롤 지속 → CTA/연락 → [채용]
+  └─ 404/오류로 읽힘 → 신뢰 하락 → [이탈]
+
+이탈 포인트:
+  1. Placeholder 영역 — 빈 박스가 "의도된 여백"으로 읽혀야
+  2. Archive 카드 06/07 — 클릭 후 빈 화면 = 결함으로 읽힘
+  3. Footer — 가짜 이메일 + 없는 resume.pdf = 신뢰 직격
+    </pre>
+
+    <p><strong>시각 위계 (첫째→둘째→셋째)</strong></p>
+    <ol>
+      <li><strong>1순위</strong>: Archive 카드 <code>IN ARCHIVE</code> badge — 먼저 읽혀야 기대치 교정됨. 카드 진입 전 기대치를 닫아야 클릭 후 실망 없음.</li>
+      <li><strong>2순위</strong>: Placeholder 영역 thin border + mono label — "채워질 자리"임을 알림. 회색 배경만으론 부족, 보더 1px + 캡션이 의도 신호.</li>
+      <li><strong>3순위</strong>: Footer — 실값만 노출. 가짜 행은 레이아웃 gap도 남기지 않고 숨김.</li>
+    </ol>
+
+    <p><strong>컴포넌트 + 상태</strong></p>
+
+    <p><strong>A. Placeholder.tsx 보완</strong></p>
+    <table>
+      <tr><th>상태</th><th>시각 처리</th></tr>
+      <tr><td>empty (default)</td><td>bg-[#E8E6E0] + 1px border (text-ink-primary/10) + font-mono text-label "ASSET INCOMING" + 인덱스 번호</td></tr>
+      <tr><td>image-404</td><td>img onError → Placeholder로 graceful swap. src 404 시 동일 bg로 교체</td></tr>
+      <tr><td>video-missing</td><td>동일 bg + SVG play outline 24px (stroke text-ink-muted) + font-mono "VIDEO — COMING"</td></tr>
+      <tr><td>hover</td><td>opacity 1.0 → 0.95 (transition 150ms) — 반응 있되 강조 없음</td></tr>
+      <tr><td>focus</td><td>ring outline (Crowny Class 기본 유지)</td></tr>
+    </table>
+
+    <p><strong>B. Archive Card (project 06/07)</strong></p>
+    <table>
+      <tr><th>상태</th><th>시각 처리</th></tr>
+      <tr><td>default</td><td>bg-dark-soft brightness 0.85 + 좌상단 badge "IN ARCHIVE" (font-mono text-label text-ink-inverse/60, border 1px border-ink-inverse/20)</td></tr>
+      <tr><td>hover</td><td>brightness 0.85→0.95 (200ms ease) + "CASE IN ARCHIVE" 서브라인 opacity 0→1</td></tr>
+      <tr><td>click (studyHref 없음)</td><td>&lt;a&gt; 대신 &lt;div role="presentation"&gt; — cursor-default, pointer-events:none. 클릭 이벤트 없음.</td></tr>
+      <tr><td>View Site SOON (siteHref 없음)</td><td>라벨 유지 + text-ink-inverse/40 + cursor-not-allowed + aria-disabled="true"</td></tr>
+      <tr><td>focus</td><td>ring outline 유지 (Crowny Class 기본)</td></tr>
+    </table>
+
+    <p><strong>C. Footer 연락처</strong></p>
+    <table>
+      <tr><th>항목</th><th>실값 있음</th><th>실값 없음 / placeholder</th></tr>
+      <tr><td>email</td><td>정상 mailto 링크</td><td>row 전체 display:none — 레이아웃 gap 없이 소멸</td></tr>
+      <tr><td>resume.pdf</td><td>정상 download attr</td><td>download attr 제거 + text-ink-primary/40 + cursor-not-allowed + aria-disabled="true"</td></tr>
+      <tr><td>GitHub / Notion</td><td>정상 active (실링크 있음)</td><td>해당 없음 — 실링크 확인 후 렌더</td></tr>
+    </table>
+
+    <p><strong>D. About statement</strong>: 값이 비어있거나 placeholder 텍스트이면 section에 <code>display:none</code>. 레이아웃 붕괴 없이 자연 소멸. CEO가 실값 입력하면 즉시 정상 렌더.</p>
+
+    <p><strong>토큰 매핑</strong></p>
+    <table>
+      <tr><th>영역</th><th>토큰</th></tr>
+      <tr><td>Placeholder 배경</td><td>bg-[#E8E6E0] (기존 토큰, 새 HEX 아님)</td></tr>
+      <tr><td>Placeholder 보더</td><td>border border-ink-primary/10</td></tr>
+      <tr><td>Placeholder 라벨</td><td>font-mono text-label text-ink-muted</td></tr>
+      <tr><td>Placeholder play icon</td><td>stroke: text-ink-muted (SVG stroke 직접)</td></tr>
+      <tr><td>Archive 카드 배경</td><td>bg-dark-soft (brightness-85)</td></tr>
+      <tr><td>Archive badge 텍스트</td><td>font-mono text-label text-ink-inverse/60</td></tr>
+      <tr><td>Archive badge 보더</td><td>border border-ink-inverse/20</td></tr>
+      <tr><td>Archive hover 서브라인</td><td>font-sans text-label text-ink-inverse/70</td></tr>
+      <tr><td>Footer disabled 텍스트</td><td>text-ink-primary/40 cursor-not-allowed</td></tr>
+      <tr><td>About empty</td><td>display:none (토큰 없음, 레이아웃 gap 자동 소멸)</td></tr>
+    </table>
+    <p><em>폰트 전부 text-label 이상(≥16px). 임의 HEX 없음 — bg-[#E8E6E0]는 Placeholder.tsx 기존 사용 토큰.</em></p>
+
+    <p><strong>강개발 핸드오프</strong></p>
+    <ol>
+      <li><code>Placeholder.tsx</code>: <code>data-placeholder</code> attr 유지. img 래핑 시 <code>onError</code> 핸들러 추가 → 발화 시 Placeholder div로 swap. 비디오는 src 없거나 fetch 404 시 동일 Placeholder 렌더 + SVG play outline + font-mono "VIDEO — COMING" 캡션.</li>
+      <li><code>ProjectCard.tsx</code>: <code>studyHref</code> 없으면 <code>&lt;a&gt;</code>를 <code>&lt;div role="presentation"&gt;</code>으로 교체 (pointer-events:none). <code>siteHref</code> 없으면 href 제거 + <code>aria-disabled="true"</code> + Tailwind <code>opacity-40 cursor-not-allowed pointer-events-none</code> 클래스.</li>
+      <li><code>Footer.tsx</code>: email이 placeholder 값이거나 falsy면 row <code>hidden</code> 클래스. resume.url 미확보 시 download attr 제거 + <code>aria-disabled="true"</code> + <code>text-ink-primary/40 cursor-not-allowed</code>. 두 조건 모두 빌드타임 검사 우선, JS fallback 허용.</li>
+    </ol>
+
+    <p><strong>체크리스트 ✓</strong></p>
+    <ul>
+      <li>✓ 흐름(분기 2개, 이탈 3곳) 먼저, 시각 나중</li>
+      <li>✓ 5개 상태 모두 명시 (empty / image-404 / video-missing / hover / disabled / focus)</li>
+      <li>✓ 임의 HEX 없음 (bg-[#E8E6E0]는 기존 토큰)</li>
+      <li>✓ 폰트 전부 text-label 이상 (≥16px)</li>
+      <li>✓ 토큰 이름 + 상태별 동작으로 핸드오프</li>
+      <li>✓ mockup.html 3 screens 완성</li>
+    </ul>
+  </div>
+</div>
+<div class="turn developer">
+  <div class="who"><span class="emoji">⚙️</span> 강개발</div>
+  <div class="bubble">
+
+    <p><strong>요구사항 재확인</strong>: 강디 핸드오프 3건(Placeholder.tsx / ProjectCard.tsx / Footer+About) → 기존 Tailwind 토큰·Lucide만, 임의 HEX·px·라이브러리 추가 없음, 완료 기준 <code>next build</code> + 타입 OK.</p>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>구현 가능성 · 비용</strong></p>
+    <table>
+      <tr><th>#</th><th>항목</th><th>판정</th><th>시간</th><th>전제조건</th></tr>
+      <tr>
+        <td>A</td>
+        <td>Placeholder.tsx — img onError swap, video fallback</td>
+        <td><strong>가능</strong></td>
+        <td>~1h</td>
+        <td>없음</td>
+      </tr>
+      <tr>
+        <td>B</td>
+        <td>ProjectCard.tsx — studyHref/siteHref 조건 분기</td>
+        <td><strong>조건부</strong></td>
+        <td>~45min</td>
+        <td>GSAP 셀렉터 현황 확인 (아래 위험 섹션)</td>
+      </tr>
+      <tr>
+        <td>C</td>
+        <td>Footer.tsx — email/resume/About section 게이트</td>
+        <td><strong>가능</strong></td>
+        <td>~1h</td>
+        <td>placeholder 판별 로직 결정 (아래 결론: falsy 체크로 단순화)</td>
+      </tr>
+    </table>
+    <p style="color:var(--muted);font-size:13px;">총 ~2h 45min. <code>next build</code> 게이트 포함 +15min.</p>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>A. Placeholder.tsx — 가장 단순한 접근</strong></p>
+    <p><code>type: 'image' | 'video' | 'empty'</code> prop + <code>useState(false)</code> failed 플래그. img는 <code>onError</code> → <code>setFailed(true)</code>. video는 src prop 없으면 바로 Placeholder 렌더 — fetch 404 런타임 체크 불필요, src 없음 자체가 fallback 신호로 충분.</p>
+    <pre><code>// img 래핑
+&lt;img
+  src={src}
+  onError={(e) => {
+    e.currentTarget.onerror = null; // 무한루프 방지 — 아래 위험 참조
+    setFailed(true);
+  }}
+  ...
+/&gt;
+
+// video fallback — src 없으면 바로 placeholder
+{!videoSrc ? (
+  &lt;PlaceholderDiv label="VIDEO — COMING" showPlayIcon /&gt;
+) : (
+  &lt;video src={videoSrc} ... /&gt;
+)}</code></pre>
+    <p>SVG play icon — Lucide <code>PlayCircle</code> (stroke <code>text-ink-muted</code>, 24px). Lucide는 이미 설치된 아이콘 셋이므로 추가 라이브러리 없음.</p>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>B. ProjectCard.tsx — 가장 단순한 접근</strong></p>
+    <pre><code>// studyHref 없으면 클릭 불가 래퍼
+const CardWrapper = studyHref
+  ? ({ children }) =&gt; &lt;a href={studyHref}&gt;{children}&lt;/a&gt;
+  : ({ children }) =&gt; &lt;div role="presentation" aria-hidden="true"&gt;{children}&lt;/div&gt;;
+
+// siteHref 없으면 disabled 버튼처럼
+&lt;a
+  {...(siteHref ? { href: siteHref } : {})}
+  aria-disabled={!siteHref}
+  className={cn('...', !siteHref &amp;&amp; 'opacity-40 cursor-not-allowed pointer-events-none')}
+&gt;
+  {siteHref ? 'View Site' : 'View Site — SOON'}
+&lt;/a&gt;</code></pre>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>C. Footer + About — placeholder 판별 핵심 결론</strong></p>
+    <p><strong><code>hello@parkminjoo.com</code> 하드코딩 비교 제거.</strong> 대신 <code>data/footer.ts</code>에서 <code>email: ''</code> (빈 문자열) 또는 <code>null</code>. 컴포넌트는 <code>!email</code> falsy 체크만.</p>
+    <pre><code>// data/footer.ts — CEO 실값 받기 전
+export const footerData = {
+  email: '',          // 실값 오면 'parkminjoo@xxx.com' 채우기만
+  resume: { url: '' }, // 실값 오면 '/resume.pdf'
+};
+
+// Footer.tsx
+{email &amp;&amp; &lt;tr&gt;&lt;td&gt;&lt;a href={`mailto:${email}`}&gt;{email}&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;}
+
+&lt;a
+  {...(resume.url ? { href: resume.url, download: 'resume.pdf' } : {})}
+  aria-disabled={!resume.url}
+  className={cn('...', !resume.url &amp;&amp; 'opacity-40 cursor-not-allowed pointer-events-none')}
+&gt;
+  Resume
+&lt;/a&gt;</code></pre>
+    <p>About: <code>!statement ? null : &lt;section&gt;...&lt;/section&gt;</code>. JSX 조건 렌더 — 레이아웃 gap 자동 소멸.</p>
+    <p style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 12px;font-size:13px;"><strong>CEO 받는 즉시 1:1 교체 구조:</strong> <code>data/footer.ts</code>의 <code>email</code> · <code>resume.url</code> 값을 빈 문자열→실값으로만 바꾸면 컴포넌트 수정 없이 자동 렌더 전환.</p>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>위험 · 롤백</strong></p>
+    <ol>
+      <li>
+        <strong>GSAP 셀렉터 미스 (B 조건부 판정 이유)</strong> — <code>&lt;a&gt;</code>→<code>&lt;div&gt;</code> 교체 시 GSAP가 <code>a</code> 또는 <code>.project-card a</code> 셀렉터로 archive 카드를 애니메이션 타겟으로 잡고 있으면 target miss. 교체 후 브라우저 콘솔에서 GSAP <code>targets found: 0</code> 경고 확인 필수. 방지책: GSAP 셀렉터를 <code>data-card</code> 속성으로 통일 (a·div 모두 붙임).
+      </li>
+      <li>
+        <strong>img onError 무한루프</strong> — <code>onError</code> 핸들러에서 <code>e.currentTarget.onerror = null</code> 먼저 세팅 안 하면 빈 src 재셋 시 onError 재발화. state failed 체크로 2중 방어.
+      </li>
+      <li>
+        <strong>resume.url 존재 ≠ 파일 존재</strong> — <code>resume.url = '/resume.pdf'</code> 채워도 <code>/public/resume.pdf</code> 파일이 없으면 다운로드 404. 빌드타임 체크 불가 — CEO가 파일 올릴 때 경로까지 함께 확정 필요. (강체크 검증 포인트.)
+      </li>
+    </ol>
+    <p>롤백: 3개 파일 독립 변경. 빌드 실패 시 파일 단위 <code>git restore</code>. data/footer.ts 원래 placeholder 값은 주석으로 남겨둠.</p>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>테스트 계획</strong></p>
+    <table>
+      <tr><th>케이스</th><th>입력</th><th>기대 결과</th></tr>
+      <tr><td>골든 — img 정상</td><td>src 유효</td><td>이미지 렌더, Placeholder 없음</td></tr>
+      <tr><td>골든 — studyHref 있음</td><td>href 값 존재</td><td>&lt;a&gt; 클릭 → 라우팅</td></tr>
+      <tr><td>골든 — email 실값</td><td>email 비어있지 않음</td><td>mailto 링크 노출</td></tr>
+      <tr><td>엣지 — img 404</td><td>onError 발화</td><td>Placeholder div(bg+border+라벨) 교체, img DOM 제거</td></tr>
+      <tr><td>엣지 — video src 없음</td><td>videoSrc = undefined</td><td>Placeholder + PlayCircle SVG + "VIDEO — COMING"</td></tr>
+      <tr><td>엣지 — studyHref null</td><td>prop 없음</td><td>div role="presentation", 클릭 무반응, Tab 포커스 skip</td></tr>
+      <tr><td>엣지 — email = ''</td><td>falsy</td><td>email row DOM 제거, 레이아웃 gap 없음</td></tr>
+      <tr><td>엣지 — resume.url = ''</td><td>falsy</td><td>download attr 없음, opacity-40, aria-disabled</td></tr>
+      <tr><td>빌드 게이트</td><td>전체 변경 후</td><td><code>next build</code> 타입 에러 0</td></tr>
+    </table>
+
+  </div>
+</div>
+<div class="turn qa">
+  <div class="who"><span class="emoji">🔍</span> 강체크</div>
+  <div class="bubble">
+
+    <p><strong>검증 대상</strong>: 강디 핸드오프 + 강개발 구현안 3파일(Placeholder.tsx / ProjectCard.tsx / Footer+About). <em>아직 구현 전 — 아래는 "검증 계획"(재현 단계·증상·위치)이고, 원인 진단은 강개발 몫.</em> 완료 게이트 = <code>next build</code> + 타입 0 + 채용 담당자 30초 스캔에 결함으로 안 읽힘.</p>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>1. 강개발 리스크 3건 — 재현 단계 / 증상 / 위치</strong></p>
+    <table>
+      <tr><th>리스크</th><th>재현 단계</th><th>관찰할 증상 · 위치</th></tr>
+      <tr>
+        <td>GSAP 셀렉터 미스</td>
+        <td>① ProjectCard 06/07을 <code>&lt;a&gt;→&lt;div role="presentation"&gt;</code> 교체 후 <code>next dev</code><br>② Web Projects 섹션까지 스크롤<br>③ 브라우저 콘솔 확인</td>
+        <td>콘솔 <code>GSAP target not found</code> / <code>targets found: 0</code> 경고 여부. <em>참고: 현 셀렉터가 <code>data-card/-meta/-index/-visual/-title</code> 속성 기반이면 태그 교체와 무관 → 경고 안 뜨면 통과.</em> 위치: ProjectCard.tsx + GSAP 트리거 파일.</td>
+      </tr>
+      <tr>
+        <td>resume.url≠파일</td>
+        <td>① <code>resume.url='/resume.pdf'</code> 채움 + <code>/public/resume.pdf</code> <strong>미업로드</strong> 상태<br>② <code>next build</code><br>③ Footer Resume 클릭</td>
+        <td>빌드는 <strong>통과</strong>(빌드타임 검출 불가) → 런타임 클릭 시 <strong>404</strong>. 위치: public/resume.pdf 부재. CEO 업로드 경로 확정 전까지 잠재.</td>
+      </tr>
+      <tr>
+        <td>placeholder 판별</td>
+        <td>① <code>data/footer.ts</code>에 옛 <code>hello@parkminjoo.com</code> 잔존<br>② Footer 렌더</td>
+        <td>falsy 체크(<code>!email</code>)만 하면 가짜 이메일이 <strong>실값으로 노출</strong>. → SSOT: data에서 <code>email:''</code> 정규화 필수. 위치: data/footer.ts. 강개발 결론(하드코딩 비교 제거 + 빈문자열)대로면 해소.</td>
+      </tr>
+    </table>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>2. 엣지 케이스 (골든은 강개발 표 참조 — 여기선 깨질 자리만)</strong></p>
+    <table>
+      <tr><th>#</th><th>엣지</th><th>기대 동작</th><th>실패 증상</th></tr>
+      <tr><td>E1</td><td>썸네일 404 (img onError)</td><td>Placeholder div로 swap, 깜빡임 없이 1프레임 교체</td><td>onerror=null 누락 시 무한 재발화 / 빈 img 깨진 아이콘 플래시</td></tr>
+      <tr><td>E2</td><td>archive 카드 키보드·SR</td><td>Tab 포커스 skip, 스크린리더가 "링크"로 안 읽음</td><td><code>div role="presentation"</code>인데 내부에 잔존 <code>&lt;a&gt;</code>·tabindex 있으면 포커스 트랩 / SR 오안내</td></tr>
+      <tr><td>E3</td><td>Resume download 404</td><td>—</td><td>aria-disabled 처리 됐어도 url 채워지면 클릭 가능 → 파일 없으면 404 (위 리스크2)</td></tr>
+      <tr><td>E4</td><td>email='' → mailto</td><td>row DOM 제거, 레이아웃 gap 0</td><td><code>mailto:</code>(주소 없는) 링크가 렌더되면 빈 메일 클라이언트 열림</td></tr>
+      <tr><td>E5</td><td>About statement 빈 배열/빈 문자열</td><td>section 조건 렌더 null — 자연 소멸</td><td><code>[]</code>는 truthy → <code>!statement</code> 통과 못 함. <code>.length</code>/문자열 구분 안 하면 빈 섹션 잔존·헤딩만 둥둥</td></tr>
+    </table>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>3. 리스크 등급 (🔴 차단 / 🟡 완화 후 통과 / 🟢 수용)</strong></p>
+    <table>
+      <tr><th>등급</th><th>항목 · 위치</th><th>권고 · 우회안</th></tr>
+      <tr><td>🟡</td><td>Resume download 404 — public/resume.pdf 부재</td><td>파일 업로드 전까지 <code>resume.url=''</code> 유지(빈값이면 disabled로 안전). 우회: 파일 준비 전엔 url 절대 채우지 않기 = 404 원천 차단.</td></tr>
+      <tr><td>🟡</td><td>archive 카드 비대화 접근성 — ProjectCard 06/07</td><td>div 교체 시 내부 잔존 링크·tabindex 제거 + <code>aria-disabled</code> 일관. 우회: 카드 전체 비활성 대신 "IN ARCHIVE" badge로 기대치 사전 차단(강디안)이면 SR도 정보 전달됨.</td></tr>
+      <tr><td>🟡</td><td>placeholder 가짜 이메일 노출 — data/footer.ts</td><td>SSOT 빈문자열 정규화. 우회: 옛 값 주석 보존하되 활성 필드는 <code>''</code>.</td></tr>
+      <tr><td>🟢</td><td>GSAP 셀렉터 — data-attr 기반이면 무영향</td><td>콘솔 1회 확인으로 수용. 경고 뜨면 강개발 data-card 통일.</td></tr>
+      <tr><td>🟢</td><td>img onError 무한루프</td><td>강개발 2중 방어(onerror=null + state)로 해소 — 수용.</td></tr>
+      <tr><td>🟢</td><td>다크패턴 · 개보법/표시광고법</td><td>해당 없음. 가짜 연락처 숨김은 오히려 오인 유발 제거 = 정직. 수집 폼·과장 표현 없음.</td></tr>
+    </table>
+    <p style="color:var(--muted);font-size:13px;">🔴 없음. 모든 항목 완화/수용 가능 — 배포 차단 사유 아님.</p>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+
+    <p><strong>정성 평가 (채용 담당자 30초 스캔)</strong>: 강디·강개발안의 "빈 박스 = editorial placeholder + IN ARCHIVE badge로 기대치 사전 차단" 방향이 정답. 빈 곳을 <em>숨기지 말고 의도로 라벨링</em>하는 게 신뢰에 유리. 단 — Resume·email 같은 <strong>연락 경로가 죽으면 30초 평가가 직격</strong>(채용 담당자의 종착점). 그래서 "빈값이면 비활성"은 맞되, 값 채우는 순간 실파일/실주소가 <strong>함께</strong> 살아있어야 한다.</p>
+
+    <p><strong>배포 권고</strong>: 구현 후 회귀 게이트 — ① <code>next build</code> 타입 0 ② 콘솔 GSAP 경고 0 ③ E1~E5 수동 확인 ④ CEO 실값 주입 시 resume 파일 동시 존재 검증. 이 4개 통과 시 머지.</p>
+
+    <p><strong>검토 결과: 조건부 통과</strong> — 조건: (a) data/footer.ts SSOT 빈문자열 정규화(하드코딩 비교 금지), (b) resume.url은 public/resume.pdf 실파일과 <em>동시에만</em> 채움, (c) archive div 교체 후 GSAP 콘솔 경고 0 + 내부 잔존 링크/tabindex 제거 확인.</p>
+
+  </div>
+</div>
+<!-- TURNS_END -->
+
+</main>
+
+<section class="summary">
+  <h2>🎯 강팀장 마감 요약 — 텔레그램으로도 발송됨</h2>
+  <p style="color: var(--muted); font-size: 13px; margin-top: 0;">
+    강팀장은 회의 마감 시 아래 SUMMARY 블록을 *반드시* 채운다.
+    이 안의 내용이 텔레그램 메시지 본문으로 그대로 전송된다.
+  </p>
+  <!-- SUMMARY_START -->
+  <div class="block">
+    <h3>결정</h3>
+    <ul>
+      <li><strong>빈 박스 = 의도된 editorial placeholder 방향 채택</strong> — 빈 영역을 숨기지 않고 thin border + mono 라벨("ASSET INCOMING" / "VIDEO — COMING")로 "채워질 자리"임을 명시. 채용 담당자 30초 스캔에 결함이 아닌 편집 의도물로 읽히게.</li>
+      <li><strong>Web 06·07 archive 노출 방식 확정</strong> — CEO 확정대로 케이스스터디 없이 실명+썸네일 archive 카드. 카드 좌상단 "IN ARCHIVE" badge로 기대치 사전 차단, studyHref 없으면 <code>&lt;div role="presentation"&gt;</code>로 비대화(클릭 무반응·Tab skip), siteHref 없으면 "View Site — SOON" + aria-disabled.</li>
+      <li><strong>SSOT 빈값 정규화 방식 채택</strong> — <code>data/footer.ts</code>·<code>data/about.ts</code>를 빈값(<code>''</code> / <code>[]</code>)으로 정규화하고 컴포넌트는 falsy 체크만. 하드코딩 <code>hello@parkminjoo.com</code> 비교 금지. 실값은 data 한 곳만 바꾸면 컴포넌트 수정 없이 자동 렌더 전환.</li>
+      <li><strong>빈값 게이트 동작 확정</strong> — email 빈값=row 자체 소멸(레이아웃 gap 0), resume.url 빈값=download attr 제거 + 비활성, About statement 빈값=section 조건 렌더 null. 빈 배열(<code>[]</code>) truthy 함정은 <code>.length</code>/문자열 구분으로 처리(강체크 E5).</li>
+      <li><strong>강팀 코드 작업 범위 확정</strong> — Placeholder.tsx(onError swap·video fallback) / ProjectCard.tsx(archive 비대화) / Footer.tsx·about.ts(SSOT 게이트) 3파일. 총 ~2h 45min + 빌드 게이트.</li>
+      <li><strong>(CEO 기확정)</strong> Web 06/07 = 실명+썸네일 archive 노출, 회의 범위 = 포폴 제작 직접 영역만(텔레그램·마케팅·보안 안건 제외).</li>
+    </ul>
+  </div>
+  <div class="block">
+    <h3>미결정 / 다음 회의 안건</h3>
+    <ul>
+      <li><strong>① resume.url 값-실파일 묶음 강제 여부 (CEO 운영 규칙)</strong> — <code>resume.url='/resume.pdf'</code>는 빌드 통과하지만 <code>public/resume.pdf</code> 실파일이 없으면 런타임 404(빌드타임 검출 불가). "url 값 채우는 시점 = 실파일 업로드 시점"을 한 묶음으로 강제하는 운영 규칙을 둘지 CEO 결정 필요. 강체크 권고는 "파일 준비 전까지 url 빈값 유지 = 404 원천 차단".</li>
+      <li><strong>② 빈 6곳 중 CEO 에셋 준비 1순위</strong> — Web06/07·Mobile·Content&Marketing·Visual 10컷 중 30초 스캔 효과가 가장 큰 곳부터 채울 순서. 강팀 코드는 빈값 우아 처리까지 완료되므로 이건 CEO 콘텐츠 우선순위 결정.</li>
+    </ul>
+  </div>
+  <div class="block">
+    <h3>다음 액션</h3>
+    <ul>
+      <li><strong>[강개발]</strong> <code>data/footer.ts</code>·<code>data/about.ts</code> SSOT 빈값 정규화(하드코딩 비교 제거) + Placeholder.tsx onError/video fallback + ProjectCard.tsx archive 비대화 + Footer/About 빈값 게이트 — 3파일 독립 변경, 롤백 시 파일 단위 <code>git restore</code>.</li>
+      <li><strong>[강체크]</strong> 회귀 게이트 4종 통과 확인 — ① <code>next build</code> 타입 0 ② 콘솔 GSAP 경고 0(archive div 교체 후) ③ 엣지 E1~E5 수동 확인 ④ CEO 실값 주입 시 resume 실파일 동시 존재 검증. 4개 통과 시 머지.</li>
+      <li><strong>[CEO]</strong> 아래 준비물 표대로 실값·실파일 전달 — 받는 즉시 강팀이 1:1 교체. (미결정 ①에 따라 resume는 url+파일 한 묶음으로.)</li>
+    </ul>
+    <table style="border-collapse:collapse;margin-top:10px;font-size:13px;">
+      <tr><th style="border:1px solid #e5e7eb;padding:6px 10px;background:#f9fafb;text-align:left;">준비물</th><th style="border:1px solid #e5e7eb;padding:6px 10px;background:#f9fafb;text-align:left;">규격 (경로·비율·개수)</th><th style="border:1px solid #e5e7eb;padding:6px 10px;background:#f9fafb;text-align:left;">들어갈 위치</th></tr>
+      <tr><td style="border:1px solid #e5e7eb;padding:6px 10px;">이메일 실값</td><td style="border:1px solid #e5e7eb;padding:6px 10px;">실제 수신 가능 주소 문자열 1개</td><td style="border:1px solid #e5e7eb;padding:6px 10px;"><code>data/footer.ts</code> <code>email</code></td></tr>
+      <tr><td style="border:1px solid #e5e7eb;padding:6px 10px;">resume.pdf</td><td style="border:1px solid #e5e7eb;padding:6px 10px;">PDF 실파일 → <code>/public/resume.pdf</code> (url 값과 동시에)</td><td style="border:1px solid #e5e7eb;padding:6px 10px;"><code>data/footer.ts</code> <code>resume.url</code> + 실파일</td></tr>
+      <tr><td style="border:1px solid #e5e7eb;padding:6px 10px;">Web 06/07 subline</td><td style="border:1px solid #e5e7eb;padding:6px 10px;">카드별 한 줄 텍스트 2개(프로젝트 실명+요약)</td><td style="border:1px solid #e5e7eb;padding:6px 10px;">archive 카드 06/07</td></tr>
+      <tr><td style="border:1px solid #e5e7eb;padding:6px 10px;">썸네일</td><td style="border:1px solid #e5e7eb;padding:6px 10px;">06/07 카드 썸네일 이미지 (기존 카드 비율 준수) 2장</td><td style="border:1px solid #e5e7eb;padding:6px 10px;">archive 카드 06/07 img</td></tr>
+      <tr><td style="border:1px solid #e5e7eb;padding:6px 10px;">About statement</td><td style="border:1px solid #e5e7eb;padding:6px 10px;">실제 자기소개 문장(영문 generic 대체) 문자열/배열</td><td style="border:1px solid #e5e7eb;padding:6px 10px;"><code>data/about.ts</code> statement</td></tr>
+    </table>
+  </div>
+  <!-- SUMMARY_END -->
+</section>
+
+<section class="closing">
+  <h2>회의 마무리 — 목업 보고 한 마디씩</h2>
+  <iframe src="mockup.html" title="화면 목업"></iframe>
+  <div class="final-comments">
+    <!-- 디자인/화면 안건이 있었던 회의는 *모든 참석자가* 여기 한 줄씩 남기고 종료 -->
+    <!-- 예:
+    <div class="comment ui"><span class="who">🎨 강디</span>: 결제 단계 CTA 위계 한 단 더 약하게.</div>
+    -->
+    <!-- COMMENTS_START -->
+    <div class="comment pm"><span class="who">🎯 강팀장</span>: 3화면 목업이 "결함 vs 편집 의도"의 경계를 그대로 보여준다 — 빈박스·archive·Footer fallback 셋 다 같은 mono 라벨 언어로 묶여 일관됨. 머지 게이트는 강체크 4종, 연락 경로(email·resume)는 값과 실파일이 한 묶음일 때만 살린다.</div>
+    <div class="comment designer"><span class="who">🎨 강디</span>: 빈 박스 화면의 thin border + "ASSET INCOMING" 라벨이 회색 배경만일 때보다 의도가 확실히 읽힌다. archive 카드는 "IN ARCHIVE" badge가 썸네일보다 먼저 읽히는 위계만 구현 단계에서 지켜달라 — 기대치 교정이 먼저여야 클릭 후 실망이 없다.</div>
+    <div class="comment developer"><span class="who">⚙️ 강개발</span>: 3화면 전부 기존 토큰·Lucide로 커버되고 임의 HEX 없음. Footer fallback 화면은 data 빈값→falsy 렌더 구조 그대로다. archive div 교체 후 GSAP 셀렉터가 data-attr 기반인지 콘솔로 1회 확인하고 머지하겠다.</div>
+    <div class="comment qa"><span class="who">🔍 강체크</span>: 목업의 빈값 처리는 결함이 아니라 정직한 라벨링 — 30초 스캔에 유리하다는 판단 유지. 단 Footer fallback에서 resume는 url 빈값=비활성이 안전선이고, 값 채우는 순간 실파일이 함께 살아있는지가 E3·게이트④의 핵심. 조건부 통과.</div>
+    <!-- COMMENTS_END -->
+  </div>
+</section>
+
+<footer>강팀 · Crowny Class 디자인 시스템</footer>
+</body>
+</html>
