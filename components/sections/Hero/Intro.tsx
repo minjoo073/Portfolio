@@ -1,22 +1,16 @@
 'use client'
 
 /**
- * Intro — 균열(Fissure) 인트로 오버레이.
+ * Intro — 미니멀 로더 (mantis.works 모션 레퍼런스, CEO 지정 2026-06-18).
  *
- * 컨셉 A (강디 설계, CEO 승인·수정 2026-06-17):
- *   #EBEBEB 오버레이 위 가운데 "PARK MINJOO" 등장
- *   → PARK 좌 / MINJOO 우 로 *페이지 양끝까지* 벌어지며
- *      *두 단어 사이 빈 틈*에만 가로선이 그어짐 (글자 위는 절대 안 지나감)
- *   → 텍스트가 끝에 닿으면 상·하 오버레이가 가로선 따라 열림 → 히어로 노출.
+ * 모션:
+ *   - 화면 중앙 풀폭 연한 가로선(1px, ink/20).
+ *   - % 텍스트(모노)가 선 위를 **왼→오로 이동** (위치 = 진행률). fill 아님 — 텍스트 이동.
+ *   - 로딩 도중 ~18% 에서 살짝 멈칫했다가 다시 로딩(실제 로더 느낌).
+ *   - 선 아래 좌측: 이름(세미볼드, 절제) + 작은 설명(모노).
+ *   - 100% → 페이드로 Hero 진입.
  *
- * 선 처리(핵심):
- *   - 선은 PARK 오른끝 ~ MINJOO 왼끝 *틈* 에만 존재. 매 프레임 단어 rect 추적
- *     (left = parkRight, width = minjooLeft - parkRight). → 글자 위로 안 지나감.
- *   - 선 수직 위치 = 텍스트 실제 중심(빈 틈이라 글자와 안 겹침).
- *
- * 측정 기반: 단어를 실제 페이지 가장자리(margin)에 안착.
- * 스크롤 잠금: body overflow:hidden + lenisRef.current?.stop().
- * 접근성: aria-hidden(장식). 금기: WebGL·히어로 안무·About·statement 수정 금지.
+ * 헌법: CSS/GSAP, quiet luxury. 스크롤 잠금은 onComplete + 안전 타임아웃으로 해제.
  */
 
 import { useEffect, useRef, useState } from 'react'
@@ -26,20 +20,19 @@ import { useLenis } from '@/lib/hooks/useLenis'
 export function Intro() {
   const [visible, setVisible] = useState(true)
 
-  const topRef    = useRef<HTMLDivElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const lineRef   = useRef<HTMLDivElement>(null)
-  const nameRef   = useRef<HTMLParagraphElement>(null)
-  const parkRef   = useRef<HTMLSpanElement>(null)
-  const minjooRef = useRef<HTMLSpanElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const groupRef = useRef<HTMLDivElement>(null)
+  const markerRef = useRef<HTMLDivElement>(null)
+  const pctRef = useRef<HTMLSpanElement>(null)
 
-  const lenis    = useLenis()
+  const lenis = useLenis()
   const lenisRef = useRef(lenis)
-  useEffect(() => { lenisRef.current = lenis }, [lenis])
+  useEffect(() => {
+    lenisRef.current = lenis
+  }, [lenis])
 
   useEffect(() => {
-    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const isMobile  = window.matchMedia('(max-width: 767px)').matches
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)
@@ -51,140 +44,102 @@ export function Intro() {
       lenisRef.current?.start()
     }
 
-    const topEl    = topRef.current
-    const bottomEl = bottomRef.current
-    const lineEl   = lineRef.current
-    const parkEl   = parkRef.current
-    const minjooEl = minjooRef.current
-    const nameEl   = nameRef.current
-
-    if (!topEl || !bottomEl || !lineEl || !parkEl || !minjooEl || !nameEl) {
-      unlock()
-      return
-    }
-
-    if (isReduced) {
+    if (reduced) {
       const id = window.setTimeout(() => {
         setVisible(false)
         unlock()
-      }, 500)
+      }, 300)
       return () => {
         clearTimeout(id)
         unlock()
       }
     }
 
-    registerGsap()
-    gsap.set(lineEl, { opacity: 0 })
-    gsap.set(nameEl, { opacity: 0, y: 0 })
-
-    const margin = isMobile ? 14 : 28        // 페이지 가장자리 여백 (px)
-    const minDur = isMobile ? 2.0 : 2.4      // 텍스트가 끝에 닿는 시점 ≈ 오버레이 개방 (느리게)
-
-    let tl: gsap.core.Timeline | null = null
-
-    // 선을 *두 단어 사이 틈*에만: 매 프레임 단어 rect 로 left/width 갱신 (글자 위 안 지나감)
-    const updateLine = () => {
-      const parkRight = parkEl.getBoundingClientRect().right
-      const minjooLeft = minjooEl.getBoundingClientRect().left
-      const gap = Math.max(0, minjooLeft - parkRight)
-      lineEl.style.left  = `${parkRight}px`
-      lineEl.style.width = `${gap}px`
+    const cont = containerRef.current
+    const group = groupRef.current
+    const marker = markerRef.current
+    const pct = pctRef.current
+    if (!cont || !group || !marker || !pct) {
+      unlock()
+      return
     }
 
-    document.fonts.ready.then(() => {
-      lenisRef.current?.stop()
+    registerGsap()
+    gsap.set(group, { opacity: 0 })
 
-      // 단어가 가야 할 가장자리 목표
-      const parkRect   = parkEl.getBoundingClientRect()
-      const minjooRect = minjooEl.getBoundingClientRect()
-      const nameRect   = nameEl.getBoundingClientRect()
+    const prog = { p: 0 }
+    const update = () => {
+      pct.textContent = String(Math.round(prog.p))
+      // 숫자가 선을 끝까지(우측 끝) 타고 감 — 100% 면 left 100%(선 우측 끝).
+      marker.style.left = `${prog.p}%`
+    }
 
-      const parkTargetX   = margin - parkRect.left                          // PARK 좌단 → 페이지 좌끝
-      const minjooTargetX = (window.innerWidth - margin) - minjooRect.right // MINJOO 우단 → 페이지 우끝
-
-      // 선 수직 위치 = 텍스트 정중앙(틈이라 글자와 안 겹침)
-      lineEl.style.top = `${nameRect.top + nameRect.height / 2}px`
-      updateLine()
-
-      tl = gsap.timeline()
-
-      // ① 이름 등장 (0 → 0.7s)
-      tl.fromTo(
-        nameEl,
-        { opacity: 0, y: 8 },
-        { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' }
-      )
-
-      // ② 좌우 분열 — 페이지 양끝까지. 선은 onUpdate 로 틈만 추적. (t=1.0)
-      tl.to(parkEl,   { x: parkTargetX,   ease: 'power3.out', duration: 1.4, onUpdate: updateLine }, 1.0)
-      tl.to(minjooEl, { x: minjooTargetX, ease: 'power3.out', duration: 1.4, onUpdate: updateLine }, 1.0)
-      tl.to(lineEl,   { opacity: 1, duration: 0.5 }, 1.05) // 틈이 열리며 선 페이드인
-
-      // ③ 텍스트가 끝에 닿으면 — 상·하 오버레이가 가로선 따라 열림 (t=minDur)
-      tl.to(topEl,            { yPercent: -100, ease: 'power3.inOut', duration: 1.0 }, minDur)
-      tl.to(bottomEl,         { yPercent:  100, ease: 'power3.inOut', duration: 1.0 }, minDur)
-      tl.to([nameEl, lineEl], { opacity: 0, duration: 0.45 },                          minDur)
-
-      // ④ 완료 — 언마운트 + 스크롤 해제 (minDur + 1.1)
-      tl.add(() => {
-        setVisible(false)
-        unlock()
-      }, minDur + 1.1)
-    })
-
-    return () => {
-      tl?.kill()
+    const finish = () => {
+      setVisible(false)
       unlock()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const safety = window.setTimeout(finish, 5200)
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        clearTimeout(safety)
+        finish()
+      },
+    })
+
+    // ① 선·이름 등장
+    tl.to(group, { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0)
+
+    // ② % 텍스트가 선 위를 왼→오 이동 — ~18% 에서 살짝 멈칫(느려짐) 후 다시 로딩(느긋하게)
+    tl.to(prog, { p: 18, duration: 0.5, ease: 'power1.out', onUpdate: update }, 0.85)
+    tl.to(prog, { p: 23, duration: 0.65, ease: 'sine.inOut', onUpdate: update }, '>') // 살짝 늦췄다가
+    tl.to(prog, { p: 100, duration: 2.2, ease: 'power1.inOut', onUpdate: update }, '>') // 다시 로딩(더 느리게)
+
+    // ③ 100% → 잠깐 머문 뒤 느긋한 페이드로 Hero 진입
+    tl.to(cont, { opacity: 0, duration: 0.95, ease: 'power2.inOut' }, '>+0.4')
+
+    return () => {
+      clearTimeout(safety)
+      tl.kill()
+      unlock()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (!visible) return null
 
   return (
-    <div aria-hidden="true" className="fixed inset-0 z-[60]">
-      {/* ── 상단 오버레이 패널 ── */}
+    <div ref={containerRef} aria-hidden="true" className="fixed inset-0 z-[110] bg-hero-bg">
+      {/* 화면 중앙에 로더(선 + 이동 % + 이름) 배치 */}
       <div
-        ref={topRef}
-        className="fixed top-0 left-0 w-full bg-hero-bg"
-        style={{ height: '50vh' }}
-      />
+        ref={groupRef}
+        className="absolute inset-x-side-m md:inset-x-side-t xl:inset-x-side-d top-1/2 -translate-y-1/2"
+      >
+        {/* 풀폭 가로선 + 선 위를 타고 이동하는 % (숫자 배경이 선을 끊어 "선상에 올라탄" 모양) */}
+        <div className="relative h-px w-full bg-ink-primary/20">
+          <div
+            ref={markerRef}
+            className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap bg-hero-bg px-2.5 font-mono text-[11px] leading-none tracking-[0.04em] text-ink-primary"
+            style={{ left: '0%' }}
+          >
+            <span ref={pctRef}>0</span>%
+          </div>
+        </div>
 
-      {/* ── 하단 오버레이 패널 ── */}
-      <div
-        ref={bottomRef}
-        className="fixed bottom-0 left-0 w-full bg-hero-bg"
-        style={{ height: '50vh' }}
-      />
-
-      {/* ── 가로선 — 두 단어 사이 *틈* 에만. left/width 는 JS(updateLine)가 매 프레임 설정. ── */}
-      <div
-        ref={lineRef}
-        className="fixed bg-ink-primary"
-        style={{
-          top: '50vh',
-          left: '50vw',
-          width: '0px',
-          height: '1px',
-          opacity: 0,
-        }}
-      />
-
-      {/* ── 이름 — 얇게(font-normal). centering wrapper + 내부 <p>(GSAP). ── */}
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <p
-          ref={nameRef}
-          className="font-sans font-normal text-ink-primary select-none flex gap-[0.6em] whitespace-nowrap"
-          style={{
-            fontSize: 'clamp(26px, 3.4vw, 38px)',
-            letterSpacing: '0.16em',
-            opacity: 0,
-          }}
-        >
-          <span ref={parkRef}>PARK</span>
-          <span ref={minjooRef}>MINJOO</span>
-        </p>
+        {/* 선 아래 좌측: 이름 + 작은 설명 (절제·세미볼드) */}
+        <div className="mt-5 flex items-end gap-2.5">
+          <span
+            className="font-sans font-semibold text-ink-primary select-none"
+            style={{ fontSize: 'clamp(20px, 2.2vw, 30px)', letterSpacing: '-0.01em' }}
+          >
+            PARK MINJOO
+          </span>
+          <span className="font-mono text-[9px] uppercase leading-[1.35] tracking-[0.1em] text-ink-muted pb-[6px]">
+            UX/UI
+            <br />
+            DESIGNER
+          </span>
+        </div>
       </div>
     </div>
   )

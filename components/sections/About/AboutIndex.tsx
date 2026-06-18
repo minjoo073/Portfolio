@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useRef } from 'react'
 import { about } from '@/data/about'
-import { registerGsap, gsap } from '@/lib/gsap/config'
+import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
 
 /**
  * AboutIndex — CEO 지시 적용.
@@ -17,13 +17,52 @@ import { registerGsap, gsap } from '@/lib/gsap/config'
 export function AboutIndex() {
   const rootRef = useRef<HTMLDivElement>(null)
 
-  // 모션은 About.tsx 부모에서 pin + Counter-Scroll 통합 관리
+  /**
+   * 등장 모션 — 마스크 와이프업(CEO 선택 2026-06-18).
+   * 각 블록이 뷰포트 진입 시 clip-path 가림막(하단 100%)이 아래로 걷히며 글자가
+   * 위→아래로 "드러남". 잉크 현상되듯/종이 들춰지듯 — 위 펄럭임과 결 통일.
+   * clip-path 는 레이아웃 비영향 → 시프트 없음. 조용함 위해 lift 8px만 곁들임,
+   * opacity 변화 없음(드러남이 주). ScrollTrigger.batch → 스크롤 위치 따라 위→아래.
+   * reduced-motion: effect skip → 정적 표시(폴백).
+   */
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    registerGsap()
+
+    const ctx = gsap.context(() => {
+      const targets = gsap.utils.toArray<HTMLElement>('[data-reveal]')
+      if (!targets.length) return
+
+      // 하단 100% 클립 = 완전 가림(레이아웃은 유지). 살짝 내려둔 8px.
+      gsap.set(targets, { clipPath: 'inset(0% 0% 100% 0%)', y: 8 })
+
+      ScrollTrigger.batch(targets, {
+        start: 'top 86%',
+        onEnter: (batch) =>
+          gsap.to(batch, {
+            clipPath: 'inset(0% 0% 0% 0%)',
+            y: 0,
+            duration: 1.0,
+            ease: 'power3.out',
+            stagger: 0.1,
+            overwrite: 'auto',
+          }),
+      })
+
+      ScrollTrigger.refresh()
+    }, root)
+
+    return () => ctx.revert()
+  }, [])
 
   return (
     <div
       ref={rootRef}
       className="px-side-m md:px-side-t xl:px-side-d"
-      style={{ paddingTop: 160, paddingBottom: 64 }}
+      style={{ paddingTop: 280, paddingBottom: 64 }}
     >
       <div
         style={{
@@ -44,6 +83,7 @@ export function AboutIndex() {
           <div
             className="bg-dark-soft relative overflow-hidden"
             style={{ width: 240, height: 320, flexShrink: 0 }}
+            data-reveal
           >
             <Image
               src="/images/about/profile.jpg"
@@ -58,6 +98,7 @@ export function AboutIndex() {
           <h3
             className="font-kr text-ink-inverse font-semibold leading-[1.15] tracking-[-0.025em]"
             style={{ fontSize: 'clamp(36px, 3.2vw, 48px)', marginTop: 40, marginBottom: 24 }}
+            data-reveal
           >
             {about.profile.taglineLines.map((line, i) => (
               <span key={i} className="block">
@@ -67,8 +108,9 @@ export function AboutIndex() {
           </h3>
 
           <div
-            className="font-kr text-ink-inverse/85 flex flex-col text-[15px] leading-[1.75]"
+            className="font-kr text-ink-inverse/85 flex flex-col text-[16px] leading-[1.75]"
             style={{ gap: 12 }}
+            data-reveal
           >
             {about.profile.intro.map((para, i) => (
               <p key={i}>
@@ -93,7 +135,7 @@ export function AboutIndex() {
           }}
         >
           <Column en="About" kr="기본정보">
-            <div className="font-kr text-ink-inverse flex flex-col gap-2 text-[15px]">
+            <div className="font-kr text-ink-inverse flex flex-col gap-2 text-[16px]">
               <span>{about.basicInfo.birth}</span>
               <span>{about.basicInfo.name}</span>
               <span>{about.basicInfo.phone}</span>
@@ -110,8 +152,8 @@ export function AboutIndex() {
             <ul className="flex flex-col gap-3">
               {about.education.map((e) => (
                 <li key={e.name} className="flex flex-col gap-0.5">
-                  <span className="font-kr text-ink-inverse text-[15px]">{e.name}</span>
-                  <span className="font-kr text-ink-inverse/55 text-[12px]">{e.status}</span>
+                  <span className="font-kr text-ink-inverse text-[16px]">{e.name}</span>
+                  <span className="font-kr text-ink-inverse/55 text-[13px]">{e.status}</span>
                 </li>
               ))}
             </ul>
@@ -121,11 +163,11 @@ export function AboutIndex() {
             <ul className="flex flex-col gap-2.5">
               {about.certificates.map((c) => (
                 <li key={c.name} className="flex flex-col gap-0.5">
-                  <span className="font-kr text-ink-inverse text-[14px] leading-[1.35]">
+                  <span className="font-kr text-ink-inverse text-[15px] leading-[1.35]">
                     {c.name}
                   </span>
                   {(c.issuer || c.date) && (
-                    <span className="font-kr text-ink-inverse/55 text-[12px]">
+                    <span className="font-kr text-ink-inverse/55 text-[13px]">
                       {c.issuer ?? ''}
                       {c.issuer && c.date ? ' ㅣ ' : ''}
                       {c.date ?? ''}
@@ -140,10 +182,10 @@ export function AboutIndex() {
             <div className="flex flex-col gap-3">
               {Object.entries(about.skills).map(([cat, items]) => (
                 <div key={cat} className="flex flex-col gap-1">
-                  <span className="font-kr text-ink-inverse/55 text-[12px]">{cat}</span>
+                  <span className="font-kr text-ink-inverse/55 text-[13px]">{cat}</span>
                   <div className="flex flex-wrap gap-x-2.5 gap-y-0.5">
                     {(items as readonly string[]).map((t, idx, arr) => (
-                      <span key={t} className="font-kr text-ink-inverse text-[14px]">
+                      <span key={t} className="font-kr text-ink-inverse text-[15px]">
                         {t}
                         {idx < arr.length - 1 && (
                           <span className="text-ink-inverse/30 ml-2.5">·</span>
@@ -176,7 +218,7 @@ function Column({
   children: React.ReactNode
 }) {
   return (
-    <div style={{ display: 'flex', gap: 32 }}>
+    <div style={{ display: 'flex', gap: 32 }} data-reveal>
       <header
         style={{ width: 120, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 2 }}
       >
@@ -186,7 +228,7 @@ function Column({
         >
           {en}
         </h4>
-        <span className="font-kr text-ink-inverse/55 text-[12px]">{kr}</span>
+        <span className="font-kr text-ink-inverse/55 text-[13px]">{kr}</span>
       </header>
       <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
     </div>

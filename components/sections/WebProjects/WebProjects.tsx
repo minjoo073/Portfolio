@@ -2,7 +2,6 @@
 
 import { useRef } from 'react'
 import { projects } from '@/data/projects'
-import { SectionLabel } from '@/components/primitives/SectionLabel'
 import { useGsapContext } from '@/lib/hooks/useGsapContext'
 import { ProjectCard } from './ProjectCard'
 import { registerGsap } from '@/lib/gsap/config'
@@ -39,36 +38,6 @@ export function WebProjects() {
 
       const root = rootRef.current
       if (!root) return
-
-      // ── 섹션 라벨 진입 ──────────────────────────────────────────
-      const labelEl = root.querySelector('[data-section-label]')
-      if (labelEl) {
-        gsap.from(labelEl, {
-          y: 15,
-          opacity: 0,
-          duration: DURATION.enter,
-          ease: EASE.enter,
-          scrollTrigger: {
-            trigger: labelEl,
-            start: 'top 90%',
-            toggleActions: 'play none none reverse',
-          },
-        })
-        // 이탈 (라벨 div 아래가 뷰포트 위 80% 벗어날 때 fade out)
-        const labelParent = labelEl.parentElement
-        if (labelParent) {
-          gsap.to(labelEl, {
-            opacity: 0,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: labelParent,
-              start: 'bottom 80%',
-              end: 'bottom top',
-              scrub: SCRUB.loose,
-            },
-          })
-        }
-      }
 
       // ── 카드별 애니메이션 ─────────────────────────────────────────
       const cards = root.querySelectorAll('[data-card]')
@@ -110,42 +79,19 @@ export function WebProjects() {
           })
         }
 
-        // visual clip-path: inset(100% 0 0 0) → inset(0%), scrub
-        if (visualWrapper) {
-          gsap.fromTo(
-            visualWrapper,
-            { clipPath: 'inset(100% 0 0 0)' },
-            {
-              clipPath: 'inset(0% 0 0 0)',
-              ease: 'none',
-              scrollTrigger: {
-                trigger: card,
-                start: 'top 90%',
-                end: 'top 50%',
-                scrub: SCRUB.loose,
-                invalidateOnRefresh: true,
-              },
-            }
-          )
-        }
-
-        // visual inner: scale 1.08 → 1 (clip open 과 동기)
+        // visual 진입 — opacity 페이드(clip-path 폐기: 가장자리 AA seam 유발).
+        // opacity 는 transform 과 다른 속성 → 호버 3D transform 과 충돌 없음.
         if (visual) {
-          gsap.fromTo(
-            visual,
-            { scale: 1.08 },
-            {
-              scale: 1,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: card,
-                start: 'top 90%',
-                end: 'top 50%',
-                scrub: SCRUB.loose,
-                invalidateOnRefresh: true,
-              },
-            }
-          )
+          gsap.from(visual, {
+            opacity: 0,
+            duration: DURATION.enterSoft,
+            ease: EASE.enter,
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            },
+          })
         }
 
         // title: 가벼운 translateX + opacity reveal (transform 기반 → GPU 친화적)
@@ -207,11 +153,7 @@ export function WebProjects() {
       className="relative w-full bg-dark text-ink-inverse"
       data-section="web-projects"
     >
-      {/* ── 라벨 구간 60vh ────────────────────────────────────────── */}
-      {/* label은 아래쪽에 배치 — 카드로 진입하기 직전에 눈에 들어오도록 */}
-      <div className="flex h-[60vh] items-end px-side-m pb-[8vh] md:px-side-t xl:px-side-d">
-        <SectionLabel>Featured Web Projects</SectionLabel>
-      </div>
+      {/* 섹션 전환(WorkIntro)이 About↔Web 사이를 책임짐(page.tsx). 여기선 카드 직행. */}
 
       {/* ── 카드 N × 70vh ─────────────────────────────────────────── */}
       {projects.map((project) => (

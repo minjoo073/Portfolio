@@ -1,6 +1,7 @@
 import { Intro } from '@/components/sections/Hero/Intro'
 import { Hero } from '@/components/sections/Hero/Hero'
 import { About } from '@/components/sections/About/About'
+import { WorkIntro } from '@/components/sections/WebProjects/WorkIntro'
 import { WebProjects } from '@/components/sections/WebProjects/WebProjects'
 import { MobileProjects } from '@/components/sections/MobileProjects/MobileProjects'
 import { ContentMarketing } from '@/components/sections/ContentMarketing/ContentMarketing'
@@ -38,6 +39,10 @@ export default function Home() {
         {/* 솔리드 블랙이 위로 슬라이드하며 타이틀을 덮음 → 검정 여백(About paddingTop)이 "쉼" → statement 등장. */}
         <About />
       </div>
+
+      {/* About → Web 챕터 전환(거대 타이포 슬레이트). About 검정과 이어지며 '장 전환' 선언. */}
+      <WorkIntro />
+
       <WebProjects />
       <MobileProjects />
       <ContentMarketing />

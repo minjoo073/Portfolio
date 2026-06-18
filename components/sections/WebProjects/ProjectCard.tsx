@@ -9,24 +9,38 @@ interface ProjectCardProps {
   total: number
 }
 
+/* 메타 한글화 — 큰 영문 타이틀 제외 나머지는 한글(CEO 2026-06-18). */
+const MONTH: Record<string, string> = {
+  Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+  Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12',
+}
+const CAT_KR: Record<string, string> = {
+  Brand: '브랜드', Web: '웹', Redesign: '리디자인',
+  'Front-end': '프론트엔드', 'Product Design': '프로덕트 디자인',
+}
+const krDate = (d: string) => {
+  const [mon, year] = d.split(' ')
+  return MONTH[mon] ? `${year}.${MONTH[mon]}` : d
+}
+const krCategory = (c: string) => {
+  let r = c
+  for (const [en, kr] of Object.entries(CAT_KR)) r = r.split(en).join(kr)
+  return r
+}
+
+const EDGE_RING = 'inset 0 0 0 1px #0A0A0A' // 가장자리 1px 검정 — AA 번짐(흰 선) 덮기
+
 /**
- * Web Project 카드 — C안 Asymmetric Split + 진입 reveal + 호버 tilt.
+ * Web Project 카드 — 리디자인 v2 (CEO 2026-06-18, 재요청 반영).
  *
- * 레이아웃 (90vh):
- *   좌 40% 메타 패널: date · category / subline / title / 진입 옵션
- *   우 60% 비주얼: 16:9 landscape (1920×1080 hero 캡처 기준)
+ * 좌측: 세로 중앙 정렬 "한 덩어리" — 인덱스 → 메타(한글) → 타이틀(영문) → 서브라인 →
+ *       제작과정 보기(주) → 실사이트·깃허브·Cafe24(부). 위계·여백·nav 분리 해결.
+ * 우측: overflow 프레임 제거된 3D 카드(커서 tilt + 떠오름). 흰 선 제거(willChange 제거,
+ *       inset-0, 1px 검정 inset 링). 이미지 전체 클릭 → 제작과정.
  *
- * 모션:
- *   진입(GSAP scrollTrigger via WebProjects.tsx): clip-path L→R wipe + scale 1.08→1
- *   호버(이 컴포넌트): scale 1.04 + brightness 1.08 + 마우스 따라 3D tilt(±3°)
- *   이탈(GSAP): 살짝 떠오르며 흐려짐
- *
- * featured vs archive:
- *   featured(5개): brightness 1.0, View Site + View Case 진입점 2개
- *   archive(06/07): brightness 0.85, View Site + "Case in archive" 1개+라벨
- *
- * 데이터 속성 (GSAP 셀렉터):
- *   [data-card] / [data-meta] / [data-index] / [data-visual-wrapper] / [data-visual] / [data-title]
+ * 충돌 방지: 진입=opacity([data-visual]) / 이탈 parallax=transform([data-visual-wrapper]) /
+ *           호버=transform([data-visual]). 같은 요소에 GSAP transform 과 호버 transform 안 겹침.
+ * GSAP 셀렉터: [data-card][data-meta][data-index][data-visual-wrapper][data-visual][data-title]
  */
 export function ProjectCard({ project, total }: ProjectCardProps) {
   const isArchive = project.displayType === 'archive'
@@ -34,24 +48,42 @@ export function ProjectCard({ project, total }: ProjectCardProps) {
   const reduced = useReducedMotionContext()
   const visualRef = useRef<HTMLDivElement>(null)
 
-  // 마우스 따라 3D tilt — perspective 1000, max ±3°
   function handleMouseMove(e: React.MouseEvent) {
     if (reduced) return
     const el = visualRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    const rotY = ((x / rect.width) - 0.5) * 6   // -3 ~ 3
-    const rotX = -((y / rect.height) - 0.5) * 6
-    el.style.transform = `perspective(1200px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.04)`
+    const rotY = ((e.clientX - rect.left) / rect.width - 0.5) * 16 // ±8°
+    const rotX = -((e.clientY - rect.top) / rect.height - 0.5) * 16
+    el.style.transform = `perspective(1200px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.05)`
+    el.style.boxShadow = `0 36px 90px -28px rgba(0,0,0,0.8), ${EDGE_RING}`
+    el.style.filter = isArchive ? 'brightness(0.94)' : project.dimThumb ? 'brightness(0.95)' : 'brightness(1.05)'
   }
   function handleMouseLeave() {
     if (reduced) return
     const el = visualRef.current
     if (!el) return
     el.style.transform = ''
+    el.style.boxShadow = EDGE_RING
+    el.style.filter = isArchive ? 'brightness(0.85)' : project.dimThumb ? 'brightness(0.9)' : ''
   }
+
+  const visualInner = (
+    <div
+      ref={visualRef}
+      className="absolute inset-0 bg-dark-soft transition-[transform,filter,box-shadow] duration-500 ease-out"
+      style={{
+        backgroundImage: project.thumbnail ? `url(${project.thumbnail})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backfaceVisibility: 'hidden',
+        boxShadow: EDGE_RING,
+        filter: isArchive ? 'brightness(0.85)' : project.dimThumb ? 'brightness(0.9)' : undefined,
+      }}
+      data-visual
+    />
+  )
 
   return (
     <article
@@ -60,139 +92,119 @@ export function ProjectCard({ project, total }: ProjectCardProps) {
       data-project-id={project.id}
       data-display-type={project.displayType}
     >
-      <div className="flex h-full w-full">
-        {/* ── 좌 40% 메타 패널 ────────────────────────────────────── */}
-        <div className="flex w-2/5 flex-col justify-between px-side-m py-[8vh] md:px-side-t xl:px-side-d">
-          {/* 상단: date · category · workType · 인덱스 (모두 mono 인라인 — 배지 박스 폐기) */}
-          <div className="flex items-center justify-between">
-            <div
-              className="flex items-center gap-3 font-mono text-label uppercase tracking-[0.06em] text-ink-inverse/60"
-              data-meta
-            >
-              <span>{project.date}</span>
-              <span className="text-ink-inverse/30">·</span>
-              <span>{project.category}</span>
-              <span className="text-ink-inverse/30">·</span>
-              <span
-                className={
-                  project.workType === 'original'
-                    ? 'text-ink-inverse tracking-[0.2em]'
-                    : 'text-ink-inverse/45 tracking-[0.2em]'
-                }
-              >
-                {project.workType === 'original' ? 'Original' : 'Redesign'}
-              </span>
-            </div>
+      <div className="flex h-full w-full items-stretch">
+        {/* ── 좌 42% 메타 패널 — 3존 분리(상단 메타 / 중앙 타이틀 앵커 / 하단 행동존) ── */}
+        <div className="flex w-[42%] flex-col justify-between py-[14vh] px-side-m md:px-side-t xl:px-side-d">
+          {/* Zone 1 — 메타 (상단, nav 와 간격) */}
+          <div>
             <span
-              className="font-mono text-label uppercase tracking-[0.06em] text-ink-inverse/40"
+              className="block font-mono text-label tracking-[0.16em] text-ink-inverse/40"
               data-index
             >
               {project.index} / {totalStr}
             </span>
+            <div
+              className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-label text-ink-inverse/50"
+              data-meta
+            >
+              <span className="font-mono tracking-[0.06em]">{krDate(project.date)}</span>
+              <span className="text-ink-inverse/25">·</span>
+              <span className="font-kr">{krCategory(project.category)}</span>
+              <span className="text-ink-inverse/25">·</span>
+              <span
+                className={
+                  'font-kr ' +
+                  (project.workType === 'original' ? 'text-ink-inverse/90' : 'text-ink-inverse/45')
+                }
+              >
+                {project.workType === 'original' ? '오리지널' : '리디자인'}
+              </span>
+            </div>
           </div>
 
-          {/* 하단: title → subline → 진입 옵션 (강디 1픽 순서) */}
+          {/* Zone 2 — 타이틀 앵커 (중앙, 초점) */}
           <div>
             <h3
-              className="mb-5 font-display tracking-tight leading-[0.92] text-ink-inverse"
-              style={{
-                // PP Editorial New 의 진짜 매력 = Regular (400) + 작은 사이즈. 신입 톤 거대 statement 부담 해소.
-                fontSize: 'clamp(48px, 8vw, 96px)',
-                fontWeight: 400,
-                willChange: 'transform, opacity',
-              }}
+              className="font-display tracking-tight leading-[0.88] text-ink-inverse"
+              style={{ fontSize: 'clamp(56px, 8vw, 112px)', fontWeight: 400 }}
               data-title
             >
               {project.title}
             </h3>
-            <p className="mb-8 max-w-md font-sans text-[14px] leading-relaxed text-ink-inverse/60 tracking-tight">
+            <p className="mt-6 max-w-md font-kr text-[15px] leading-relaxed text-ink-inverse/55">
               {project.subline}
             </p>
+          </div>
 
-            {/* 진입 옵션 — View Site + View Case (case 페이지 ↳ TURN PAGE 와 동일 시각 언어) */}
-            <div className="flex flex-col gap-5">
-              {/* View Site — 7개 모두 */}
-              {project.siteHref ? (
-                <a
-                  href={project.siteHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group/site inline-flex items-center gap-4"
-                >
-                  <span className="h-px w-6 bg-ink-inverse/60 transition-[width,background-color] duration-500 ease-out group-hover/site:w-14 group-hover/site:bg-ink-inverse" />
-                  <span className="font-mono text-[18px] uppercase tracking-[0.18em] text-ink-inverse/80 group-hover/site:text-ink-inverse transition-colors duration-300">
-                    View Site
-                  </span>
-                  <span className="inline-block font-mono text-[18px] text-ink-inverse/60 group-hover/site:text-ink-inverse transition-[transform,color] duration-300 group-hover/site:translate-x-1 group-hover/site:-translate-y-0.5">
-                    ↗
-                  </span>
-                </a>
-              ) : (
-                <span className="inline-flex items-center gap-4">
-                  <span className="h-px w-6 bg-ink-inverse/30" />
-                  <span className="font-mono text-[18px] uppercase tracking-[0.18em] text-ink-inverse/40">
-                    View Site
-                  </span>
-                  <span className="font-mono text-[14px] uppercase tracking-[0.16em] text-ink-inverse/30">
-                    — SOON
-                  </span>
+          {/* Zone 3 — 행동존 (하단, 구분선으로 분리) */}
+          <div>
+            <div className="mb-8 h-px w-14 bg-ink-inverse/15" aria-hidden />
+            {project.studyHref ? (
+              <a
+                href={project.studyHref}
+                className="group/case inline-flex w-fit items-center gap-4"
+              >
+                <span className="h-px w-8 bg-ink-inverse/70 transition-[width,background-color] duration-500 ease-out group-hover/case:w-16 group-hover/case:bg-ink-inverse" />
+                <span className="font-kr text-[22px] tracking-tight text-ink-inverse">제작과정 보기</span>
+                <span className="inline-block text-[18px] text-ink-inverse/70 transition-transform duration-300 group-hover/case:translate-x-1">
+                  →
                 </span>
-              )}
+              </a>
+            ) : (
+              <span className="inline-flex items-center gap-4">
+                <span className="h-px w-8 bg-ink-inverse/20" />
+                <span className="font-kr text-[22px] text-ink-inverse/35">제작과정 준비중</span>
+              </span>
+            )}
 
-              {/* View Case — featured 5개만 */}
-              {project.studyHref ? (
-                <a
-                  href={project.studyHref}
-                  className="group/case inline-flex items-center gap-4"
-                >
-                  <span className="h-px w-6 bg-ink-inverse/60 transition-[width,background-color] duration-500 ease-out group-hover/case:w-14 group-hover/case:bg-ink-inverse" />
-                  <span className="font-mono text-[18px] uppercase tracking-[0.18em] text-ink-inverse/80 group-hover/case:text-ink-inverse transition-colors duration-300">
-                    View Case
-                  </span>
-                  <span className="inline-block font-mono text-[18px] text-ink-inverse/60 group-hover/case:text-ink-inverse transition-[transform,color] duration-300 group-hover/case:translate-x-1">
-                    →
-                  </span>
-                </a>
-              ) : (
-                <span className="inline-flex items-center gap-4">
-                  <span className="h-px w-6 bg-ink-inverse/20" />
-                  <span className="font-mono text-[18px] uppercase tracking-[0.18em] text-ink-inverse/35">
-                    Case in archive
-                  </span>
-                </span>
-              )}
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-kr text-[15px]">
+              {project.siteHref && <ExtLink href={project.siteHref}>실사이트</ExtLink>}
+              {project.githubHref && <ExtLink href={project.githubHref}>깃허브</ExtLink>}
+              {project.skinHref && <ExtLink href={project.skinHref}>Cafe24</ExtLink>}
             </div>
           </div>
         </div>
 
-        {/* ── 우 60% 비주얼 ───────────────────────────────────────── */}
-        <div className="flex w-3/5 items-center justify-center px-side-m py-[8vh] md:px-side-t xl:px-side-d">
+        {/* ── 우 58% 비주얼 — 3D 카드, 클릭 → 제작과정 ──────────────── */}
+        <div className="flex w-[58%] items-center justify-end px-side-m md:px-side-t xl:px-side-d">
           <div
-            className="relative w-full overflow-hidden"
+            className="relative w-full"
             style={{ aspectRatio: '16 / 9' }}
             data-visual-wrapper
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >
-            <div
-              ref={visualRef}
-              // -inset-px 로 1px overscan → GSAP clip-path · scale 보간의 sub-pixel anti-aliasing 라인 차단
-              className="absolute -inset-px bg-dark-soft transition-[transform,filter] duration-500 ease-out"
-              style={{
-                // 파일 없으면 dark-soft placeholder + 워터마크만 보임 (404는 무시)
-                backgroundImage: project.thumbnail ? `url(${project.thumbnail})` : undefined,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                willChange: 'transform',
-                filter: isArchive ? 'brightness(0.85)' : undefined,
-              }}
-              data-visual
-            />
-
+            {project.studyHref ? (
+              <a
+                href={project.studyHref}
+                aria-label={`${project.title} 제작과정 보기`}
+                className="absolute inset-0 block"
+              >
+                {visualInner}
+              </a>
+            ) : (
+              visualInner
+            )}
           </div>
         </div>
       </div>
     </article>
+  )
+}
+
+/* 외부 링크 (실사이트·깃허브·Cafe24) — 작은 한 줄, muted, ↗ */
+function ExtLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group/ext inline-flex items-center gap-1.5 text-ink-inverse/55 transition-colors duration-300 hover:text-ink-inverse"
+    >
+      <span>{children}</span>
+      <span className="inline-block text-[12px] transition-transform duration-300 group-hover/ext:translate-x-0.5 group-hover/ext:-translate-y-0.5">
+        ↗
+      </span>
+    </a>
   )
 }

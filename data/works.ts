@@ -1,6 +1,7 @@
 /**
  * 케이스스터디 뷰어 (/work/<slug>) 라우트 데이터.
- * 순서: lunare → fancive → lp → buja → mathhub (mathhub = 마지막, next 없음).
+ * 순서: lunare → fancive → lp → mathhub → buja (buja = 마지막, next 없음).
+ *   (CEO 2026-06-18: mathhub 를 buja 앞으로)
  *
  * slug      : /work/<slug> URL
  * label     : NEXT 오버레이에 표시할 이름
@@ -35,14 +36,14 @@ export const works: Work[] = [
     tagline: '바이닐 굿즈 브랜드 커머스 사이트',
   },
   {
-    slug: 'buja',    label: '부자관광', iframeSrc: '/projects/buja/study/',
-    year: '2025', role: 'Responsive Publishing',
-    tagline: '부자관광 리브랜딩 + 반응형 퍼블리싱',
-  },
-  {
     slug: 'mathhub', label: 'MATHHUB',  iframeSrc: '/projects/mathhub/study/',
     year: '2025', role: 'UX / UI Design',
     tagline: '수학 학습 플랫폼 인터랙션 설계',
+  },
+  {
+    slug: 'buja',    label: '부자관광', iframeSrc: '/projects/buja/study/',
+    year: '2025', role: 'Responsive Publishing',
+    tagline: '부자관광 리브랜딩 + 반응형 퍼블리싱',
   },
 ]
 
@@ -50,7 +51,7 @@ export function getWork(slug: string): Work | undefined {
   return works.find(w => w.slug === slug)
 }
 
-/** slug 다음 작업 반환. mathhub(마지막)이면 undefined. */
+/** slug 다음 작업 반환. buja(마지막)이면 undefined. */
 export function getNextWork(slug: string): Work | undefined {
   const idx = works.findIndex(w => w.slug === slug)
   if (idx === -1 || idx === works.length - 1) return undefined

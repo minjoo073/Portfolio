@@ -3,12 +3,12 @@ import type { Project } from '@/lib/types/project'
 /**
  * Web Projects — 7개
  *
- * 순서 (CEO 결정 2026-06-16):
+ * 순서 (CEO 결정 2026-06-18 — MathHub 를 부자관광 앞으로):
  *   01 LUNARE   (Original — 기획+브랜딩+디자인) → /work/lunare
  *   02 ONVINYL  (Original)                     → /work/lp
  *   03 FANCIVE  (Original)                     → /work/fancive
- *   04 부자관광 (Redesign — 기존 사이트 개선)   → /work/buja
- *   05 MathHub  (Redesign)                     → /work/mathhub
+ *   04 MathHub  (Redesign)                     → /work/mathhub
+ *   05 부자관광 (Redesign — 기존 사이트 개선)   → /work/buja
  *   06 Project 06 (Redesign, archive — 케이스 없음)
  *   07 Project 07 (Redesign, archive)
  *
@@ -29,6 +29,8 @@ export const projects: Project[] = [
     workType: 'original',
     studyHref: '/work/lunare',
     siteHref: 'https://minjoo073.github.io/LUNARE/',
+    githubHref: 'https://github.com/minjoo073/LUNARE',
+    // skinHref: 'https://___.cafe24.com/...', // Cafe24 스킨 — CEO 제공 예정
   },
   {
     id: 'project02',
@@ -44,6 +46,7 @@ export const projects: Project[] = [
     workType: 'original',
     studyHref: '/work/lp',
     siteHref: 'https://minjoo073.github.io/lp_2/',
+    githubHref: 'https://github.com/minjoo073/lp_2',
   },
   {
     id: 'project03',
@@ -59,25 +62,13 @@ export const projects: Project[] = [
     workType: 'original',
     studyHref: '/work/fancive',
     siteHref: 'https://minjoo073.github.io/FANCIVE/',
+    githubHref: 'https://github.com/minjoo073/FANCIVE',
   },
   {
-    id: 'project04',
-    index: '04',
-    type: 'web',
-    title: '부자관광',
-    date: 'Jan 2026',
-    category: 'UX/UI Web · Redesign',
-    subline: '부자관광 리브랜딩 + 반응형 퍼블리싱',
-    thumbnail: '/images/projects/04/thumbnail.webp',
-    detailAnchor: '#project04',
-    displayType: 'featured',
-    workType: 'redesign',
-    studyHref: '/work/buja',
-    siteHref: 'https://minjoo073.github.io/redesign/',
-  },
-  {
+    // CEO 2026-06-18: MathHub 를 부자관광 앞으로. 배지(index)만 04 로 변경,
+    // id/thumbnail(/05/)/studyHref 등 에셋 참조는 프로젝트에 그대로 둠.
     id: 'project05',
-    index: '05',
+    index: '04',
     type: 'web',
     title: 'MathHub',
     date: 'Nov 2025',
@@ -89,6 +80,24 @@ export const projects: Project[] = [
     workType: 'redesign',
     studyHref: '/work/mathhub',
     siteHref: 'https://jiwon12011.github.io/mathhub/',
+    githubHref: 'https://github.com/jiwon12011/mathhub',
+    dimThumb: true, // 밝은 캡처 — 검정 배경에 떠 보여 한 톤 다운
+  },
+  {
+    id: 'project04',
+    index: '05',
+    type: 'web',
+    title: '부자관광',
+    date: 'Jan 2026',
+    category: 'UX/UI Web · Redesign',
+    subline: '부자관광 리브랜딩 + 반응형 퍼블리싱',
+    thumbnail: '/images/projects/04/thumbnail.webp',
+    detailAnchor: '#project04',
+    displayType: 'featured',
+    workType: 'redesign',
+    studyHref: '/work/buja',
+    siteHref: 'https://minjoo073.github.io/redesign/',
+    githubHref: 'https://github.com/minjoo073/redesign',
   },
   {
     id: 'project06',

@@ -23,8 +23,14 @@ export interface Project {
   detailAnchor: string
   /** 케이스스터디 정적 경로 — /work/<slug> */
   studyHref?: string
-  /** 라이브 사이트 URL — 7개 모두 (View Site 진입점) */
+  /** 라이브 사이트 URL — 실사이트 진입점 */
   siteHref?: string
+  /** GitHub 저장소 URL — 깃허브 진입점 */
+  githubHref?: string
+  /** Cafe24 스킨 URL — 예: 01 LUNARE 커머스 스킨 */
+  skinHref?: string
+  /** 썸네일이 밝아 검정 배경에 떠 보일 때 한 톤 어둡게(예: MathHub) */
+  dimThumb?: boolean
   /** 좌 메타 패널 1줄 설명 */
   subline: string
   /** 카드 위계 — featured(큰 카드 두 진입점) / archive(brightness 다운 + 한 진입점) */
