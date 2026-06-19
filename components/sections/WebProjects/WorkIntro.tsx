@@ -4,12 +4,12 @@
  * WorkIntro — About ↔ Web Projects 섹션 전환(챕터 슬레이트).
  * CEO 선택 2026-06-18: "거대 타이포 슬레이트".
  *
- * 구조: 200vh 섹션 안에 sticky 100vh 패널 → 스크롤 동안 화면에 고정(핀 대신 CSS sticky,
+ * 구조: 260vh 섹션 안에 sticky 100vh 패널 → 스크롤 동안 화면에 고정(핀 대신 CSS sticky,
  * Lenis 와 충돌 없음). 스크럽 타임라인이 진행률을 reveal→hold→exit 로 매핑.
  *
- *   0.00–0.52  REVEAL : 거대 'SELECTED WORK' clip-wipe(위→아래) + 하단선 L→R + 메타 fade
- *   0.52–0.62  HOLD   : 정지(읽힘)
- *   0.62–1.00  EXIT   : 패널 scale↓·y↑·fade → 카드 01 로 인계
+ *   0.00–0.45  REVEAL : 거대 'SELECTED WORK' clip-wipe(위→아래) + 하단선 L→R + 메타 fade
+ *   0.45–0.55  HOLD   : 정지(읽힘)
+ *   0.55–1.00  EXIT   : 검정 커튼 강하(linear) + 패널 fade(power1.out) → 카드 01 로 인계
  *
  * 헌법: CSS/GSAP/clip-path(필터 아님). reduced-motion → effect skip(정적 표시 폴백).
  * 위 About 인덱스의 mask-wipe / 종이 모티프와 같은 clip 언어 재사용 → 결 통일.
@@ -27,13 +27,18 @@ export function WorkIntro() {
       registerGsap()
       const root = rootRef.current
       if (!root) return
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
       const head = root.querySelector('[data-wi-head]')
       const line = root.querySelector('[data-wi-line]')
       const meta = root.querySelector('[data-wi-meta]')
       const panel = root.querySelector('[data-wi-panel]')
-      if (!head || !line || !meta || !panel) return
+      const curtain = root.querySelector('[data-wi-curtain]')
+      if (!head || !line || !meta || !panel || !curtain) return
+
+      // 커튼 초기 상태 — reduced-motion 가드 바깥에서 설정해 항상 화면 위에 숨김
+      gsap.set(curtain, { yPercent: -100, willChange: 'transform' })
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
       // 초기(가림) 상태
       gsap.set(head, { clipPath: 'inset(0% 0% 100% 0%)', y: 14 })
@@ -53,13 +58,12 @@ export function WorkIntro() {
       tl.to(head, { clipPath: 'inset(0% 0% 0% 0%)', y: 0, ease: 'power2.out', duration: 0.4 }, 0)
       tl.to(line, { scaleX: 1, ease: 'power2.out', duration: 0.44 }, 0.08)
       tl.to(meta, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.3 }, 0.22)
-      // HOLD 0.52–0.62 (gap)
-      // EXIT — 슬레이트가 빠지며 카드로 인계
-      tl.to(
-        panel,
-        { scale: 0.92, opacity: 0, y: -36, ease: 'power2.in', duration: 0.38 },
-        0.62
-      )
+      // HOLD 0.45–0.55 (gap)
+      // EXIT — Drop Curtain: 검정 슬래브 강하로 패널 전체 덮음 + 패널 fade
+      // ease: none → 스크롤 1:1 매핑, 후반 가속 "휙" 제거
+      // 구간 0.55–1.00 (45%) + 섹션 260vh → 실제 ~117vh 분량, 천천히 차오르는 느낌
+      tl.to(curtain, { yPercent: 0, ease: 'none', duration: 0.45 }, 0.55)
+      tl.to(panel, { yPercent: 8, opacity: 0, ease: 'power1.out', duration: 0.40 }, 0.61)
     },
     rootRef,
     []
@@ -70,13 +74,20 @@ export function WorkIntro() {
       ref={rootRef}
       aria-label="Selected Work"
       className="relative bg-dark text-ink-inverse"
-      style={{ height: '200vh' }}
+      style={{ height: '260vh' }}
       data-section="work-intro"
     >
       <div
         data-wi-panel
         className="sticky top-0 flex h-screen flex-col justify-center px-side-m md:px-side-t xl:px-side-d"
       >
+        {/* Drop Curtain — 화면 위에 대기, EXIT 구간에 강하해 패널 전체를 덮음 */}
+        <div
+          data-wi-curtain
+          className="absolute inset-0 bg-dark z-10 pointer-events-none"
+          aria-hidden
+        />
+
         <h2
           data-wi-head
           className="font-sans font-semibold uppercase text-ink-inverse"

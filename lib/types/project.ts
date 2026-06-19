@@ -12,6 +12,18 @@ export type ProjectDisplayType = 'featured' | 'archive'
  */
 export type ProjectWorkType = 'original' | 'redesign'
 
+/**
+ * left:  워드마크·본문 좌측 / 비주얼 우측 (01·03·05 홀수)
+ * right: 워드마크·본문 우측 / 비주얼 좌측 (02·04 짝수)
+ */
+export type ProjectVariant = 'left' | 'right'
+
+/**
+ * 16:10 — 기본 (featured 760×475)
+ * 4:5   — 03 FANCIVE 전용 (비주얼 폭 동일 760, 높이 950)
+ */
+export type ProjectVisualRatio = '16:10' | '4:5'
+
 export interface Project {
   id: string
   index: string
@@ -52,4 +64,30 @@ export interface Project {
   ia?: string
   interaction?: string
   result?: string
+
+  // ── Bracket Ledger 카드 신규 필드 (2026-06-19) ─────────────────
+  /** 제작 규모 — 예: '1인 제작', '팀 3인' */
+  scale?: string
+  /** 역할 배열 — 예: ['브랜드 IA', '랜딩 카피', '스킨 퍼블리싱'] */
+  role?: string[]
+  /** 기술 스택 배열 — 예: ['HTML', 'CSS', 'JavaScript'] */
+  stack?: string[]
+  /**
+   * 본문 정렬 방향
+   * left:  워드마크·본문 좌측 / 비주얼 우측 (01·03·05 기본)
+   * right: 워드마크·본문 우측 / 비주얼 좌측 (02·04)
+   */
+  variant?: ProjectVariant
+  /**
+   * 비주얼 비율
+   * '16:10' — 기본 featured (760×475)
+   * '4:5'   — 03 FANCIVE 전용 (760×950)
+   */
+  visualRatio?: ProjectVisualRatio
+  /** 워드마크 영문 텍스트 (PP Editorial 128px) — title 와 별도로 표기 가능 */
+  wordmark?: string
+  /** 한 줄 카피 (한국어, 22px 400) */
+  tagline?: string
+  /** 전체 카운터 최대값 (총 몇 개인지) */
+  total?: string
 }

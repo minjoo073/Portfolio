@@ -19,17 +19,22 @@ import gsap from 'gsap'
  * }, root, [])
  */
 export function useGsapContext(
-  fn: (context: gsap.Context) => void,
+  fn: (context: gsap.Context) => (() => void) | void,
   scope?: RefObject<Element | null>,
   deps: DependencyList = []
 ): RefObject<gsap.Context | null> {
   const ctxRef = useRef<gsap.Context | null>(null)
 
   useEffect(() => {
-    const ctx = gsap.context((self) => fn(self), scope?.current ?? undefined)
+    let extraCleanup: (() => void) | void
+
+    const ctx = gsap.context((self) => {
+      extraCleanup = fn(self)
+    }, scope?.current ?? undefined)
     ctxRef.current = ctx
 
     return () => {
+      extraCleanup?.()
       ctx.revert()
       ctxRef.current = null
     }

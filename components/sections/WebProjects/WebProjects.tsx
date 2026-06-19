@@ -3,31 +3,22 @@
 import { useRef } from 'react'
 import { projects } from '@/data/projects'
 import { useGsapContext } from '@/lib/hooks/useGsapContext'
-import { ProjectCard } from './ProjectCard'
+import { ArchiveCard } from './ProjectCard'
+import { HeroStickyExchange } from './HeroStickyExchange'
 import { registerGsap } from '@/lib/gsap/config'
-import { DURATION, EASE, STAGGER, SCRUB } from '@/lib/gsap/tokens'
+import { EASE } from '@/lib/gsap/tokens'
 import gsap from 'gsap'
 
 /**
- * Web Projects — 세로 풀블리드 스택 (Revision 2 as-built 정본).
+ * Web Projects — Set 3 · Sticky Visual Exchange (2026-06-19).
  *
- * 구조 (docs/02_SectionStructure.md §3.1 1:1):
- *   60vh  — 라벨 구간
- *   N×70vh — 카드 N장 (데이터 배열 자동 확장)
- *   20vh  — 전환 여백
+ * 구조:
+ *   Hero  (01–05): HeroStickyExchange — 단일 sticky 섹션, 비주얼 고정 + 본문 슬라이드
+ *   Archive (06+07): 단일 ~60vh 섹션, 좌50/우50 분할
  *
- * 인터랙션 (docs/03_Interaction.md §4 1:1):
- *   - 섹션 라벨: y 15→0 · opacity 0→1 진입, scrub-loose 이탈
- *   - 카드 meta:  y 10→0 · opacity 0→1 · stagger item (card top 95%)
- *   - 카드 index: opacity 0→0.6 (card top 90%)
- *   - visual:     clip-path inset(100%→0) + scale 1.08→1 scrub (top 90%→50%)
- *   - title:      clip-path inset(0 100%→0) L→R · enter-soft (card top 75%)
- *   - exit parallax: visual y→-30 / title y→-20 · opacity→0.6 scrub
- *   - card hover: CSS group-hover (visual brightness, title translateX)
- *
- * Step 1 팩토리 재사용: registerGsap() → createReveal / createParallax 내부 사용.
- * ProgressBar 제거: 가로 트랙 전용 컴포넌트, 세로 맥락 부적합.
- * Visual Works(가로 핀)와 대비: Web = 세로 묵직, Visual = 가로 환기.
+ * 모션:
+ *   Hero  — CSS sticky + ScrollTrigger scrub (Lenis pin 충돌 없음)
+ *   Archive  — 두 카드 stagger fade-up
  */
 export function WebProjects() {
   const rootRef = useRef<HTMLElement>(null)
@@ -39,112 +30,94 @@ export function WebProjects() {
       const root = rootRef.current
       if (!root) return
 
-      // ── 카드별 애니메이션 ─────────────────────────────────────────
-      const cards = root.querySelectorAll('[data-card]')
+      const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (isReduced) return
 
-      cards.forEach((card) => {
-        const meta = card.querySelector('[data-meta]')
-        const indexEl = card.querySelector('[data-index]')
-        const visualWrapper = card.querySelector('[data-visual-wrapper]')
-        const visual = card.querySelector('[data-visual]')
-        const titleEl = card.querySelector('[data-title]')
+      // ── Archive 카드 등장 ──────────────────────────────────────────
+      const archiveCards = root.querySelectorAll('[data-archive-card]')
 
-        // meta children: date · category stagger
-        if (meta && meta.children.length > 0) {
-          gsap.from(Array.from(meta.children), {
-            y: 10,
+      archiveCards.forEach((card, i) => {
+        const visualEl   = card.querySelector('[data-visual]')
+        const titleEl    = card.querySelector('[data-title]')
+        const metaEls    = Array.from(card.querySelectorAll('[data-meta]'))
+
+        // 카드 자체 fade-up
+        gsap.from(card, {
+          opacity: 0,
+          y: 16,
+          duration: 1.0,
+          ease: EASE.enter,
+          delay: i * 0.12,
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+
+        // 이미지 reveal — opacity 0→1
+        if (visualEl) {
+          gsap.from(visualEl, {
             opacity: 0,
-            stagger: STAGGER.item,
-            duration: DURATION.enter,
-            ease: EASE.enter,
+            duration: 1.2,
+            ease: 'power2.out',
+            delay: i * 0.12,
             scrollTrigger: {
               trigger: card,
-              start: 'top 95%',
-              toggleActions: 'play none none reverse',
-            },
-          })
-        }
-
-        // index: opacity 0 → 0.6
-        if (indexEl) {
-          gsap.from(indexEl, {
-            opacity: 0,
-            duration: DURATION.enter,
-            ease: EASE.enter,
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 90%',
-              toggleActions: 'play none none reverse',
-            },
-          })
-        }
-
-        // visual 진입 — opacity 페이드(clip-path 폐기: 가장자리 AA seam 유발).
-        // opacity 는 transform 과 다른 속성 → 호버 3D transform 과 충돌 없음.
-        if (visual) {
-          gsap.from(visual, {
-            opacity: 0,
-            duration: DURATION.enterSoft,
-            ease: EASE.enter,
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 80%',
-              toggleActions: 'play none none reverse',
-            },
-          })
-        }
-
-        // title: 가벼운 translateX + opacity reveal (transform 기반 → GPU 친화적)
-        // ease 를 'sine.out' 로 → power3.out 의 첫 0.1s 빠른 opacity 상승이 "번쩍" 으로 인지되던 문제 완화
-        // duration 더 길게 → 부드러운 진입
-        if (titleEl) {
-          gsap.from(titleEl, {
-            x: -40,
-            opacity: 0,
-            duration: 1.4,
-            ease: 'sine.out',
-            scrollTrigger: {
-              trigger: titleEl,
               start: 'top 85%',
               toggleActions: 'play none none none',
             },
           })
         }
 
-        // exit parallax — visual y 0 → -30px (이전 카드가 위로 빠짐)
-        if (visualWrapper) {
-          gsap.to(visualWrapper, {
-            y: -30,
-            ease: 'none',
+        // 타이틀 reveal — x -16→0 + opacity 0→1
+        if (titleEl) {
+          gsap.from(titleEl, {
+            x: -16,
+            opacity: 0,
+            duration: 1.0,
+            ease: 'sine.out',
+            delay: i * 0.12 + 0.1,
             scrollTrigger: {
               trigger: card,
-              start: 'bottom 50%',
-              end: 'bottom top',
-              scrub: SCRUB.loose,
-              invalidateOnRefresh: true,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
             },
           })
         }
 
-        // exit parallax — title y 0 → -20px (opacity 변경 제거: 다음 카드 enter 와 시각 충돌 차단)
-        if (titleEl) {
-          gsap.to(titleEl, {
-            y: -20,
-            ease: 'none',
+        // 메타/CTA stagger fade-up
+        if (metaEls.length > 0) {
+          gsap.from(metaEls, {
+            y: 8,
+            opacity: 0,
+            stagger: 0.08,
+            duration: 0.8,
+            ease: 'power2.out',
+            delay: i * 0.12 + 0.2,
             scrollTrigger: {
               trigger: card,
-              start: 'bottom 50%',
-              end: 'bottom top',
-              scrub: SCRUB.loose,
-              invalidateOnRefresh: true,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
             },
           })
         }
+      })
+
+      // Lenis 안전 refresh
+      gsap.delayedCall(0.1, () => {
+        const ST = (gsap as unknown as { ScrollTrigger?: { refresh: () => void } }).ScrollTrigger
+        if (ST?.refresh) ST.refresh()
       })
     },
     rootRef,
     []
   )
+
+  /* 01–05 hero, 06–07 archive 분리 */
+  const heroProjects = projects.filter(p => p.displayType === 'featured')
+  const archiveProjects = projects.filter(p => p.displayType === 'archive')
+  const totalCount = projects.length
 
   return (
     <section
@@ -153,14 +126,50 @@ export function WebProjects() {
       className="relative w-full bg-dark text-ink-inverse"
       data-section="web-projects"
     >
-      {/* 섹션 전환(WorkIntro)이 About↔Web 사이를 책임짐(page.tsx). 여기선 카드 직행. */}
+      {/* ── Hero 카드 01–05 — Sticky Visual Exchange ──────────────── */}
+      <HeroStickyExchange projects={heroProjects} total={totalCount} />
 
-      {/* ── 카드 N × 70vh ─────────────────────────────────────────── */}
-      {projects.map((project) => (
-        <ProjectCard key={project.id} project={project} total={projects.length} />
-      ))}
+      {/* ── Archive 섹션 06+07 — 단일 ~60vh 블록 ────────────────── */}
+      {archiveProjects.length > 0 && (
+        <div
+          className="relative w-full"
+          style={{ minHeight: '60vh', paddingTop: '10vh', paddingBottom: '10vh' }}
+          data-archive-section
+        >
+          {/* 상단 레이블 */}
+          <div
+            className="flex items-center gap-4 mb-[6vh]"
+            style={{
+              paddingLeft: 'clamp(64px, 6.25vw, 120px)',
+              paddingRight: 'clamp(64px, 6.25vw, 120px)',
+            }}
+          >
+            <span
+              className="font-mono text-ink-inverse/25"
+              style={{ fontSize: '12px', letterSpacing: '0.16em' }}
+            >
+              ARCHIVE
+            </span>
+            <div className="flex-1 h-px bg-ink-inverse/10" aria-hidden />
+          </div>
 
-      {/* ── 전환 여백 20vh ────────────────────────────────────────── */}
+          {/* 좌50 / 우50 그리드 — hairline 없음 */}
+          <div
+            className="grid grid-cols-2"
+            style={{
+              paddingLeft: 'clamp(64px, 6.25vw, 120px)',
+              paddingRight: 'clamp(64px, 6.25vw, 120px)',
+              gap: `0 clamp(48px, 4.17vw, 80px)`,
+            }}
+          >
+            {archiveProjects.map((project) => (
+              <ArchiveCard key={project.id} project={project} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── 전환 여백 ────────────────────────────────────────────── */}
       <div className="h-[20vh]" aria-hidden />
     </section>
   )
