@@ -1,0 +1,238 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { useLenis } from '@/lib/hooks/useLenis'
+
+interface StudyDrawerProps {
+  open: boolean
+  onClose: () => void
+  src: string
+  title: string
+}
+
+/**
+ * StudyDrawer — 우측 슬라이드 팝업.
+ *
+ * - 열릴 때 Lenis.stop() / document.body overflow:hidden (Lenis 미초기화 폴백)
+ * - 닫힐 때 Lenis.start() / overflow 해제
+ * - ESC 키 닫기
+ * - 배경 dim 클릭 닫기
+ * - iframe src: 외부 GitHub Pages URL 임베드 시도
+ *   X-Frame-Options 차단 시 폴백 버튼("새 탭에서 열기") 자동 노출
+ */
+export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
+  const lenis = useLenis()
+  const lenisRef = useRef(lenis)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  // CEO 가 iframe 차단 확인 시 true 로 전환 → 폴백 UI 노출
+  const [iframeBlocked] = useState(false)
+
+  lenisRef.current = lenis
+
+  // iframe X-Frame-Options 차단 감지 불가 (브라우저 보안 정책)
+  // 차단 시 CEO 가 iframeBlocked=true 로 수동 전환하거나 별도 프록시 처리 필요
+
+  // 스크롤 잠금 / 해제
+  useEffect(() => {
+    const l = lenisRef.current
+    if (open) {
+      if (l) {
+        l.stop()
+      } else {
+        document.body.style.overflow = 'hidden'
+      }
+    } else {
+      if (l) {
+        l.start()
+      } else {
+        document.body.style.overflow = ''
+      }
+    }
+    return () => {
+      // 언마운트 시 반드시 해제
+      if (l) l.start()
+      else document.body.style.overflow = ''
+    }
+  }, [open])
+
+  // ESC 닫기
+  useEffect(() => {
+    if (!open) return
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  // open 될 때 iframe focus → 접근성
+  useEffect(() => {
+    if (open && iframeRef.current) {
+      // 약간의 지연 후 focus (슬라이드 애니 완료 후)
+      const t = setTimeout(() => iframeRef.current?.focus(), 460)
+      return () => clearTimeout(t)
+    }
+  }, [open])
+
+  return (
+    <>
+      {/* dim 오버레이 */}
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 100,
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+          transition: 'opacity 350ms ease',
+        }}
+      />
+
+      {/* drawer panel */}
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${title} 제작과정`}
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          height: '100vh',
+          width: 'min(80%, 1400px)',
+          background: '#fff',
+          zIndex: 101,
+          transform: open ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 450ms cubic-bezier(0.22,0.61,0.36,1)',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '-24px 0 80px rgba(0,0,0,0.32)',
+        }}
+      >
+        {/* 헤더 */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px 28px',
+            borderBottom: '1px solid rgba(17,17,17,0.08)',
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-pretendard), sans-serif',
+              fontSize: '13px',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'rgba(17,17,17,0.55)',
+            }}
+          >
+            {title} — 제작과정
+          </span>
+          <button
+            onClick={onClose}
+            aria-label="닫기"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: '1px solid rgba(17,17,17,0.12)',
+              background: 'transparent',
+              cursor: 'pointer',
+              color: '#111',
+              fontSize: '18px',
+              lineHeight: 1,
+              transition: 'background 200ms ease, border-color 200ms ease',
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLButtonElement
+              el.style.background = 'rgba(17,17,17,0.06)'
+              el.style.borderColor = 'rgba(17,17,17,0.24)'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLButtonElement
+              el.style.background = 'transparent'
+              el.style.borderColor = 'rgba(17,17,17,0.12)'
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* iframe 영역 */}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+          {open && (
+            <iframe
+              ref={iframeRef}
+              src={src}
+              title={`${title} 제작과정`}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                border: 0,
+              }}
+              // Lenis 가 iframe 내부 스크롤을 가로채지 않도록
+              data-lenis-prevent
+            />
+          )}
+
+          {/* X-Frame-Options 차단 폴백 — CEO 가 차단 확인 시 iframeBlocked=true 로 전환 */}
+          {iframeBlocked && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '16px',
+                background: '#fafaf9',
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: 'var(--font-pretendard), sans-serif',
+                  fontSize: '14px',
+                  color: 'rgba(17,17,17,0.55)',
+                  textAlign: 'center',
+                }}
+              >
+                제작과정 페이지를 이 창에서 불러올 수 없습니다.
+              </p>
+              <a
+                href={src}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontFamily: 'var(--font-pretendard), sans-serif',
+                  fontSize: '13px',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  color: '#111',
+                  textDecoration: 'none',
+                  padding: '10px 24px',
+                  border: '1px solid rgba(17,17,17,0.24)',
+                  borderRadius: '4px',
+                  transition: 'background 200ms ease',
+                }}
+              >
+                새 탭에서 열기 ↗
+              </a>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
+  )
+}

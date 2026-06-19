@@ -14,7 +14,7 @@
 /* ───────────────────────── Reset & Base ───────────────────────── */
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
   }
 
   html,

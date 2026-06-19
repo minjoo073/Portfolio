@@ -19,7 +19,7 @@ const krDate = (d: string) => {
   return MONTH[mon] ? `${year}.${MONTH[mon]}` : d
 }
 
-const EDGE_RING = 'inset 0 0 0 1px #0A0A0A'
+// EDGE_RING 제거 — 1px inset border 가 전체 이미지 색감 죽이는 원인 (CEO 2026-06-19)
 
 /* ── vw 스케일 헬퍼 (base 1920) ─────────────────────────────────── */
 // clamp(minPx, vwVal, maxPx) — 가독성 보호 + 1920 이상 캡
@@ -108,7 +108,7 @@ function HeroCard({ project, total }: ProjectCardProps) {
     const rotY = ((e.clientX - rect.left) / rect.width - 0.5) * 12
     const rotX = -((e.clientY - rect.top) / rect.height - 0.5) * 12
     el.style.transform = `perspective(1200px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.04)`
-    el.style.boxShadow = `0 36px 90px -28px rgba(0,0,0,0.8), ${EDGE_RING}`
+    el.style.boxShadow = '0 36px 90px -28px rgba(0,0,0,0.8)'
     el.style.filter = project.dimThumb ? 'brightness(0.95)' : 'brightness(1.04)'
   }
   function handleMouseLeave() {
@@ -116,7 +116,7 @@ function HeroCard({ project, total }: ProjectCardProps) {
     const el = visualRef.current
     if (!el) return
     el.style.transform = ''
-    el.style.boxShadow = EDGE_RING
+    el.style.boxShadow = ''
     el.style.filter = project.dimThumb ? 'brightness(0.9)' : ''
   }
 
@@ -156,7 +156,6 @@ function HeroCard({ project, total }: ProjectCardProps) {
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               backfaceVisibility: 'hidden',
-              boxShadow: EDGE_RING,
               filter: project.dimThumb ? 'brightness(0.9)' : undefined,
             }}
             data-visual
@@ -172,7 +171,6 @@ function HeroCard({ project, total }: ProjectCardProps) {
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
             backfaceVisibility: 'hidden',
-            boxShadow: EDGE_RING,
             filter: project.dimThumb ? 'brightness(0.9)' : undefined,
           }}
           data-visual
@@ -439,7 +437,7 @@ export function ArchiveCard({ project }: { project: Project }) {
     const rotY = ((e.clientX - rect.left) / rect.width - 0.5) * 12
     const rotX = -((e.clientY - rect.top) / rect.height - 0.5) * 12
     el.style.transform = `perspective(1200px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.04)`
-    el.style.boxShadow = `0 36px 90px -28px rgba(0,0,0,0.8), ${EDGE_RING}`
+    el.style.boxShadow = '0 36px 90px -28px rgba(0,0,0,0.8)'
     el.style.filter = 'brightness(1.04)'
   }
   function handleMouseLeave() {
@@ -447,7 +445,7 @@ export function ArchiveCard({ project }: { project: Project }) {
     const el = visualRef.current
     if (!el) return
     el.style.transform = ''
-    el.style.boxShadow = EDGE_RING
+    el.style.boxShadow = ''
     el.style.filter = ''
   }
 
@@ -479,7 +477,7 @@ export function ArchiveCard({ project }: { project: Project }) {
         </div>
       </div>
 
-      {/* 이미지 16:10 — Hero 와 동일 비율, overflow 없음 (3D hover 가 박스 밖으로 자유롭게 움직임) */}
+      {/* 이미지 16:10 — Hero 와 동일 비율, overflow 없음 */}
       <div
         className="relative"
         style={{ aspectRatio: '16 / 10', width: '100%', maxWidth: 'clamp(380px, 34vw, 660px)' }}
@@ -493,7 +491,6 @@ export function ArchiveCard({ project }: { project: Project }) {
             backgroundImage: project.thumbnail ? `url(${project.thumbnail})` : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            boxShadow: EDGE_RING,
           }}
           data-visual
         />

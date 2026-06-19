@@ -3,6 +3,7 @@ import { Hero } from '@/components/sections/Hero/Hero'
 import { About } from '@/components/sections/About/About'
 import { WorkIntro } from '@/components/sections/WebProjects/WorkIntro'
 import { WebProjects } from '@/components/sections/WebProjects/WebProjects'
+import { MobileIntro } from '@/components/sections/MobileProjects/MobileIntro'
 import { MobileProjects } from '@/components/sections/MobileProjects/MobileProjects'
 import { ContentMarketing } from '@/components/sections/ContentMarketing/ContentMarketing'
 import { VisualWorks } from '@/components/sections/VisualWorks/VisualWorks'
@@ -44,6 +45,10 @@ export default function Home() {
       <WorkIntro />
 
       <WebProjects />
+
+      {/* Web → Mobile 챕터 전환 (WorkIntro 와 동일 패턴) */}
+      <MobileIntro />
+
       <MobileProjects />
       <ContentMarketing />
       <VisualWorks />

@@ -264,10 +264,9 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
           ref={logoRef}
           className="fixed z-50 select-none"
           style={{
-            top: '48px',
-            // iframe-box 좌측 가장자리(케이스 시작점)에서 8px 안쪽
-            // max(48, (100vw-1824)/2)는 iframe-left 와 같다 (iframe 폭 = min(100%-96, 1824))
-            left: 'calc(max(48px, (100vw - 1824px) / 2) + 8px)',
+            top: '30px',
+            // iframe-box 좌측 가장자리에 정렬 (상좌우 30px 통일)
+            left: 'max(30px, calc((100vw - 1860px) / 2))',
             transform: dropTransform,
             transition: dropTransition,
             // 스크롤 중간: outline + 흐려짐. 위/끝: solid + 선명.
@@ -346,9 +345,9 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
           onClick={() => sessionStorage.setItem('postNavScrollId', 'work')}
           className="fixed z-50 group block"
           style={{
-            top: '48px',
-            // iframe-box 우측 가장자리에서 8px 안쪽 (로고와 대칭)
-            right: 'calc(max(48px, (100vw - 1824px) / 2) + 8px)',
+            top: '30px',
+            // iframe-box 우측 가장자리에 정렬 (로고와 대칭)
+            right: 'max(30px, calc((100vw - 1860px) / 2))',
             opacity: logoOpaque ? 1 : 0.35,
             transition: 'opacity 350ms cubic-bezier(0.4, 0, 0.2, 1)',
           }}
@@ -397,21 +396,23 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
       )}
 
       {/*
-       * 케이스스터디 iframe — 균일 여백 확장 박스
-       * 상하좌우 48px씩, max 1824px (콘텐츠 1440 + 좌우 192px 거터)
-       * 콘텐츠 자체는 SLUG_OVERRIDES 로 1440 캡됨 → 박스가 커져도 콘텐츠는 가운데 정렬
+       * 케이스스터디 iframe — 상/좌/우 48px, 하단 0 (CEO 2026-06-19)
+       * 하단을 viewport 끝까지 붙여 "제작과정이 아래에서 올라오는" 느낌
+       * 상단 border + border-radius 만 시각 효과로 남음 (하단은 viewport 밖)
        */}
       <iframe
         ref={iframeRef}
         src={work.iframeSrc}
         title={`${work.label} Case Study`}
-        className="fixed rounded-sm border border-ink-primary/[0.08] bg-canvas"
+        className="fixed border border-b-0 border-ink-primary/[0.08] bg-canvas"
         style={{
-          top: '48px',
+          top: '30px',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 'min(calc(100% - 96px), 1824px)',
-          height: 'calc(100vh - 96px)',
+          width: 'min(calc(100% - 60px), 1860px)',
+          height: 'calc(100vh - 30px)',
+          borderTopLeftRadius: '4px',
+          borderTopRightRadius: '4px',
         }}
         loading="eager"
       />

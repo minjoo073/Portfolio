@@ -96,7 +96,12 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       smoothWheel: !reduced,
       wheelMultiplier: 1,
       touchMultiplier: 2,
-      syncTouch: false
+      syncTouch: false,
+      // iframe / data-lenis-prevent element 안 wheel 차단 (StudyDrawer iframe 등)
+      prevent: (node: Element) =>
+        node.hasAttribute('data-lenis-prevent') ||
+        node.tagName === 'IFRAME' ||
+        !!node.closest('[data-lenis-prevent]'),
     })
     lenisRef.current = lenis
     setLenisInstance(lenis)

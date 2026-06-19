@@ -33,7 +33,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 /* ── 상수 ────────────────────────────────────────────────────────── */
-const EDGE_RING = 'inset 0 0 0 1px #0A0A0A'
+// EDGE_RING 제거 — 1px inset border 가 전체 이미지 색감 죽이는 원인 (CEO 2026-06-19)
 
 /* ── vw 스케일 헬퍼 (base 1920) ─────────────────────────────────── */
 const vw = (basePx: number, minPx: number) =>
@@ -125,10 +125,7 @@ function VisualPanel({ project, index }: VisualPanelProps) {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        backfaceVisibility: 'hidden',
-        boxShadow: EDGE_RING,
         filter: project.dimThumb ? 'brightness(0.9)' : undefined,
-        willChange: 'opacity, transform',
       }}
       data-visual-img
     />
@@ -138,10 +135,10 @@ function VisualPanel({ project, index }: VisualPanelProps) {
     <div
       className="absolute inset-0 flex items-center"
       style={{
-        // 비주얼 컬럼을 그리드 5번 트랙 영역과 맞추기 위해 포지션은 부모가 처리
         opacity: index === 0 ? 1 : 0,
-        // 초기 scale: 비활성 카드는 살짝 확대 (crossfade 시 줌아웃 효과)
-        transform: index === 0 ? 'scale(1)' : 'scale(1.04)',
+        transform: index === 0 ? undefined : 'scale(1.04)',
+        // 비활성 카드 클릭 차단 — 5개 겹쳐있어 맨 위 카드 a 태그가 클릭 가로채는 문제 방지
+        pointerEvents: index === 0 ? 'auto' : 'none',
       }}
       data-visual-panel
       data-panel-index={index}
@@ -193,10 +190,10 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
     <div
       className="absolute inset-0 flex flex-col justify-center"
       style={{
-        // 초기: 첫 카드 보임, 나머지 opacity 0 + 미세 y 20px (큰 슬라이드 X)
         opacity: index === 0 ? 1 : 0,
         transform: index === 0 ? 'translateY(0)' : 'translateY(20px)',
         willChange: 'opacity, transform',
+        pointerEvents: index === 0 ? 'auto' : 'none',
       }}
       data-body-panel
       data-panel-index={index}
@@ -317,9 +314,6 @@ interface MetaRailPanelProps {
 }
 
 function MetaRailPanel({ project, index }: MetaRailPanelProps) {
-  const roles = (project.role ?? []).filter(r => r !== '—')
-  const roleStr = roles.length > 0 ? roles.join(' · ') : null
-
   return (
     <div
       className="absolute inset-0 flex flex-col justify-center"
@@ -332,31 +326,35 @@ function MetaRailPanel({ project, index }: MetaRailPanelProps) {
       data-panel-index={index}
     >
       <div className="flex flex-col" style={{ width: '100%', gap: '12px' }}>
+        {/* 연월 */}
         <span
           className="font-mono text-ink-inverse/50"
           style={{ fontSize: vw(13, 11), lineHeight: 1.8, letterSpacing: '0.08em' }}
         >
           {krDate(project.date)}
         </span>
+        {/* 카테고리 */}
         <span
           className="font-kr text-ink-inverse/50"
           style={{ fontSize: vw(13, 11), lineHeight: 1.8, letterSpacing: '0.08em' }}
         >
           {project.category}
         </span>
-        <span
-          className="font-kr"
-          style={{
-            fontSize: vw(15, 13),
-            lineHeight: 1.8,
-            letterSpacing: '0.08em',
-            color: project.workType === 'original'
-              ? 'rgba(248,247,244,0.9)'
-              : 'rgba(248,247,244,0.5)',
-          }}
-        >
-          {project.workType === 'original' ? '오리지널' : '리디자인'}
-        </span>
+        {/* '리디자인' 만 표시 (밝게 강조) — '오리지널' 은 라인 자체 생략 */}
+        {project.workType === 'redesign' && (
+          <span
+            className="font-kr"
+            style={{
+              fontSize: vw(15, 13),
+              lineHeight: 1.8,
+              letterSpacing: '0.08em',
+              color: 'rgba(248,247,244,0.9)',
+            }}
+          >
+            리디자인
+          </span>
+        )}
+        {/* scale: 1인 제작 (밝게) / 팀 프로젝트 · 기여 X% (일반 톤) */}
         {project.scale && (
           <span
             className="font-kr"
@@ -365,21 +363,14 @@ function MetaRailPanel({ project, index }: MetaRailPanelProps) {
               lineHeight: 1.8,
               letterSpacing: '0.08em',
               color: project.scale.includes('팀')
-                ? 'rgba(248,247,244,0.7)'
-                : 'rgba(248,247,244,0.5)',
+                ? 'rgba(248,247,244,0.5)'
+                : 'rgba(248,247,244,0.9)',
             }}
           >
             {project.scale}
           </span>
         )}
-        {roleStr && (
-          <span
-            className="font-kr text-ink-inverse/50"
-            style={{ fontSize: vw(13, 11), lineHeight: 1.8, letterSpacing: '0.08em' }}
-          >
-            {roleStr}
-          </span>
-        )}
+        {/* role 은 본문(BodyPanel) 과 중복이므로 메타에서 제외 */}
       </div>
     </div>
   )
@@ -434,41 +425,83 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
       // activeIndex 카드를 활성화하는 paused timeline 생성
       // 매번 새 timeline 을 만들어 play(0) 으로 즉시 실행
       const buildStepTl = (activeIndex: number) => {
-        const tl = gsap.timeline({ paused: true })
+        const tl = gsap.timeline({
+          paused: true,
+          // 시작 시점에 비활성 카드들을 즉시 op 0 으로 reset
+          // 활성 카드 + 직전 활성 카드 외 다른 카드의 잔상 완전 차단
+          onStart: () => {
+            visualPanels.forEach((vis, i) => {
+              if (i === activeIndex) return
+              // 직전 활성 카드는 fade-out 트윈이 처리하니 skip
+              // 그 외 카드는 즉시 hidden 상태 강제
+              const opacity = parseFloat(getComputedStyle(vis).opacity)
+              if (opacity > 0.01 && i !== prevActive) {
+                gsap.set(vis, { opacity: 0, scale: 1.04 })
+              }
+            })
+            bodyPanels.forEach((body, i) => {
+              if (i === activeIndex) return
+              const opacity = parseFloat(getComputedStyle(body).opacity)
+              if (opacity > 0.01 && i !== prevActive) {
+                gsap.set(body, { y: i < activeIndex ? -20 : 20, opacity: 0 })
+              }
+            })
+            metaPanels.forEach((meta, i) => {
+              if (i === activeIndex) return
+              const opacity = parseFloat(getComputedStyle(meta).opacity)
+              if (opacity > 0.01 && i !== prevActive) {
+                gsap.set(meta, { y: i < activeIndex ? -20 : 20, opacity: 0 })
+              }
+            })
+          }
+        })
 
+        // pointer-events 즉시 토글 — 활성 카드만 클릭 받게 (멀티 카드 a 태그 충돌 방지)
+        visualPanels.forEach((vis, i) => {
+          gsap.set(vis, { pointerEvents: i === activeIndex ? 'auto' : 'none' })
+        })
+        bodyPanels.forEach((body, i) => {
+          gsap.set(body, { pointerEvents: i === activeIndex ? 'auto' : 'none' })
+        })
+
+        // overwrite: 'auto' — 같은 element 의 진행 중 트윈을 자동 kill (잔상 방지)
         visualPanels.forEach((vis, i) => {
           if (i === activeIndex) {
-            tl.to(vis, { opacity: 1, scale: 1, duration: 0.7, ease: 'power3.inOut' }, 0)
+            tl.to(vis, { opacity: 1, scale: 1, duration: 0.7, ease: 'power3.inOut', overwrite: 'auto' }, 0)
           } else {
-            tl.to(vis, { opacity: 0, scale: 1.04, duration: 0.6, ease: 'power3.inOut' }, 0)
+            tl.to(vis, { opacity: 0, scale: 1.04, duration: 0.6, ease: 'power3.inOut', overwrite: 'auto' }, 0)
           }
         })
 
         bodyPanels.forEach((body, i) => {
           if (i === activeIndex) {
-            tl.to(body, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.inOut' }, 0)
+            tl.to(body, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.inOut', overwrite: 'auto' }, 0)
           } else if (i < activeIndex) {
-            tl.to(body, { y: -20, opacity: 0, duration: 0.6, ease: 'power3.inOut' }, 0)
+            tl.to(body, { y: -20, opacity: 0, duration: 0.6, ease: 'power3.inOut', overwrite: 'auto' }, 0)
           } else {
-            tl.to(body, { y: 20, opacity: 0, duration: 0.6, ease: 'power3.inOut' }, 0)
+            tl.to(body, { y: 20, opacity: 0, duration: 0.6, ease: 'power3.inOut', overwrite: 'auto' }, 0)
           }
         })
 
         metaPanels.forEach((meta, i) => {
           if (i === activeIndex) {
-            tl.to(meta, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.inOut' }, 0)
+            tl.to(meta, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.inOut', overwrite: 'auto' }, 0)
           } else if (i < activeIndex) {
-            tl.to(meta, { y: -20, opacity: 0, duration: 0.6, ease: 'power3.inOut' }, 0)
+            tl.to(meta, { y: -20, opacity: 0, duration: 0.6, ease: 'power3.inOut', overwrite: 'auto' }, 0)
           } else {
-            tl.to(meta, { y: 20, opacity: 0, duration: 0.6, ease: 'power3.inOut' }, 0)
+            tl.to(meta, { y: 20, opacity: 0, duration: 0.6, ease: 'power3.inOut', overwrite: 'auto' }, 0)
           }
         })
 
         return tl
       }
 
-      // step timeline 캐시 — 각 카드별 1개 미리 생성
-      const stepTls = projects.map((_, i) => buildStepTl(i))
+      // 직전 활성 인덱스 추적 — 잔상 방지용 reset 로직에서 사용
+      let prevActive = 0
+
+      // step timeline 은 *매번* 새로 생성 — 캐시 안 함
+      // 캐시 + play(0) 패턴은 GSAP 가 첫 호출 시 element 상태를 initial 로 기록 →
+      // 이후 호출 시 stale initial 로 jump 발생 (02→03 잔상 원인)
 
       // ── ScrollTrigger: section 상단 오프셋 추적 전용 ──────────
       // onUpdate 로 currentActive 를 변경하지 않음
@@ -501,8 +534,10 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
       }
 
       const goTo = (nextIndex: number) => {
+        prevActive = currentActive
         currentActive = nextIndex
-        stepTls[nextIndex]?.play(0)
+        // 매번 새 timeline — 현재 element state 부터 정확하게 트윈
+        buildStepTl(nextIndex).play()
 
         // section 내 해당 슬롯 스크롤 위치로 이동
         // 슬롯 0 = sectionTop, 슬롯 1 = sectionTop + 1vh, ...

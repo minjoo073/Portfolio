@@ -8,6 +8,7 @@ import { HeroStickyExchange } from './HeroStickyExchange'
 import { registerGsap } from '@/lib/gsap/config'
 import { EASE } from '@/lib/gsap/tokens'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 /**
  * Web Projects — Set 3 · Sticky Visual Exchange (2026-06-19).
@@ -33,82 +34,9 @@ export function WebProjects() {
       const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       if (isReduced) return
 
-      // ── Archive 카드 등장 ──────────────────────────────────────────
-      const archiveCards = root.querySelectorAll('[data-archive-card]')
-
-      archiveCards.forEach((card, i) => {
-        const visualEl   = card.querySelector('[data-visual]')
-        const titleEl    = card.querySelector('[data-title]')
-        const metaEls    = Array.from(card.querySelectorAll('[data-meta]'))
-
-        // 카드 자체 fade-up
-        gsap.from(card, {
-          opacity: 0,
-          y: 16,
-          duration: 1.0,
-          ease: EASE.enter,
-          delay: i * 0.12,
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse',
-          },
-        })
-
-        // 이미지 reveal — opacity 0→1
-        if (visualEl) {
-          gsap.from(visualEl, {
-            opacity: 0,
-            duration: 1.2,
-            ease: 'power2.out',
-            delay: i * 0.12,
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          })
-        }
-
-        // 타이틀 reveal — x -16→0 + opacity 0→1
-        if (titleEl) {
-          gsap.from(titleEl, {
-            x: -16,
-            opacity: 0,
-            duration: 1.0,
-            ease: 'sine.out',
-            delay: i * 0.12 + 0.1,
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          })
-        }
-
-        // 메타/CTA stagger fade-up
-        if (metaEls.length > 0) {
-          gsap.from(metaEls, {
-            y: 8,
-            opacity: 0,
-            stagger: 0.08,
-            duration: 0.8,
-            ease: 'power2.out',
-            delay: i * 0.12 + 0.2,
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          })
-        }
-      })
-
+      // Archive 처리 완전 제거 — ArchiveCard 의 React 렌더에 의존 (default visible)
       // Lenis 안전 refresh
-      gsap.delayedCall(0.1, () => {
-        const ST = (gsap as unknown as { ScrollTrigger?: { refresh: () => void } }).ScrollTrigger
-        if (ST?.refresh) ST.refresh()
-      })
+      gsap.delayedCall(0.3, () => ScrollTrigger.refresh())
     },
     rootRef,
     []
@@ -129,11 +57,11 @@ export function WebProjects() {
       {/* ── Hero 카드 01–05 — Sticky Visual Exchange ──────────────── */}
       <HeroStickyExchange projects={heroProjects} total={totalCount} />
 
-      {/* ── Archive 섹션 06+07 — 단일 ~60vh 블록 ────────────────── */}
+      {/* ── Archive 섹션 06+07 — 한 화면 가득 (사용자가 보고 지나가게) ───── */}
       {archiveProjects.length > 0 && (
         <div
           className="relative w-full"
-          style={{ minHeight: '60vh', paddingTop: '10vh', paddingBottom: '10vh' }}
+          style={{ minHeight: '100vh', paddingTop: '15vh', paddingBottom: '6vh', position: 'relative', zIndex: 5 }}
           data-archive-section
         >
           {/* 상단 레이블 */}
@@ -169,8 +97,8 @@ export function WebProjects() {
         </div>
       )}
 
-      {/* ── 전환 여백 ────────────────────────────────────────────── */}
-      <div className="h-[20vh]" aria-hidden />
+      {/* ── 전환 여백 (Archive → MobileIntro 사이) ─── */}
+      <div className="h-[6vh]" aria-hidden />
     </section>
   )
 }

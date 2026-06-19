@@ -143,6 +143,7 @@ export const projects: Project[] = [
     studyHref: '/work/buja',
     siteHref: 'https://minjoo073.github.io/redesign/',
     githubHref: 'https://github.com/minjoo073/redesign',
+    dimThumb: true, // 밝은 캡처 — 검정 배경에 떠 보여 한 톤 다운
   },
   {
     // ── 06 서울국제여성영화제 (리디자인) ─────────────────────────
