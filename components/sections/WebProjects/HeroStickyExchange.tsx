@@ -515,6 +515,11 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
         onRefresh: (self) => {
           sectionTop = self.start  // px 단위 스크롤 절댓값
         },
+        // sticky 잡힌 동안만 Lenis wheel 처리 차단 — 진입/이탈 시 Lenis smooth 정상
+        onEnter: () => section.setAttribute('data-lenis-prevent', ''),
+        onLeave: () => section.removeAttribute('data-lenis-prevent'),
+        onEnterBack: () => section.setAttribute('data-lenis-prevent', ''),
+        onLeaveBack: () => section.removeAttribute('data-lenis-prevent'),
       })
 
       // ── Wheel 기반 단방향 1칸 이동 ────────────────────────────
@@ -562,8 +567,18 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
         if (delta > MIN_DELTA) {
           if (!isPinActive()) return  // sticky 구간 밖이면 자유 스크롤
 
-          // 05(마지막) 도달 후 추가 wheel down → 자유 스크롤로 Archive 진입
-          if (currentActive >= count - 1) return
+          // 05(마지막) 도달 후 wheel down → Lenis 로 부드러운 Archive 진입
+          if (currentActive >= count - 1) {
+            e.preventDefault()
+            if (cooldown) return
+            cooldown = true
+            const sectionBottom = sectionTop + section.offsetHeight
+            lenisRef.current?.scrollTo(sectionBottom + 1, {
+              duration: 0.6, lock: false, force: true,
+            })
+            setTimeout(() => { cooldown = false }, COOLDOWN_MS)
+            return
+          }
 
           e.preventDefault()
           if (cooldown) return
@@ -578,8 +593,17 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
         if (delta < -MIN_DELTA) {
           if (!isPinActive()) return  // sticky 구간 밖이면 자유 스크롤
 
-          // 01(첫 번째) 도달 후 wheel up → 자유 스크롤로 Hero 위 진입
-          if (currentActive <= 0) return
+          // 01(첫 번째) 도달 후 wheel up → Lenis 로 부드러운 위쪽(About) 진입
+          if (currentActive <= 0) {
+            e.preventDefault()
+            if (cooldown) return
+            cooldown = true
+            lenisRef.current?.scrollTo(sectionTop - window.innerHeight, {
+              duration: 0.6, lock: false, force: true,
+            })
+            setTimeout(() => { cooldown = false }, COOLDOWN_MS)
+            return
+          }
 
           e.preventDefault()
           if (cooldown) return

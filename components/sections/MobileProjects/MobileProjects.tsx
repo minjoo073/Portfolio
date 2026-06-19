@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { SectionLabel } from '@/components/primitives/SectionLabel'
 import { PhoneMockup } from './PhoneMockup'
 import { StudyDrawer } from './StudyDrawer'
 import { mobileProjects } from '@/data/mobile-projects'
@@ -152,20 +151,17 @@ function StudyCta({ onClick }: { onClick: () => void }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   메타 레일 (좌측 세로 컬럼) — A/B 공유
+   메타 레일 (세로 컬럼)
    ══════════════════════════════════════════════════════════════════ */
 interface MetaRailProps {
   project: MobileProject
-  /** 레일 너비 clamp 값 */
   railWidth: string
-  /** 폰트 스케일 (A=normal, B=small) */
-  scale?: 'normal' | 'small'
 }
 
-function MetaRail({ project, railWidth, scale = 'normal' }: MetaRailProps) {
-  const labelSize = scale === 'small' ? vw(9, 8) : vw(10, 9)
-  const valueSize = scale === 'small' ? vw(10, 9) : vw(11, 10)
-  const indexSize = scale === 'small' ? vw(10, 9) : vw(11, 10)
+function MetaRail({ project, railWidth }: MetaRailProps) {
+  const labelSize = vw(10, 9)
+  const valueSize = vw(11, 10)
+  const indexSize = vw(11, 10)
 
   return (
     <div
@@ -278,23 +274,15 @@ function MetaRail({ project, railWidth, scale = 'normal' }: MetaRailProps) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ProjectBody (중앙 본문) — A/B 공유. 워드마크 + 카피 + CTA
+   ProjectBody (본문 컬럼) — 워드마크 + 카피 + CTA
    ══════════════════════════════════════════════════════════════════ */
 interface ProjectBodyProps {
   project: MobileProject
-  wordmarkSize: [number, number]   // [basePx, minPx]
-  taglineSize: [number, number]
   bodyWidth: string
   onStudyOpen: () => void
 }
 
-function ProjectBody({
-  project,
-  wordmarkSize,
-  taglineSize,
-  bodyWidth,
-  onStudyOpen,
-}: ProjectBodyProps) {
+function ProjectBody({ project, bodyWidth, onStudyOpen }: ProjectBodyProps) {
   return (
     <div
       style={{
@@ -310,13 +298,15 @@ function ProjectBody({
       <h2
         className="font-display"
         style={{
-          fontSize: vw(wordmarkSize[0], wordmarkSize[1]),
+          fontSize: vw(96, 64),
           fontWeight: 400,
-          lineHeight: 0.92,
+          lineHeight: 0.94,
           letterSpacing: '-0.03em',
           color: '#F8F7F4',
           margin: 0,
-          marginBottom: '20px',
+          marginBottom: '24px',
+          wordBreak: 'keep-all',
+          overflowWrap: 'break-word',
         }}
         data-wordmark
       >
@@ -327,12 +317,12 @@ function ProjectBody({
       <p
         style={{
           fontFamily: 'var(--font-pretendard), sans-serif',
-          fontSize: vw(taglineSize[0], taglineSize[1]),
+          fontSize: vw(24, 17),
           fontWeight: 400,
           lineHeight: 1.55,
           color: 'rgba(248,247,244,0.60)',
           margin: 0,
-          marginBottom: '36px',
+          marginBottom: '40px',
         }}
       >
         {project.tagline}
@@ -363,14 +353,24 @@ function ProjectBody({
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   섹션 1 — 앱 A (자린고비) 100vh
+   AppSection — 통합 단일 컴포넌트
+   mirror=false (홀수): [메타] [본문] [폰]  ← 좌→우
+   mirror=true  (짝수): [폰] [본문] [메타]  ← 좌→우 (reverse)
    ══════════════════════════════════════════════════════════════════ */
-interface AppSectionAProps {
+interface AppSectionProps {
   project: MobileProject
+  /** 섹션 인덱스 (0-based). 0=홀수=정방향, 1=짝수=mirror */
+  sectionIndex: number
   onStudyOpen: () => void
 }
 
-function AppSectionA({ project, onStudyOpen }: AppSectionAProps) {
+function AppSection({
+  project,
+  sectionIndex,
+  onStudyOpen,
+}: AppSectionProps) {
+  const mirror = sectionIndex % 2 !== 0
+
   return (
     <section
       aria-label={`${project.title} 앱 소개`}
@@ -382,26 +382,13 @@ function AppSectionA({ project, onStudyOpen }: AppSectionAProps) {
         overflow: 'hidden',
       }}
     >
-      {/* 상단 라벨 영역 8vh */}
-      <div
-        style={{
-          height: '8vh',
-          display: 'flex',
-          alignItems: 'flex-end',
-          paddingBottom: '2vh',
-          paddingLeft: 'clamp(20px, 4.17vw, 80px)',
-          paddingRight: 'clamp(20px, 4.17vw, 80px)',
-          flexShrink: 0,
-        }}
-      >
-        <SectionLabel className="text-ink-inverse/70">Mobile Projects</SectionLabel>
-      </div>
 
-      {/* 본체 — 3컬럼 (메타 + 본문 + 폰) */}
+      {/* 본체 — 3컬럼 */}
       <div
         style={{
           flex: 1,
           display: 'flex',
+          flexDirection: mirror ? 'row-reverse' : 'row',
           alignItems: 'center',
           paddingLeft: 'clamp(40px, 5vw, 96px)',
           paddingRight: 'clamp(32px, 3vw, 64px)',
@@ -411,23 +398,20 @@ function AppSectionA({ project, onStudyOpen }: AppSectionAProps) {
           overflow: 'hidden',
         }}
       >
-        {/* 좌 — 메타 레일 */}
+        {/* 메타 레일 */}
         <MetaRail
           project={project}
           railWidth={vw(130, 105)}
-          scale="normal"
         />
 
-        {/* 중앙 — 본문 */}
+        {/* 본문 */}
         <ProjectBody
           project={project}
-          wordmarkSize={[96, 64]}
-          taglineSize={[18, 14]}
           bodyWidth={vw(420, 300)}
           onStudyOpen={onStudyOpen}
         />
 
-        {/* 우 — 폰 mock */}
+        {/* 폰 mock */}
         <div
           style={{
             flex: 1,
@@ -437,100 +421,7 @@ function AppSectionA({ project, onStudyOpen }: AppSectionAProps) {
             overflow: 'hidden',
           }}
         >
-          <PhoneMockup project={project} maxHeight="70vh" dimmed={false} />
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   섹션 2 — 앱 B (TripMate) 80vh
-   ══════════════════════════════════════════════════════════════════ */
-interface AppSectionBProps {
-  project: MobileProject
-  onStudyOpen: () => void
-}
-
-function AppSectionB({ project, onStudyOpen }: AppSectionBProps) {
-  return (
-    <section
-      aria-label={`${project.title} 앱 소개`}
-      style={{
-        height: '80vh',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        overflow: 'hidden',
-        borderTop: '1px solid rgba(248,247,244,0.08)',
-      }}
-    >
-      {/* "Also Shipped" 헤더 라인 6vh */}
-      <div
-        style={{
-          height: '6vh',
-          display: 'flex',
-          alignItems: 'flex-end',
-          paddingBottom: '1.5vh',
-          paddingLeft: 'clamp(40px, 5vw, 96px)',
-          paddingRight: 'clamp(32px, 3vw, 64px)',
-          flexShrink: 0,
-        }}
-      >
-        <span
-          style={{
-            fontFamily: 'var(--font-mono), monospace',
-            fontSize: vw(10, 9),
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: 'rgba(248,247,244,0.28)',
-          }}
-        >
-          Also Shipped
-        </span>
-      </div>
-
-      {/* 본체 — 3컬럼 (메타 + 본문 + 폰) */}
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 'clamp(40px, 5vw, 96px)',
-          paddingRight: 'clamp(32px, 3vw, 64px)',
-          paddingBottom: '6vh',
-          boxSizing: 'border-box',
-          gap: `clamp(20px, 1.875vw, 36px)`,
-          overflow: 'hidden',
-        }}
-      >
-        {/* 좌 — 메타 레일 (B: 88% 폭) */}
-        <MetaRail
-          project={project}
-          railWidth={vw(110, 88)}
-          scale="small"
-        />
-
-        {/* 중앙 — 본문 (B: 워드마크 64/48) */}
-        <ProjectBody
-          project={project}
-          wordmarkSize={[64, 48]}
-          taglineSize={[16, 13]}
-          bodyWidth={vw(360, 260)}
-          onStudyOpen={onStudyOpen}
-        />
-
-        {/* 우 — 폰 mock (B: 50vh) */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-          }}
-        >
-          <PhoneMockup project={project} maxHeight="50vh" dimmed={false} />
+          <PhoneMockup project={project} maxHeight="80vh" dimmed={false} />
         </div>
       </div>
     </section>
@@ -557,23 +448,25 @@ export function MobileProjects() {
       className="relative bg-dark text-ink-inverse"
       data-section="mobile-projects"
     >
-      {/* 섹션 1 — 자린고비 100vh */}
+      {/* 섹션 0 — 자린고비 (홀수 인덱스, 폰 우측) */}
       {projectA && (
-        <AppSectionA
+        <AppSection
           project={projectA}
+          sectionIndex={0}
           onStudyOpen={() => setDrawerOpenFor('jaringobi')}
         />
       )}
 
-      {/* 섹션 2 — TripMate 80vh */}
+      {/* 섹션 1 — TripMate (짝수 인덱스, 폰 좌측 mirror) */}
       {projectB && (
-        <AppSectionB
+        <AppSection
           project={projectB}
+          sectionIndex={1}
           onStudyOpen={() => setDrawerOpenFor('tripmate')}
         />
       )}
 
-      {/* StudyDrawer — A/B 공유, 각자 studyHref iframe */}
+      {/* StudyDrawer — A/B 공유 */}
       {activeProject?.studyHref && (
         <StudyDrawer
           open={drawerOpenFor !== null}

@@ -26,8 +26,18 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   // CEO 가 iframe 차단 확인 시 true 로 전환 → 폴백 UI 노출
   const [iframeBlocked] = useState(false)
+  // 매 open 시점에 새 timestamp → GitHub Pages 캐시 강제 무효화
+  const [bustKey, setBustKey] = useState(0)
 
   lenisRef.current = lenis
+
+  useEffect(() => {
+    if (open) setBustKey(Date.now())
+  }, [open])
+
+  const bustedSrc = bustKey
+    ? `${src}${src.includes('?') ? '&' : '?'}v=${bustKey}`
+    : src
 
   // iframe X-Frame-Options 차단 감지 불가 (브라우저 보안 정책)
   // 차단 시 CEO 가 iframeBlocked=true 로 수동 전환하거나 별도 프록시 처리 필요
@@ -91,6 +101,45 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
         }}
       />
 
+      {/* 닫기 — drawer 좌측 dim 영역에 floating */}
+      <button
+        onClick={onClose}
+        aria-label="닫기"
+        style={{
+          position: 'fixed',
+          top: '32px',
+          left: '32px',
+          zIndex: 102,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '44px',
+          height: '44px',
+          borderRadius: '50%',
+          border: '1px solid rgba(248,247,244,0.32)',
+          background: 'transparent',
+          cursor: 'pointer',
+          color: '#F8F7F4',
+          fontSize: '20px',
+          lineHeight: 1,
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+          transition: 'opacity 350ms ease, background 200ms ease, border-color 200ms ease',
+        }}
+        onMouseEnter={(e) => {
+          const el = e.currentTarget as HTMLButtonElement
+          el.style.background = 'rgba(248,247,244,0.10)'
+          el.style.borderColor = 'rgba(248,247,244,0.55)'
+        }}
+        onMouseLeave={(e) => {
+          const el = e.currentTarget as HTMLButtonElement
+          el.style.background = 'transparent'
+          el.style.borderColor = 'rgba(248,247,244,0.32)'
+        }}
+      >
+        ×
+      </button>
+
       {/* drawer panel */}
       <aside
         role="dialog"
@@ -111,69 +160,18 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
           boxShadow: '-24px 0 80px rgba(0,0,0,0.32)',
         }}
       >
-        {/* 헤더 */}
+        {/* iframe 영역 — wrapper 에도 data-lenis-prevent (closest 매칭용 안전망) */}
         <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '20px 28px',
-            borderBottom: '1px solid rgba(17,17,17,0.08)',
-            flexShrink: 0,
-          }}
+          style={{ flex: 1, position: 'relative', overflow: 'hidden' }}
+          data-lenis-prevent
         >
-          <span
-            style={{
-              fontFamily: 'var(--font-pretendard), sans-serif',
-              fontSize: '13px',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'rgba(17,17,17,0.55)',
-            }}
-          >
-            {title} — 제작과정
-          </span>
-          <button
-            onClick={onClose}
-            aria-label="닫기"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              border: '1px solid rgba(17,17,17,0.12)',
-              background: 'transparent',
-              cursor: 'pointer',
-              color: '#111',
-              fontSize: '18px',
-              lineHeight: 1,
-              transition: 'background 200ms ease, border-color 200ms ease',
-              flexShrink: 0,
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLButtonElement
-              el.style.background = 'rgba(17,17,17,0.06)'
-              el.style.borderColor = 'rgba(17,17,17,0.24)'
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLButtonElement
-              el.style.background = 'transparent'
-              el.style.borderColor = 'rgba(17,17,17,0.12)'
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* iframe 영역 */}
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           {open && (
             <iframe
               ref={iframeRef}
-              src={src}
+              key={bustKey}
+              src={bustedSrc}
               title={`${title} 제작과정`}
+              scrolling="yes"
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -181,7 +179,6 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
                 height: '100%',
                 border: 0,
               }}
-              // Lenis 가 iframe 내부 스크롤을 가로채지 않도록
               data-lenis-prevent
             />
           )}

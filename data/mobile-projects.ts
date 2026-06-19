@@ -24,7 +24,7 @@ export const mobileProjects: MobileProject[] = [
     },
     tagline: '아끼면 이긴다, 절약을 게임으로',
     thumbnail: '/images/mobile/01/thumbnail.png',
-    // previewVideo: '/images/mobile/01/preview.mp4',  ← CEO 영상 준비 후 주석 해제
+    previewVideo: '/images/mobile/01/preview.mp4',
     studyHref: 'https://minjoo073.github.io/jaringobi_/',
     displayType: 'featured',
   },
@@ -33,13 +33,14 @@ export const mobileProjects: MobileProject[] = [
     index: '02',
     title: 'TripMate',
     category: '여행동행 매칭',
+    releaseDate: '2026',
     platforms: ['Web'],
     downloadLinks: {
       web: 'https://tripmate-mu-red.vercel.app',
     },
-    stack: ['Expo', 'React Native', 'Expo Router'],
     tagline: '여행 동행, 더 쉽게',
     thumbnail: '/images/mobile/02/thumbnail.png',
+    previewVideo: '/images/mobile/02/preview.mp4',
     // studyHref: '',  // CEO 가 제작과정 URL 제공 시 교체
     displayType: 'side',
   },

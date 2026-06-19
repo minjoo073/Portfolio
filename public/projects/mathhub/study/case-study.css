@@ -29,7 +29,7 @@
 
   --maxw: 1080px;
   --gutter: 40px;
-  --page-margin: 100px;       /* breakpoint left/right gutter — same 100px from 1440 to 1920 */
+  --page-margin: 64px;        /* breakpoint left/right gutter — shell caps at 1440px */
 
   --radius-s: 8px;
   --radius-m: 14px;
@@ -64,9 +64,8 @@ p { margin: 0; text-wrap: pretty; }
 h1,h2,h3,h4 { margin: 0; font-weight: 700; letter-spacing: -0.025em; }
 
 /* ---------- layout primitives ---------- */
-/* page shell — width: min(100vw - margin*2, 1792px), always centered
-   100px gutter holds steady from 1440 to 1920 (cap only bites above ~1992px) */
-.wrap { width: min(calc(100vw - var(--page-margin) * 2), 1792px); margin-inline: auto; padding-inline: 0; }
+/* page shell — width: min(100vw - margin*2, 1440px), always centered */
+.wrap { width: min(calc(100vw - var(--page-margin) * 2), 1440px); margin-inline: auto; padding-inline: 0; }
 
 /* continuous rhythm — blocks flow on one canvas */
 .section { padding-block: 100px 150px; }
