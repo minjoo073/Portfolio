@@ -17,9 +17,9 @@ interface PhoneMockupProps {
  * PhoneMockup — 9:19.5 비율 폰 프레임.
  *
  * 레이어:
- *   1. 썸네일 div (backgroundImage cover) — 항상 풀스크린 표시
- *   2. video — 호버 시 fade-in 으로 위로 겹쳐 재생. 호버 해제 시 fade-out + pause + reset.
- *      영상은 9:16 비율이라 contain + bottom 으로 표시되어 상단은 자연 검은 영역.
+ *   1. 썸네일 div (backgroundImage cover) — 항상 풀스크린
+ *   2. video — 호버 시 fade-in 으로 위에 겹쳐 재생
+ *   3. hint 라벨 ("↗ Hover to play") — 폰 박스 안 우하단, 호버 시만 사라짐
  */
 export function PhoneMockup({ project, dimmed = false, width, maxHeight }: PhoneMockupProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -108,6 +108,37 @@ export function PhoneMockup({ project, dimmed = false, width, maxHeight }: Phone
         >
           <source src={project.previewVideo} type="video/mp4" />
         </video>
+      )}
+
+      {/* hint 라벨 — 폰 박스 안 우하단, 호버 시만 fade-out */}
+      {project.previewVideo && (
+        <span
+          aria-hidden
+          style={{
+            position: 'absolute',
+            bottom: 'clamp(10px, 1.5vh, 18px)',
+            right: 'clamp(10px, 1vw, 16px)',
+            fontFamily: 'var(--font-mono), monospace',
+            fontSize: 'clamp(10px, 0.75vw, 12px)',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'rgba(248,247,244,0.7)',
+            background: 'rgba(0,0,0,0.42)',
+            backdropFilter: 'blur(3px)',
+            paddingLeft: '10px',
+            paddingRight: '10px',
+            paddingTop: '5px',
+            paddingBottom: '5px',
+            borderRadius: '4px',
+            opacity: hovered ? 0 : 1,
+            transition: 'opacity 300ms ease',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+            zIndex: 2,
+          }}
+        >
+          ↗ Hover to play
+        </span>
       )}
     </div>
   )

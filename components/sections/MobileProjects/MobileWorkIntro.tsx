@@ -127,13 +127,8 @@ export function MobileWorkIntro() {
           }}
         >
           <span
-            style={{
-              fontFamily: 'var(--font-mono), monospace',
-              fontSize: '11px',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: 'rgba(248,247,244,0.30)',
-            }}
+            className="font-kr text-ink-muted tracking-[0.04em]"
+            style={{ fontSize: '18px' }}
           >
             Mobile &nbsp;/&nbsp; Two &mdash;&nbsp; 자린고비&nbsp;+&nbsp;TripMate
           </span>
