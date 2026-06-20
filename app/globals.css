@@ -53,6 +53,22 @@
   display: none; /* Chrome / Safari / Edge Chromium */
 }
 
+/* ───────────────────────── Receipt sway (Content & Marketing) ───── */
+/* 영수증 *박스 자체* 미세 sway — rotation ±0.2°, translate sub-pixel. */
+/* 텍스트는 같이 transform 되지만 강도가 작아 *시각상 정지* 로 인지. */
+@keyframes receipt-sway {
+  0%   { transform: rotate(-0.3deg) translateY(0); }
+  25%  { transform: rotate(-0.1deg) translateY(-0.5px); }
+  50%  { transform: rotate(-0.4deg) translateY(0.5px); }
+  75%  { transform: rotate(-0.2deg) translateY(-0.5px); }
+  100% { transform: rotate(-0.3deg) translateY(0); }
+}
+.receipt-sway {
+  animation: receipt-sway 5s ease-in-out infinite;
+  transform-origin: top center;
+  will-change: transform;
+}
+
 /* ───────────────────────── Reduced Motion ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
