@@ -13,11 +13,36 @@
  * 헌법: CSS/GSAP, quiet luxury. 스크롤 잠금은 onComplete + 안전 타임아웃으로 해제.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { registerGsap, gsap } from '@/lib/gsap/config'
 import { useLenis } from '@/lib/hooks/useLenis'
 
+// module-level cache — StrictMode double-mount 사이에 sessionStorage 가 비어도
+// 같은 postNav 값을 두 번째 mount 에 전달하기 위함
+let _consumedPostNav: { scrollId: string | null; cardSlug: string | null } | null = null
+let _consumedAt = 0
+
 export function Intro() {
+  // mount 첫 render 시 sessionStorage 즉시 consume → module cache 저장
+  // StrictMode 의 두 번째 mount 는 cache 사용 (3초 내)
+  const postNavInitial = useMemo(() => {
+    if (typeof window === 'undefined') return { scrollId: null as string | null, cardSlug: null as string | null }
+    const sid = sessionStorage.getItem('postNavScrollId')
+    const csl = sessionStorage.getItem('postNavCardSlug')
+    if (sid || csl) {
+      _consumedPostNav = { scrollId: sid, cardSlug: csl }
+      _consumedAt = Date.now()
+      try {
+        sessionStorage.removeItem('postNavScrollId')
+        // postNavCardSlug 는 HeroSticky 가 별도로 consume → 여기서 안 건드림
+      } catch {}
+      return { scrollId: sid, cardSlug: csl }
+    }
+    if (_consumedPostNav && Date.now() - _consumedAt < 3000) {
+      return _consumedPostNav
+    }
+    return { scrollId: null, cardSlug: null }
+  }, [])
   const [visible, setVisible] = useState(true)
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -33,6 +58,64 @@ export function Intro() {
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    // postNav 진입 (Back 으로 / 진입) — Intro 가 화면 가린 채 scrollTo 완료까지 유지
+    // → Hero 안 보임. element 마운트 + scrollTo 후 페이드아웃.
+    const postNavScrollId = postNavInitial.scrollId
+    const postNavCardSlug = postNavInitial.cardSlug
+    if (postNavScrollId || postNavCardSlug) {
+      // body overflow lock — Hero 노출 차단
+      document.body.style.overflow = 'hidden'
+
+      let cancelled = false
+      let attempts = 0
+      const settle = () => {
+        if (cancelled) return
+        if (postNavScrollId) {
+          const el = document.getElementById(postNavScrollId)
+          if (el) {
+            const top = el.getBoundingClientRect().top + window.scrollY
+            // 1) 즉시 native scroll 점프 (Lenis 없어도 작동)
+            window.scrollTo({ top, left: 0, behavior: 'instant' as ScrollBehavior })
+            // 2) Lenis 가 있으면 internal _scroll 도 동기
+            const lenis = lenisRef.current
+            if (lenis) {
+              lenis.scrollTo(top, {
+                immediate: true,
+                force: true,
+                lock: true,
+                duration: 0,
+              })
+            }
+            // 2 frame 후 Intro 페이드아웃 + unlock
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => {
+                if (!cancelled) {
+                  setVisible(false)
+                  document.body.style.overflow = ''
+                }
+              })
+            )
+            return
+          }
+        } else {
+          setVisible(false)
+          document.body.style.overflow = ''
+          return
+        }
+        attempts++
+        if (attempts < 120) requestAnimationFrame(settle)
+        else {
+          setVisible(false)
+          document.body.style.overflow = ''
+        }
+      }
+      requestAnimationFrame(settle)
+      return () => {
+        cancelled = true
+        document.body.style.overflow = ''
+      }
+    }
 
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)

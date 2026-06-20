@@ -11,6 +11,8 @@ export interface MobileProject {
     appStore?: string
     /** 다운로드 없이 웹에서만 동작 (TripMate 등) */
     web?: string
+    /** 별도 랜딩페이지 URL */
+    landingPage?: string
   }
   stack?: string[]
   tagline: string
@@ -19,8 +21,16 @@ export interface MobileProject {
   thumbnail: string
   /** 9:19.5 영상 (mp4/webm) — 있으면 video 자동 사용 */
   previewVideo?: string
+  /** 영상 살짝 확대 (1.05 = 5% 확대). 영상에 자체 폰 mock 베젤이 있어 가릴 때 사용 */
+  videoZoom?: number
   /** 제작과정 외부 URL — 없으면 CTA 미노출 */
   studyHref?: string
   displayType: 'featured' | 'side'
   comingSoon?: boolean
+  /** 제작 기간 (예: '4주') — TODO: CEO 확인 */
+  period?: string
+  /** 담당 역할 (예: 'Solo Design + Dev') — TODO: CEO 확인 */
+  role?: string
+  /** UX 의도 한 줄 카피 — TODO: CEO 확인 */
+  uxIntent?: string
 }

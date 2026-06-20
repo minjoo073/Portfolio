@@ -1,7 +1,7 @@
 /**
  * 케이스스터디 뷰어 (/work/<slug>) 라우트 데이터.
- * 순서: lunare → fancive → lp → mathhub → buja (buja = 마지막, next 없음).
- *   (CEO 2026-06-18: mathhub 를 buja 앞으로)
+ * 순서: lunare → lp → fancive → mathhub → buja (buja = 마지막, next 없음).
+ *   (CEO 2026-06-21: lp 를 fancive 앞으로 — projects.ts 와 일치)
  *
  * slug      : /work/<slug> URL
  * label     : NEXT 오버레이에 표시할 이름
@@ -26,14 +26,14 @@ export const works: Work[] = [
     tagline: '달의 광휘를 차용한 코스메틱 브랜딩 + 커머스',
   },
   {
-    slug: 'fancive', label: 'FANCIVE',  iframeSrc: '/projects/fancive/study/',
-    year: '2025', role: 'Editorial Archive',
-    tagline: '매거진 형식의 패션 아카이브 웹',
-  },
-  {
     slug: 'lp',      label: 'ONVINYL',  iframeSrc: '/projects/lp/study/',
     year: '2025', role: 'Brand Identity',
     tagline: '바이닐 굿즈 브랜드 커머스 사이트',
+  },
+  {
+    slug: 'fancive', label: 'FANCIVE',  iframeSrc: '/projects/fancive/study/',
+    year: '2025', role: 'Editorial Archive',
+    tagline: '매거진 형식의 패션 아카이브 웹',
   },
   {
     slug: 'mathhub', label: 'MATHHUB',  iframeSrc: '/projects/mathhub/study/',

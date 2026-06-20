@@ -25,7 +25,9 @@ const nextConfig = {
     return {
       beforeFiles: [
         { source: '/projects/:slug/study', destination: '/projects/:slug/study/index.html' },
-        { source: '/projects/:slug/study/', destination: '/projects/:slug/study/index.html' }
+        { source: '/projects/:slug/study/', destination: '/projects/:slug/study/index.html' },
+        // LUNARE_ Vite 빌드가 base: '/LUNARE_/' 라 asset path 가 /LUNARE_/* 로 빠짐 → 실제 위치로 매핑
+        { source: '/LUNARE_/:path*', destination: '/projects/lunare/study/:path*' }
       ]
     }
   }

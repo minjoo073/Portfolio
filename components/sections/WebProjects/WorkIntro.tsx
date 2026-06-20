@@ -90,11 +90,13 @@ export function WorkIntro() {
 
         <h2
           data-wi-head
-          className="font-sans font-semibold uppercase text-ink-inverse"
+          className="text-ink-inverse"
           style={{
+            fontFamily: 'var(--font-display), serif',
+            fontWeight: 400,
             fontSize: 'clamp(48px, 11vw, 196px)',
-            lineHeight: 0.92,
-            letterSpacing: '-0.025em',
+            lineHeight: 0.96,
+            letterSpacing: '-0.03em',
           }}
         >
           Web

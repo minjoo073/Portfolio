@@ -58,7 +58,7 @@ export function PhoneMockup({ project, dimmed = false, width, maxHeight }: Phone
               aspectRatio: '9 / 19.5',
             }),
         position: 'relative',
-        borderRadius: '2rem',
+        borderRadius: '1.25rem',
         overflow: 'hidden',
         border: '1px solid rgba(248,247,244,0.18)',
         opacity: dimmed ? 0.55 : 1,
@@ -102,6 +102,8 @@ export function PhoneMockup({ project, dimmed = false, width, maxHeight }: Phone
             opacity: hovered ? 1 : 0,
             transition: 'opacity 300ms ease',
             pointerEvents: 'none',
+            transform: project.videoZoom ? `scale(${project.videoZoom})` : undefined,
+            transformOrigin: 'center',
           }}
         >
           <source src={project.previewVideo} type="video/mp4" />

@@ -23,7 +23,7 @@
  *   → CEO 브리핑 "비주얼 컬럼 pin + 본문만 스윕" 패턴상 단일 컬럼 고정이 정답
  */
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { Project } from '@/lib/types/project'
 import { useGsapContext } from '@/lib/hooks/useGsapContext'
 import { registerGsap } from '@/lib/gsap/config'
@@ -60,6 +60,10 @@ function StackChip({ label }: { label: string }) {
   )
 }
 
+/* ── module-level cache for postNav slug (StrictMode double-mount 대응) ─ */
+let _consumedSlug: string | null = null
+let _consumedSlugAt = 0
+
 /* ── 외부 링크 ──────────────────────────────────────────────────── */
 function ExtLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -68,7 +72,7 @@ function ExtLink({ href, children }: { href: string; children: React.ReactNode }
       target="_blank"
       rel="noopener noreferrer"
       className="group/ext inline-flex items-center gap-1.5 transition-colors duration-300"
-      style={{ fontSize: vw(13, 11), color: 'rgba(248,247,244,0.55)' }}
+      style={{ fontSize: vw(17, 15), color: 'rgba(248,247,244,0.55)' }}
       onMouseEnter={(e) => {
         ;(e.currentTarget as HTMLAnchorElement).style.color = 'rgba(248,247,244,1)'
       }}
@@ -236,7 +240,7 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
       {project.tagline && (
         <p
           className="font-kr text-ink-inverse/65"
-          style={{ fontSize: vw(18, 14), letterSpacing: '-0.01em', fontWeight: 400, marginTop: vw(24, 18) }}
+          style={{ fontSize: vw(18, 14), letterSpacing: '-0.01em', fontWeight: 400, marginTop: vw(32, 24) }}
         >
           {project.tagline}
         </p>
@@ -246,7 +250,7 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
       {roleStr && (
         <p
           className="font-kr text-ink-inverse/50"
-          style={{ fontSize: vw(14, 12), fontWeight: 400, marginTop: vw(20, 16) }}
+          style={{ fontSize: vw(14, 12), fontWeight: 400, marginTop: vw(28, 22) }}
         >
           {roleStr}
         </p>
@@ -254,7 +258,7 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
 
       {/* 스택 칩 */}
       {hasStacks && (
-        <div className="flex flex-wrap gap-2" style={{ marginTop: vw(20, 16) }}>
+        <div className="flex flex-wrap gap-2" style={{ marginTop: vw(28, 22) }}>
           {stacks.map((s) => (
             <StackChip key={s} label={s} />
           ))}
@@ -262,7 +266,7 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
       )}
 
       {/* CTA */}
-      <div style={{ marginTop: vw(32, 24) }}>
+      <div style={{ marginTop: vw(40, 32) }}>
         {project.studyHref ? (
           <a
             href={project.studyHref}
@@ -274,7 +278,7 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
             />
             <span
               className="font-kr text-ink-inverse"
-              style={{ fontSize: vw(18, 14) }}
+              style={{ fontSize: vw(22, 18) }}
             >
               제작과정
             </span>
@@ -285,13 +289,13 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
         ) : (
           <span className="inline-flex items-center gap-4">
             <span className="h-px w-8 bg-ink-inverse/20" />
-            <span className="font-kr text-ink-inverse/35" style={{ fontSize: vw(18, 14) }}>제작과정 준비중</span>
+            <span className="font-kr text-ink-inverse/35" style={{ fontSize: vw(22, 18) }}>제작과정 준비중</span>
           </span>
         )}
 
         <div
           className="bg-ink-inverse/15"
-          style={{ height: '1px', width: '100%', marginTop: vw(20, 16), marginBottom: vw(20, 16) }}
+          style={{ height: '1px', width: '100%', marginTop: vw(28, 22), marginBottom: vw(28, 22) }}
           aria-hidden
         />
 
@@ -392,6 +396,34 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
   const lenisRef = useRef(lenis)
   lenisRef.current = lenis
 
+  // ── postNav 카드 복귀 — sessionStorage 의 slug 로 초기 활성 카드 결정 ──
+  // useState initializer 안에서 즉시 읽음 (mount 첫 render). useEffect 시점에 다른 useEffect 가
+  // remove 했을 가능성 회피.
+  const [initialIndex] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0
+    try {
+      const current = sessionStorage.getItem('postNavCardSlug')
+      let slug: string | null = null
+      if (current) {
+        // 첫 mount — sessionStorage 즉시 consume + module cache 저장
+        slug = current
+        _consumedSlug = current
+        _consumedSlugAt = Date.now()
+        sessionStorage.removeItem('postNavCardSlug')
+      } else if (_consumedSlug && Date.now() - _consumedSlugAt < 3000) {
+        // StrictMode 두 번째 mount — sessionStorage 비어있지만 3초 내 cache 유효
+        slug = _consumedSlug
+      }
+      if (!slug) return 0
+      const found = projects.findIndex(
+        p => (p.studyHref ?? '').replace(/\/$/, '') === `/work/${slug}`
+      )
+      return found >= 0 ? found : 0
+    } catch {
+      return 0
+    }
+  })
+
   useGsapContext(
     () => {
       registerGsap()
@@ -412,14 +444,24 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
 
       if (visualPanels.length !== count || bodyPanels.length !== count) return
 
-      // ── 초기 상태 강제 설정 ───────────────────────────────────
-      gsap.set(visualPanels[0], { opacity: 1, scale: 1 })
-      bodyPanels[0] && gsap.set(bodyPanels[0], { y: 0 })
-      metaPanels[0] && gsap.set(metaPanels[0], { y: 0 })
-
-      visualPanels.slice(1).forEach(el => gsap.set(el, { opacity: 0, scale: 1.04 }))
-      bodyPanels.slice(1).forEach(el => gsap.set(el, { y: 20, opacity: 0 }))
-      metaPanels.slice(1).forEach(el => gsap.set(el, { y: 20, opacity: 0 }))
+      // ── 초기 상태 강제 설정 — initialIndex 활성 (useState 값), 나머지 hidden ───
+      visualPanels.forEach((el, i) =>
+        gsap.set(el, {
+          opacity: i === initialIndex ? 1 : 0,
+          scale: i === initialIndex ? 1 : 1.04,
+          pointerEvents: i === initialIndex ? 'auto' : 'none',
+        })
+      )
+      bodyPanels.forEach((el, i) =>
+        gsap.set(el, {
+          y: i === initialIndex ? 0 : 20,
+          opacity: i === initialIndex ? 1 : 0,
+          pointerEvents: i === initialIndex ? 'auto' : 'none',
+        })
+      )
+      metaPanels.forEach((el, i) =>
+        gsap.set(el, { y: i === initialIndex ? 0 : 20, opacity: i === initialIndex ? 1 : 0 })
+      )
 
       // ── step animation 팩토리 ─────────────────────────────────
       // activeIndex 카드를 활성화하는 paused timeline 생성
@@ -527,7 +569,7 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
       const COOLDOWN_MS = 900
       const MIN_DELTA   = 5   // 미세 진동 필터링
 
-      let currentActive = 0
+      let currentActive = initialIndex
       let cooldown      = false
 
       // sticky 구간 체크 — section tall 컨테이너가 viewport 를 점유 중인지
@@ -752,23 +794,29 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
        * pointerEvents: none → 클릭/hover 이벤트 투과
        * zIndex: 0 → sticky wrapper(zIndex:1) 뒤에 위치
        */}
-      {projects.map((_, i) => (
-        <div
-          key={i}
-          data-step-marker
-          data-step={i}
-          style={{
-            position: 'absolute',
-            top: `${i * 100}vh`,
-            height: '100vh',
-            width: '1px',
-            left: 0,
-            pointerEvents: 'none',
-            zIndex: -1,
-          }}
-          aria-hidden
-        />
-      ))}
+      {projects.map((project, i) => {
+        // studyHref `/work/<slug>` 에서 slug 추출 → step marker 에 id 부여
+        // WorkViewer Back 클릭 시 `work-<slug>` 로 정확한 카드 위치 복귀
+        const studySlug = project.studyHref?.match(/^\/work\/([\w-]+)/)?.[1]
+        return (
+          <div
+            key={i}
+            data-step-marker
+            data-step={i}
+            id={studySlug ? `work-${studySlug}` : undefined}
+            style={{
+              position: 'absolute',
+              top: `${i * 100}vh`,
+              height: '100vh',
+              width: '1px',
+              left: 0,
+              pointerEvents: 'none',
+              zIndex: -1,
+            }}
+            aria-hidden
+          />
+        )
+      })}
     </div>
   )
 }

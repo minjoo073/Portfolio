@@ -22,11 +22,16 @@ export const mobileProjects: MobileProject[] = [
       playStore:
         'https://play.google.com/store/apps/details?id=jaringobi.myapp&pli=1',
     },
+    stack: ['Android', 'Java'],
     tagline: '아끼면 이긴다, 절약을 게임으로',
     thumbnail: '/images/mobile/01/thumbnail.png',
     previewVideo: '/images/mobile/01/preview.mp4',
+    videoZoom: 1.06, // 영상 자체에 폰 mock 베젤 포함 — 살짝 확대해서 가림
     studyHref: 'https://minjoo073.github.io/jaringobi_/',
     displayType: 'featured',
+    period: '4주',         // TODO: CEO 확인
+    role: 'Solo Design + Dev',
+    uxIntent: '절약을 게임처럼 — 점수로 동기 부여', // TODO: CEO 카피
   },
   {
     id: 'tripmate',
@@ -37,11 +42,16 @@ export const mobileProjects: MobileProject[] = [
     platforms: ['Web'],
     downloadLinks: {
       web: 'https://tripmate-mu-red.vercel.app',
+      landingPage: '#', // TODO: CEO 랜딩페이지 URL 제공
     },
+    stack: ['Expo', 'React Native', 'Expo Router'],
     tagline: '여행 동행, 더 쉽게',
     thumbnail: '/images/mobile/02/thumbnail.png',
     previewVideo: '/images/mobile/02/preview.mp4',
     // studyHref: '',  // CEO 가 제작과정 URL 제공 시 교체
     displayType: 'side',
+    period: '6주',         // TODO: CEO 확인
+    role: 'Solo Design + Dev',
+    uxIntent: '여행 동행 매칭의 첫 마찰 줄이기', // TODO: CEO 카피
   },
 ]

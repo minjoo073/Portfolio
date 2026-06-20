@@ -14,6 +14,11 @@
 /진행                     # 다음 단계 자동 진행
 ```
 
-## 디자인 베이스
-활성 디자인 스타일 카탈로그 — `.claude/knowledge/ui-designer/styles/`
-기본 #1 Crowny Class (보라→분홍 그라데이션, Pretendard, radius 10/16, Lucide)
+## 디자인 베이스 — PARK MINJOO Portfolio
+**톤: quiet luxury + 신입 (editorial, RayRayLab 어휘).** Crowny Class 와 무관 — 이 프로젝트는 카탈로그 스타일 사용 안 함.
+- 다크/라이트 교차 (라이트 → 다크 5섹션 → 라이트)
+- Pretendard Variable + PP Editorial (display) + Inter/Mono
+- 토큰: `rgba(248,247,244,*)` 계열 + 다크 #0a0a0a
+- 모션: GSAP + Lenis, scrub/pin/fade — quiet 톤, tech-feel 회피
+- 인터랙션: 호버 시 잔잔한 hairline·fade, snap·bounce 금지
+- 수치 0개 (다운로드/리뷰 X) — *의도 + craft + 1인 워크플로우* 어필

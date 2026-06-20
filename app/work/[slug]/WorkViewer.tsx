@@ -342,7 +342,11 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
         <Link
           href="/"
           scroll={false}
-          onClick={() => sessionStorage.setItem('postNavScrollId', 'work')}
+          onClick={() => {
+            console.log('[Back] saving slug=', work.slug)
+            sessionStorage.setItem('postNavScrollId', `work-${work.slug}`)
+            sessionStorage.setItem('postNavCardSlug', work.slug)
+          }}
           className="fixed z-50 group block"
           style={{
             top: '30px',
@@ -374,7 +378,11 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
         <Link
           href="/"
           scroll={false}
-          onClick={() => sessionStorage.setItem('postNavScrollId', 'work')}
+          onClick={() => {
+            console.log('[Back] saving slug=', work.slug)
+            sessionStorage.setItem('postNavScrollId', `work-${work.slug}`)
+            sessionStorage.setItem('postNavCardSlug', work.slug)
+          }}
           className={cn(
             'fixed z-50',
             'font-mono text-[11px] uppercase tracking-[0.12em]',
@@ -510,7 +518,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
                     visibility: 'hidden',
                   }}
                 >
-                  {nextWork ? `— ${nextWork.label}` : '↑ 처음으로'}
+                  {nextWork ? nextWork.label : '↑ 처음으로'}
                 </h2>
                 {/* idle 레이어 — 옅은 회색 솔리드. outline 폐기로 stem 안 라인 해소 */}
                 <h2
@@ -522,7 +530,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
                     visibility: reduced ? 'hidden' : 'visible',
                   }}
                 >
-                  {nextWork ? `— ${nextWork.label}` : '↑ 처음으로'}
+                  {nextWork ? nextWork.label : '↑ 처음으로'}
                 </h2>
                 {/* hover 레이어 — 검정 솔리드, 좌→우 wipe 로 채워짐 */}
                 <h2
@@ -538,7 +546,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
                       : 'clip-path 800ms cubic-bezier(0.22, 1, 0.36, 1)',
                   }}
                 >
-                  {nextWork ? `— ${nextWork.label}` : '↑ 처음으로'}
+                  {nextWork ? nextWork.label : '↑ 처음으로'}
                 </h2>
               </div>
             </div>

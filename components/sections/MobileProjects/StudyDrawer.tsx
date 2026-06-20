@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useLenis } from '@/lib/hooks/useLenis'
 
 interface StudyDrawerProps {
@@ -26,6 +27,9 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   // CEO 가 iframe 차단 확인 시 true 로 전환 → 폴백 UI 노출
   const [iframeBlocked] = useState(false)
+  // Portal mount 가드 — SSR/hydration 안전
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
   // 매 open 시점에 새 timestamp → GitHub Pages 캐시 강제 무효화
   const [bustKey, setBustKey] = useState(0)
 
@@ -84,7 +88,10 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
     }
   }, [open])
 
-  return (
+  if (!mounted) return null
+
+  // createPortal → document.body 에 직접 렌더 (부모 transform 영향 회피)
+  return createPortal(
     <>
       {/* dim 오버레이 */}
       <div
@@ -230,6 +237,7 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
           )}
         </div>
       </aside>
-    </>
+    </>,
+    document.body
   )
 }

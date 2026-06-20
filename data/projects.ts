@@ -141,8 +141,8 @@ export const projects: Project[] = [
     variant: 'left',
     visualRatio: '16:10',
     studyHref: '/work/buja',
-    siteHref: 'https://minjoo073.github.io/redesign/',
-    githubHref: 'https://github.com/minjoo073/redesign',
+    siteHref: 'https://minjoo073.github.io/buja/',
+    githubHref: 'https://github.com/minjoo073/buja',
     dimThumb: true, // 밝은 캡처 — 검정 배경에 떠 보여 한 톤 다운
   },
   {

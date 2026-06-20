@@ -40,12 +40,15 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       const el = document.getElementById(id)
       if (!el || !lenisInstance) return false
       const top = el.getBoundingClientRect().top + window.scrollY
+      // postNav 진입 시 Hero 잠깐 보이는 거 회피 → 즉시 점프 (Lenis immediate)
+      // sessionStorage 의 postNavScrollId 가 있을 때만 immediate, 일반 hash 는 smooth
+      const isPostNav = id.startsWith('work-')
       lenisInstance.scrollTo(top, {
         offset: 0,
-        duration: 1.2,
+        duration: isPostNav ? 0 : 1.2,
         lock: true,
         force: true,
-        immediate: false,
+        immediate: isPostNav,
       })
       return true
     }
@@ -64,7 +67,9 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
           requestAnimationFrame(tryScroll)
         }
       }
-      setTimeout(tryScroll, 400)
+      // postNav 진입은 즉시 시작 (Hero 노출 회피)
+      const initialDelay = id.startsWith('work-') ? 0 : 400
+      setTimeout(tryScroll, initialDelay)
     }
 
     // 1) sessionStorage 의 명시적 스크롤 의도 (Back 버튼 경로)

@@ -3,8 +3,8 @@ import { Hero } from '@/components/sections/Hero/Hero'
 import { About } from '@/components/sections/About/About'
 import { WorkIntro } from '@/components/sections/WebProjects/WorkIntro'
 import { WebProjects } from '@/components/sections/WebProjects/WebProjects'
-import { MobileIntro } from '@/components/sections/MobileProjects/MobileIntro'
 import { MobileProjects } from '@/components/sections/MobileProjects/MobileProjects'
+import { MobileWorkIntro } from '@/components/sections/MobileProjects/MobileWorkIntro'
 import { ContentMarketing } from '@/components/sections/ContentMarketing/ContentMarketing'
 import { VisualWorks } from '@/components/sections/VisualWorks/VisualWorks'
 import { Footer } from '@/components/sections/Footer/Footer'
@@ -46,9 +46,10 @@ export default function Home() {
 
       <WebProjects />
 
-      {/* Web → Mobile 챕터 전환 (WorkIntro 와 동일 패턴) */}
-      <MobileIntro />
+      {/* Web → Mobile 챕터 전환 (거대 serif 슬레이트, WorkIntro 동일 패턴) */}
+      <MobileWorkIntro />
 
+      {/* Mobile Projects — Horizontal Spread (옵션 C). 자린고비 page 0, TripMate page 1 */}
       <MobileProjects />
       <ContentMarketing />
       <VisualWorks />
