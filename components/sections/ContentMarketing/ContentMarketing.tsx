@@ -6,6 +6,7 @@ import { SectionLabel } from '@/components/primitives/SectionLabel'
 import { Receipt } from './Receipt'
 import { PreviewArea } from './PreviewArea'
 import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
+import { useLenis } from '@/lib/hooks/useLenis'
 
 /**
  * Content & Marketing — 옵션 D 2단계 시퀀스.
@@ -23,6 +24,13 @@ export function ContentMarketing() {
   const [activeId, setActiveId] = useState(contentGroups[0].id)
   const activeGroup = contentGroups.find(g => g.id === activeId) ?? contentGroups[0]
   const stage1OuterRef = useRef<HTMLDivElement>(null)
+  const lenis = useLenis()
+  const lenisRef = useRef(lenis)
+  // snap 진행 추적 — ±1 그룹 제한 위해 직전 정착 그룹 idx 유지
+  const lastSnapIdxRef = useRef(0)
+  useEffect(() => {
+    lenisRef.current = lenis
+  }, [lenis])
 
   // Stage [1] sticky + scrub timeline — RayRayLab 영수증 패턴
   // 0~30%: paragraph + 좌우 라벨 등장
@@ -72,28 +80,30 @@ export function ContentMarketing() {
         scrollTrigger: {
           trigger: outer,
           start: 'top top',
-          end: '+=250%',
+          end: '+=380%',
           scrub: 0.6,
           invalidateOnRefresh: true,
         },
       })
 
-      // Stage 1 자라남 — receipt duration 명시: 0.23 ~ 0.5 (자라남 완료)
-      // 0.5 ~ 0.7 = hold (영수증 완성형 + 잉크 온전 visible)
-      // 0.7 = sticky 풀림 직후 = 잉크 fade 시작 (= 영수증 하단 닿은 후)
-      tl.to(line, { width: '60vw', ease: 'power3.inOut', duration: 0.13 }, 0)
-      tl.to(paragraph, { opacity: 1, y: 0, ease: 'power2.out' }, 0.2)
-      tl.to(receipt, { maxHeight: '90vh', ease: 'power2.out', duration: 0.27 }, 0.23)
+      // Stage 1 자라남 — 380vh outer 안 sticky 풀림 = progress 0.74
+      // 자라남 끝 ≤ 0.74 보장 (sticky 잡힌 동안 자라남 완료)
+      //   선 0 ~ 0.25 (천천히 좌→우 벌어짐)
+      //   paragraph 0.28 ~ 0.55
+      //   receipt 0.3 ~ 0.7 (자라남 끝 = sticky 풀림 직전)
+      tl.to(line, { width: '60vw', ease: 'power3.inOut', duration: 0.25 }, 0)
+      tl.to(paragraph, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.27 }, 0.28)
+      tl.to(receipt, { maxHeight: '90vh', ease: 'power2.out', duration: 0.4 }, 0.3)
 
-      // 잉크 회수 — 자라남 완료 후 hold 시간 (0.5~0.9) 두고 *0.9 부터* 시작
-      // 사용자 인지 = 영수증 충분히 visible 후 천천히 잉크 사라짐
+      // 잉크 회수 — 자라남 끝 (0.7) → hold 0.15 → sticky 풀림 (0.74) 후 잉크 fade 시작 (0.85)
+      // sticky 풀림 후 영수증 자연 위로 이동 + 잉크 fade 동시 진행
       if (receiptLines && receiptLines.length > 0) {
         tl.to(receiptLines, {
           opacity: 0,
           filter: 'blur(1.2px)',
-          stagger: { each: 0.018, from: 'start' },
+          stagger: { each: 0.012, from: 'start' },
           ease: 'power1.in',
-        }, 0.9)
+        }, 0.85)
       }
 
 
@@ -120,34 +130,35 @@ export function ContentMarketing() {
         tl2.to(stage2Left, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' }, 0)
         tl2.to(stage2Right, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' }, 0)
 
-        // Stage 2 *pin* — top top 도달 후 viewport 고정 + 스크롤 snap 으로 정확히 한 그룹씩 전환
-        // pin 영역 300vh = 그룹당 100vh (이전 60vh) — 영수증→01 진입 시 momentum 으로 02 까지
-        // 점프하는 문제 해결. 한 번 swipe = 한 그룹씩만 진행 보장.
-        // anticipatePin: 1 = pin 직전 위치 보정 → unpin 시 한 frame 점프 방지
+        // Stage 2 pin + snap — pin 영역 *적정* (momentum 흡수 + 단축 균형)
+        // pin 영역 200vh = 그룹당 67vh (강 swipe momentum 50vh 정도 흡수 가능)
+        // snap delay 0.03 + duration 0.2~0.35 = 가장 빠른 정착
+        // snapTo ±1 clamp = momentum 으로 1 그룹 통과 시도 시 clamp 가 다음 그룹만 허용
         ScrollTrigger.create({
           trigger: stage2,
           pin: true,
           pinSpacing: true,
           anticipatePin: 1,
           start: 'top top',
-          end: '+=300%',
+          end: '+=200%',
           invalidateOnRefresh: true,
-          // snap = swipe 멈춤 시 가까운 그룹 위치로 자동 정렬
-          // snap 위치 = [0, 0.5, 1] (3 그룹 = 2 step = 1/2 간격)
-          // directional: false = Lenis 관성으로 살짝 위로 흐를 때도 *가까운 점* 우선 (= 03 유지)
-          //                     기본값 true 면 "위로 가는 방향" 판단 → 위 snap 점 (02) 으로 끌려감
           snap: {
-            snapTo: 1 / (contentGroups.length - 1),
-            duration: { min: 0.18, max: 0.35 },
+            snapTo: (progress) => {
+              const groupCount = contentGroups.length - 1
+              const exact = progress * groupCount
+              const desired = Math.round(exact)
+              const last = lastSnapIdxRef.current
+              const clamped = Math.max(last - 1, Math.min(last + 1, desired))
+              return clamped / groupCount
+            },
+            duration: { min: 0.2, max: 0.35 },
             ease: 'power2.inOut',
-            delay: 0.08,
+            delay: 0.03,
             directional: false,
           },
-          // group 변경 = snap *완료 후* 만 (덜컹 해결)
-          // 이전: onUpdate 가 snap 진행 중 group 변경 → snap easing + component swap + intro reveal 3 모션 충돌
-          // 현재: snap 정착 후만 swap → 한 frame 깔끔
           onSnapComplete: (self) => {
             const groupIndex = Math.round(self.progress * (contentGroups.length - 1))
+            lastSnapIdxRef.current = groupIndex
             const newId = contentGroups[groupIndex].id
             setActiveId(prev => (prev === newId ? prev : newId))
           },
@@ -172,7 +183,7 @@ export function ContentMarketing() {
       <div
         ref={stage1OuterRef}
         className="relative"
-        style={{ height: '250vh' }}
+        style={{ height: '380vh' }}
       >
         <div className="sticky top-0 h-screen w-full px-side-m md:px-side-t xl:px-side-d">
           {/* paragraph — absolute 위쪽 고정 */}

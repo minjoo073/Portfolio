@@ -1,5 +1,4 @@
 import type { VisualItem as VisualItemType } from '@/lib/types/content'
-import { Placeholder } from '@/components/primitives/Placeholder'
 
 interface VisualItemProps {
   item: VisualItemType
@@ -7,43 +6,42 @@ interface VisualItemProps {
 }
 
 /**
- * Visual Works 1개 아이템 — category에 따라 폭/비율 분기.
- *   poster: 4/5 portrait, clamp(220px, 22vw, 320px)
- *   banner: 16/9 landscape, clamp(360px, 36vw, 520px)
- *
- * 호버 시 인덱스 + category 라벨 노출 (가벼운 톤).
+ * Visual Works 1개 아이템 — *이미지 원본 비율 유지* + 높이 60vh 고정.
+ *   - 너비 자동 (aspect 강제 X, object-cover crop X)
+ *   - 포스터 = 자연 세로 비율 / 배너 = 자연 가로 비율
+ *   - caption 은 이미지 아래 (img width 따라감)
  */
 export function VisualItem({ item, total }: VisualItemProps) {
   const isPoster = item.category === 'poster'
-
-  const aspect = isPoster ? '4 / 5' : '16 / 9'
-  const width = isPoster
-    ? 'clamp(220px, 22vw, 320px)'
-    : 'clamp(360px, 36vw, 520px)'
-
   const indexLabel = `${String(item.index).padStart(2, '0')} / ${String(total).padStart(2, '0')}`
-  const categoryLabel = isPoster ? 'POSTER' : 'BANNER'
+  const categoryLabel = isPoster ? 'Poster' : 'Banner'
 
   return (
     <article
       className="group flex shrink-0 flex-col gap-3"
-      style={{ width }}
       data-visual-item
       data-visual-id={item.id}
       data-category={item.category}
     >
-      <Placeholder
-        label={indexLabel}
-        aspect={aspect}
-        className="h-auto bg-dark-soft"
+      {/* 이미지 — 원본 비율 그대로, 높이 60vh, 너비 자동 (잘림 없음) */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={item.thumbnail}
+        alt={`${item.title} — ${categoryLabel}`}
+        className="block bg-dark-soft"
+        style={{ height: '60vh', width: 'auto' }}
+        loading="lazy"
+        onError={(e) => {
+          ;(e.target as HTMLImageElement).style.display = 'none'
+        }}
       />
 
-      {/* 메타 — 평소 인덱스만, 호버 시 카테고리 라벨 fade in */}
-      <div className="flex items-baseline justify-between font-mono text-label uppercase tracking-[0.06em] text-ink-inverse">
-        <span>{indexLabel}</span>
-        <span className="text-ink-inverse/40 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100">
-          {categoryLabel}
+      {/* hairline caption — V01 — Poster · 01 / 12 */}
+      <div className="flex items-baseline justify-between gap-4 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-inverse/55">
+        <span>
+          {item.title} <span className="text-ink-inverse/35">— {categoryLabel}</span>
         </span>
+        <span>{indexLabel}</span>
       </div>
     </article>
   )
