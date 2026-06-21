@@ -192,8 +192,13 @@ export function MobileProjects() {
           e.preventDefault()
           if (cooldown) return
           cooldown = true
+          // Lenis momentum 차단 — 세게 wheel 시 sticky 풀려서 트립메이트 건너뛰는 문제 방지
+          lenisRef.current?.stop()
           goTo(currentPageRef.current + 1)
-          setTimeout(() => { cooldown = false }, COOLDOWN_MS)
+          setTimeout(() => {
+            cooldown = false
+            lenisRef.current?.start()
+          }, COOLDOWN_MS)
           return
         }
 
@@ -217,8 +222,13 @@ export function MobileProjects() {
           e.preventDefault()
           if (cooldown) return
           cooldown = true
+          // Lenis momentum 차단 — 반대 방향도 동일 보호
+          lenisRef.current?.stop()
           goTo(currentPageRef.current - 1)
-          setTimeout(() => { cooldown = false }, COOLDOWN_MS)
+          setTimeout(() => {
+            cooldown = false
+            lenisRef.current?.start()
+          }, COOLDOWN_MS)
         }
       }
 

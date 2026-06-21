@@ -54,17 +54,17 @@
 }
 
 /* ───────────────────────── Receipt sway (Content & Marketing) ───── */
-/* 영수증 *박스 자체* 미세 sway — rotation ±0.2°, translate sub-pixel. */
-/* 텍스트는 같이 transform 되지만 강도가 작아 *시각상 정지* 로 인지. */
+/* 상단 *선에 붙어 고정* + 하단만 *종이 펄럭* — transform-origin: top center, 기본값 0 */
+/* rotation 좌우 ±0.4° 만 사용 (좌우 균등) — 영수증 *수직 기본 + 하단 흔들림*. */
 @keyframes receipt-sway {
-  0%   { transform: rotate(-0.3deg) translateY(0); }
-  25%  { transform: rotate(-0.1deg) translateY(-0.5px); }
-  50%  { transform: rotate(-0.4deg) translateY(0.5px); }
-  75%  { transform: rotate(-0.2deg) translateY(-0.5px); }
-  100% { transform: rotate(-0.3deg) translateY(0); }
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(0.4deg); }
+  50%  { transform: rotate(-0.3deg); }
+  75%  { transform: rotate(0.2deg); }
+  100% { transform: rotate(0deg); }
 }
 .receipt-sway {
-  animation: receipt-sway 5s ease-in-out infinite;
+  animation: receipt-sway 5.5s ease-in-out infinite;
   transform-origin: top center;
   will-change: transform;
 }

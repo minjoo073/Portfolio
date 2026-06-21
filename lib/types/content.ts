@@ -25,16 +25,37 @@ export interface AppItem {
   storeUrl: string
   publishedDate: string
   subtitle?: string
+  /** 통합안 (영수증 메타포 확장) — 자린고비 PreviewArea */
+  editionNumber?: string
+  titleKr?: string
+  titleEn?: string
+  releaseDate?: string
+  platform?: string
+  concept?: string
+  role?: string
+  buildDuration?: string
+  deliverables?: string
+  mechanic?: string
+  status?: string
+  intentStatement?: string
 }
 
 export interface PromotionVideo {
   thumbnail: string
   title: string
+  /** TikTok video ID — iframe embed 용 */
+  videoId?: string
+  /** TikTok video URL — 외부 링크 (클릭 시 이동) */
+  videoUrl?: string
 }
 
 export interface PersonalVideo {
   thumbnail: string
   title?: string
+  /** Instagram Reel ID — iframe embed 용 */
+  reelId?: string
+  /** Instagram Reel URL — 외부 링크 (fallback) */
+  reelUrl?: string
 }
 
 export interface ChannelInfo {
@@ -55,12 +76,55 @@ export type ContentMedia =
       videos: PromotionVideo[]
       process: readonly string[]
       cta: { label: string; href: string }
+      /** 통합안 (자린고비 패턴) — 02 PROMOTION PreviewArea */
+      editionNumber?: string
+      titleKr?: string
+      titleSubKr?: string
+      titleEn?: string
+      releaseDate?: string
+      platforms?: string
+      campaign?: string
+      channel?: string
+      format?: string
+      role?: string
+      tool?: string
+      hook?: string
+      status?: string
+      intentStatement?: string
+      instagramUrl?: string
+      tiktokUrl?: string
+      socialHandle?: string
+      instagramHandle?: string
+      tiktokHandle?: string
     }
   | {
       type: 'personal-video'
       channel: ChannelInfo
       videos: PersonalVideo[]
       curationNote: string
+      /** 통합안 (강팀 회의) — 03 PERSONAL CONTENT */
+      editionNumber?: string
+      titleEn?: string
+      period?: string
+      totalReach?: string
+      exactReach?: string
+      cadence?: string
+      format?: string
+      editStyle?: string
+      role?: string
+      status?: string
+      intentStatement?: string
+      instagramUrl?: string
+      instagramHandle?: string
+      postsCount?: string
+      qrImage?: string
+      inbounds?: Array<{
+        id: string
+        receivedDate: string
+        category: string
+        quote?: string
+        screenshot?: string
+      }>
     }
 
 export interface ContentGroup {

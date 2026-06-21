@@ -48,7 +48,7 @@ export function Navigation() {
             <a
               href={link.href}
               className={cn(
-                'font-display text-label uppercase tracking-[0.08em] font-medium',
+                'font-mono text-label uppercase tracking-[0.08em]',
                 'relative inline-block',
                 'after:absolute after:bottom-[-4px] after:left-0',
                 'after:h-[1px] after:w-0 after:bg-current',

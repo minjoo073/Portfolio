@@ -38,29 +38,43 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
       data-receipt
       data-variant={variant}
     >
-      {/* ─── 헤더 (3줄) ─── */}
-      <div className="border-b border-dashed border-ink-primary/25 px-6 py-2 md:px-8 md:py-2.5">
-        <p className="font-mono text-label uppercase tracking-[0.12em] text-ink-muted">
+      {/* ─── 헤더 (3줄) — L2: 영수증 정보 ─── */}
+      <div
+        className={cn(
+          'border-b border-dashed border-ink-primary/25 px-6 md:px-8',
+          isStage1 ? 'py-5 md:py-6' : 'py-6 md:py-8'
+        )}
+      >
+        <p data-cm-receipt-line className={cn(
+          'font-mono uppercase tracking-[0.12em] text-ink-primary',
+          isStage1 ? 'text-sm' : 'text-sm md:text-[15px]'
+        )}>
           PARK MINJOO / RECORD
         </p>
-        <p className="mt-0.5 font-mono text-label uppercase tracking-[0.12em] text-ink-muted/70">
-          Issued · 2026
+        <p data-cm-receipt-line className={cn(
+          'mt-1 font-kr tracking-[0.02em] text-ink-muted/80',
+          isStage1 ? 'text-label' : 'text-label md:text-[12.5px]'
+        )}>
+          발행 · 2026
         </p>
-        <p className="mt-0.5 font-mono text-label uppercase tracking-[0.12em] text-ink-muted/70">
-          Category · Content &amp; Marketing
+        <p data-cm-receipt-line className={cn(
+          'mt-0.5 font-kr tracking-[0.02em] text-ink-muted/80',
+          isStage1 ? 'text-label' : 'text-label md:text-[12.5px]'
+        )}>
+          카테고리 · 콘텐츠 &amp; 마케팅
         </p>
       </div>
 
       {/* ─── 본문 ─── */}
-      <div className="px-6 py-3 md:px-8 md:py-3.5">
-        <ul className="flex flex-col gap-2 md:gap-2.5">
+      <div className={cn('px-6 md:px-8', isStage1 ? 'py-6 md:py-8' : 'py-7 md:py-9')}>
+        <ul className={cn('flex flex-col', isStage1 ? 'gap-4 md:gap-5' : 'gap-4 md:gap-6')}>
           {groups.map(group => {
             const isActive = group.id === activeId
             return (
               <li
                 key={group.id}
                 className={cn(
-                  'group flex flex-col gap-1.5 transition-opacity duration-300 ease-out',
+                  'group flex flex-col transition-opacity duration-300 ease-out gap-1.5',
                   !isStage1 && (isActive ? 'opacity-100' : 'opacity-40 hover:opacity-100'),
                   !isStage1 && 'cursor-pointer'
                 )}
@@ -69,16 +83,16 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
                 data-active={isActive || undefined}
               >
                 {/* 상단 행: index + label + leader + meta */}
-                <div className="flex items-baseline gap-4">
-                  <span className="shrink-0 font-mono text-label uppercase tracking-[0.06em] text-ink-muted">
+                <div data-cm-receipt-line className="flex items-baseline gap-4">
+                  <span className="shrink-0 font-mono text-label tracking-[0.06em] text-ink-muted/80">
                     {group.index}
                   </span>
                   <span
                     className={cn(
                       'font-display font-medium leading-[1.05] tracking-tight',
                       isStage1
-                        ? 'text-[clamp(28px,3.6vw,52px)]'
-                        : 'text-heading'
+                        ? 'text-[clamp(22px,2.6vw,38px)]'
+                        : 'text-[clamp(22px,2.2vw,30px)]'
                     )}
                   >
                     {group.label}
@@ -88,17 +102,26 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
                     className="mx-2 flex-1 self-end border-b border-dotted border-ink-primary/30"
                     style={{ marginBottom: isStage1 ? '0.6em' : '0.45em' }}
                   />
-                  <span className="shrink-0 font-mono text-label uppercase tracking-[0.08em] text-ink-muted">
+                  <span className="shrink-0 font-kr text-label tracking-[0.04em] text-ink-muted">
                     {group.receiptMeta}
                   </span>
                 </div>
 
-                {/* sub-lines (라벨 아래 들여쓰기) */}
-                <ul className="ml-8 flex flex-col gap-1 md:ml-12">
+                {/* sub-lines (라벨 아래 들여쓰기) — L4: 가장 작은 메타 */}
+                <ul className={cn(
+                  'flex flex-col',
+                  isStage1 ? 'ml-8 gap-1 md:ml-12' : 'ml-8 gap-1.5 md:ml-10'
+                )}>
                   {group.subLines.map((line, i) => (
                     <li
                       key={i}
-                      className="font-mono text-label uppercase tracking-[0.08em] text-ink-muted/75"
+                      data-cm-receipt-line
+                      className={cn(
+                        'font-kr tracking-[0.02em] text-ink-muted/70',
+                        isStage1
+                          ? 'text-[11px] md:text-xs'
+                          : 'text-xs md:text-[13px]'
+                      )}
                     >
                       └ {line}
                     </li>
@@ -110,20 +133,37 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
         </ul>
       </div>
 
-      {/* ─── 푸터 (3줄, TX 제거로 압축) ─── */}
-      <div className="border-t border-dashed border-ink-primary/25 px-6 py-2 md:px-8 md:py-2.5">
-        <div className="flex items-baseline justify-between gap-4">
-          <span className="font-mono text-label uppercase tracking-[0.12em] text-ink-muted">
+      {/* ─── 푸터 — Total 이하 영문 (영수증 톤 유지) ─── */}
+      <div
+        className={cn(
+          'border-t border-dashed border-ink-primary/25 px-6 md:px-8',
+          isStage1 ? 'py-5 md:py-6' : 'py-6 md:py-8'
+        )}
+      >
+        <div data-cm-receipt-line className="flex items-baseline justify-between gap-4">
+          <span className={cn(
+            'font-mono uppercase tracking-[0.12em] text-ink-primary',
+            isStage1 ? 'text-sm' : 'text-sm md:text-[15px]'
+          )}>
             Total
           </span>
-          <span className="font-mono text-label uppercase tracking-[0.12em] text-ink-muted">
+          <span className={cn(
+            'font-mono uppercase tracking-[0.12em] text-ink-primary',
+            isStage1 ? 'text-sm' : 'text-sm md:text-[15px]'
+          )}>
             {groups.length} entries
           </span>
         </div>
-        <p className="mt-0.5 font-mono text-label uppercase tracking-[0.12em] text-ink-muted/70">
+        <p data-cm-receipt-line className={cn(
+          'mt-1.5 font-mono uppercase tracking-[0.12em] text-ink-muted/80',
+          isStage1 ? 'text-label' : 'text-label md:text-[12.5px]'
+        )}>
           Solo run · Multi-role
         </p>
-        <p className="mt-0.5 font-mono text-label uppercase tracking-[0.12em] text-ink-muted/70">
+        <p data-cm-receipt-line className={cn(
+          'mt-0.5 font-mono uppercase tracking-[0.12em] text-ink-muted/70',
+          isStage1 ? 'text-label' : 'text-label md:text-[12.5px]'
+        )}>
           Signed · Park Minjoo · PM-2026-CM-{String(groups.length).padStart(3, '0')}
         </p>
       </div>

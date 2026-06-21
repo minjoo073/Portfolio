@@ -118,13 +118,32 @@ export function Intro() {
     }
 
     document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
     window.scrollTo(0, 0)
     lenisRef.current?.stop()
 
+    // window-level wheel/touchmove/keydown 직접 차단 — Lenis ref 가 mount 시점 null 일 수도 있어
+    // body overflow + lenis.stop() 만으론 부족. wheel 자체를 preventDefault.
+    const blockScroll = (e: Event) => {
+      e.preventDefault()
+    }
+    const blockKeys = (e: KeyboardEvent) => {
+      // PageDown/Up, Space, Arrow keys 차단
+      const keys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' ']
+      if (keys.includes(e.key)) e.preventDefault()
+    }
+    window.addEventListener('wheel', blockScroll, { passive: false })
+    window.addEventListener('touchmove', blockScroll, { passive: false })
+    window.addEventListener('keydown', blockKeys)
+
     const unlock = () => {
       document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
       window.scrollTo(0, 0)
       lenisRef.current?.start()
+      window.removeEventListener('wheel', blockScroll)
+      window.removeEventListener('touchmove', blockScroll)
+      window.removeEventListener('keydown', blockKeys)
     }
 
     if (reduced) {
@@ -161,7 +180,7 @@ export function Intro() {
       setVisible(false)
       unlock()
     }
-    const safety = window.setTimeout(finish, 5200)
+    const safety = window.setTimeout(finish, 3500)
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -171,15 +190,15 @@ export function Intro() {
     })
 
     // ① 선·이름 등장
-    tl.to(group, { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0)
+    tl.to(group, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0)
 
-    // ② % 텍스트가 선 위를 왼→오 이동 — ~18% 에서 살짝 멈칫(느려짐) 후 다시 로딩(느긋하게)
-    tl.to(prog, { p: 18, duration: 0.5, ease: 'power1.out', onUpdate: update }, 0.85)
-    tl.to(prog, { p: 23, duration: 0.65, ease: 'sine.inOut', onUpdate: update }, '>') // 살짝 늦췄다가
-    tl.to(prog, { p: 100, duration: 2.2, ease: 'power1.inOut', onUpdate: update }, '>') // 다시 로딩(더 느리게)
+    // ② % 텍스트가 선 위를 왼→오 이동 — ~18% 에서 살짝 멈칫 후 다시 로딩 (압축)
+    tl.to(prog, { p: 18, duration: 0.35, ease: 'power1.out', onUpdate: update }, 0.5)
+    tl.to(prog, { p: 23, duration: 0.4, ease: 'sine.inOut', onUpdate: update }, '>')
+    tl.to(prog, { p: 100, duration: 1.3, ease: 'power1.inOut', onUpdate: update }, '>')
 
-    // ③ 100% → 잠깐 머문 뒤 느긋한 페이드로 Hero 진입
-    tl.to(cont, { opacity: 0, duration: 0.95, ease: 'power2.inOut' }, '>+0.4')
+    // ③ 100% → 짧게 머문 뒤 페이드로 Hero 진입
+    tl.to(cont, { opacity: 0, duration: 0.55, ease: 'power2.inOut' }, '>+0.2')
 
     return () => {
       clearTimeout(safety)

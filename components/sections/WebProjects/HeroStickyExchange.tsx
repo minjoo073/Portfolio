@@ -123,7 +123,7 @@ function VisualPanel({ project, index }: VisualPanelProps) {
 
   const inner = (
     <div
-      className="absolute inset-0 bg-dark-soft transition-[filter,box-shadow] duration-500 ease-out"
+      className="absolute inset-0 bg-dark-soft"
       style={{
         backgroundImage: project.thumbnail ? `url(${project.thumbnail})` : undefined,
         backgroundSize: 'cover',

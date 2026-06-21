@@ -1,3 +1,6 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
 import type { ContentGroup } from '@/lib/types/content'
 import { AppLaunchPreview } from './previews/AppLaunchPreview'
 import { PromotionVideoPreview } from './previews/PromotionVideoPreview'
@@ -8,18 +11,69 @@ interface Props {
 }
 
 /**
- * 호버된 그룹의 미디어 타입에 따라 적절한 preview를 렌더.
+ * 호버/스크롤된 그룹의 미디어 타입에 따라 preview 렌더.
+ *
+ * Scroll 동작:
+ *  - 콘텐츠가 viewport 안 fit → 모든 wheel = 페이지 scroll (그룹 자동 전환)
+ *  - 콘텐츠 길음 + 안에서 스크롤 → 자체 scroll (data-lenis-prevent 활성)
+ *  - 자체 scroll 맨 위 도달 + 위로 wheel → 페이지 scroll (이전 그룹)
+ *  - 자체 scroll 맨 아래 도달 + 아래로 wheel → 페이지 scroll (다음 그룹)
  */
 export function PreviewArea({ group }: Props) {
   const { media } = group
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const updateLenisPrevent = (deltaY = 0) => {
+      const { scrollTop, scrollHeight, clientHeight } = el
+      const hasOverflow = scrollHeight > clientHeight + 1
+      const atTop = scrollTop <= 0
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1
+
+      // 콘텐츠 overflow X = 페이지 scroll 으로
+      if (!hasOverflow) {
+        el.removeAttribute('data-lenis-prevent')
+        return
+      }
+      // 맨 위 + 위로 스크롤 = 페이지로 전달 (이전 그룹)
+      if (deltaY < 0 && atTop) {
+        el.removeAttribute('data-lenis-prevent')
+        return
+      }
+      // 맨 아래 + 아래로 스크롤 = 페이지로 전달 (다음 그룹)
+      if (deltaY > 0 && atBottom) {
+        el.removeAttribute('data-lenis-prevent')
+        return
+      }
+      // 그 외 = 자체 scroll 유지
+      el.setAttribute('data-lenis-prevent', '')
+    }
+
+    // 그룹 변경 시 = 맨 위로 reset
+    el.scrollTop = 0
+    updateLenisPrevent(0)
+
+    const handleWheel = (e: WheelEvent) => {
+      updateLenisPrevent(e.deltaY)
+    }
+    const handleScroll = () => updateLenisPrevent(0)
+
+    el.addEventListener('wheel', handleWheel, { passive: true })
+    el.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      el.removeEventListener('wheel', handleWheel)
+      el.removeEventListener('scroll', handleScroll)
+    }
+  }, [group.id])
 
   return (
     <div
-      // 고정 height 로 layout shift 차단 — 호버마다 preview 비율 다름(9:16, 16:9, app-launch)
-      // 박스보다 큰 콘텐츠(03 PersonalContent 9:16 grid 등)는 박스 내부에서 세로 스크롤
-      // data-lenis-prevent: Lenis 가 박스 안 wheel 이벤트 가로채지 않게 → native 스크롤 작동
+      ref={ref}
       className="h-[85vh] w-full overflow-y-auto overscroll-contain no-scrollbar"
-      data-lenis-prevent
       data-preview-area
       data-active-group={group.id}
     >
@@ -29,3 +83,4 @@ export function PreviewArea({ group }: Props) {
     </div>
   )
 }
+
