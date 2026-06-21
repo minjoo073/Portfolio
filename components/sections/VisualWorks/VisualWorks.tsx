@@ -105,7 +105,9 @@ export function VisualWorks() {
       const viewportWidth = window.innerWidth
       const distance = Math.max(0, trackWidth - viewportWidth)
 
-      outer.style.height = `${100 + (distance / window.innerHeight) * 100}vh`
+      // outer height = sticky 100vh + horizontal distance + 30vh 시작 호흡
+      // (start 'top top+=30%' 로 30vh animation 정지 → 그 만큼 추가 안 하면 끝까지 못 감)
+      outer.style.height = `${100 + (distance / window.innerHeight) * 100 + 30}vh`
 
       st?.kill()
       st = ScrollTrigger.create({
@@ -121,25 +123,29 @@ export function VisualWorks() {
 
     const ctx = gsap.context(setup, outer)
 
-    // 이미지 load 후 width 재측정 — BannerGrid columns masonry 의 height 정확 계산 위해
-    // image 로드 시점 다르므로 여러 번 refresh
-    gsap.delayedCall(0.4, () => ScrollTrigger.refresh())
-    gsap.delayedCall(1.2, () => ScrollTrigger.refresh())
-    gsap.delayedCall(2.5, () => ScrollTrigger.refresh())
+    // image load 후 *setup 자체 재호출* — trackWidth 변경 시 outer.style.height + animation distance 모두 재계산
+    // 단순 ScrollTrigger.refresh 만으로는 setup() 안에서 결정된 distance 값이 안 바뀜
+    const reSetup = () => {
+      ctx.add(setup)
+      ScrollTrigger.refresh()
+    }
 
-    // 모든 image load 완료 시 한 번 더 refresh (완전 보장)
+    gsap.delayedCall(0.4, reSetup)
+    gsap.delayedCall(1.2, reSetup)
+    gsap.delayedCall(2.5, reSetup)
+
     const images = track.querySelectorAll('img')
     let loaded = 0
     const onImgLoad = () => {
       loaded++
-      if (loaded === images.length) ScrollTrigger.refresh()
+      if (loaded === images.length) reSetup()
     }
     images.forEach(img => {
       if (img.complete) onImgLoad()
       else img.addEventListener('load', onImgLoad, { once: true })
     })
 
-    const onResize = () => ScrollTrigger.refresh()
+    const onResize = () => reSetup()
     window.addEventListener('resize', onResize)
 
     return () => {
