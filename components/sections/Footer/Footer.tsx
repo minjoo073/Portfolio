@@ -5,20 +5,23 @@ import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
 import { footer } from '@/data/footer'
 
 /**
- * Footer — *판권 페이지 (colophon)* 톤.
+ * Footer — 좌: Thank You / 우: 연락처 (이메일 · GitHub · Notion 아이콘).
  *
- *   [20vh 다크 spacer]
- *     · hairline 중앙 → 좌우 sweep (페이지 "닫힘" 신호)
- *     · status whisper 정중앙 — "Available for design opportunities"
+ *   [포스터 → 푸터 호흡 + hairline sweep]  페이지 "닫힘" 신호
+ *   [메인]  좌 거대 "Thank You"(+감사합니다) / 우 이메일·GitHub 주소·Notion 아이콘
+ *   [bottom micro]  copyright
  *
- *   [한 줄 footer ~12vh, 다크 그대로]
- *     좌: Park Minjoo · Seoul       (정체성)
- *     중: Mail · Notion · GitHub    (보조 채널, 작게)
- *     우: Resume PDF ↗              (유일한 강조)
- *
- *   [bottom micro]
- *     © 2026 · Designed and built solo
+ * 모션: gsap.from() = 정적 visible 보장 + 진입 시 fade-in. (텍스트 항상 보임)
  */
+
+function NotionIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952l1.448.327s0 .84-1.168.84l-3.222.186c-.093-.187 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.216-1.632z" />
+    </svg>
+  )
+}
+
 export function Footer() {
   const containerRef = useRef<HTMLElement>(null)
 
@@ -28,19 +31,12 @@ export function Footer() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     registerGsap()
-
     const ctx = gsap.context(() => {
       const sweep = container.querySelector('[data-footer-sweep]')
-      const status = container.querySelector('[data-footer-status]')
       const left = container.querySelector('[data-footer-left]')
-      const middle = container.querySelector('[data-footer-middle]')
       const right = container.querySelector('[data-footer-right]')
       const bottom = container.querySelector('[data-footer-bottom]')
 
-      // *모든 텍스트는 정적 visible 보장* — ScrollTrigger 가 fire 안 되더라도 텍스트는 항상 보임
-      // 모션은 gsap.from() 으로 *진입 시 fade-in 추가 효과*만 (초기 상태 강제 X)
-
-      // hairline sweep — scrub
       if (sweep) {
         gsap.set(sweep, { scaleX: 0, transformOrigin: 'center center' })
         ScrollTrigger.create({
@@ -53,34 +49,19 @@ export function Footer() {
         })
       }
 
-      // status whisper — 진입 시 살짝 fade
-      if (status) {
-        ScrollTrigger.create({
-          trigger: container,
-          start: 'top 80%',
-          once: true,
-          onEnter: () => {
-            gsap.from(status, { opacity: 0, y: 8, duration: 0.6, ease: 'power2.out' })
-          },
-        })
-      }
-
-      // 좌→중→우 stagger — gsap.from() = 초기 상태 visible, 진입 시 fade-in 효과만
       ScrollTrigger.create({
         trigger: container,
         start: 'top 75%',
         once: true,
         onEnter: () => {
-          gsap.from([left, middle, right].filter(Boolean), {
+          gsap.from([left, right].filter(Boolean), {
             opacity: 0,
-            y: 10,
-            duration: 0.55,
-            stagger: 0.08,
+            y: 12,
+            duration: 0.6,
+            stagger: 0.1,
             ease: 'power2.out',
           })
-          if (bottom) {
-            gsap.from(bottom, { opacity: 0, y: 8, duration: 0.5, delay: 0.3, ease: 'power2.out' })
-          }
+          if (bottom) gsap.from(bottom, { opacity: 0, y: 8, duration: 0.5, delay: 0.3, ease: 'power2.out' })
         },
       })
     }, container)
@@ -95,98 +76,112 @@ export function Footer() {
       className="relative bg-dark text-ink-inverse"
       data-section="footer"
     >
-      {/* ─── [1] 다크 spacer + hairline sweep + status whisper ─── */}
-      <div
-        className="relative px-side-m md:px-side-t xl:px-side-d"
-        style={{ height: '28vh' }}
-      >
-        {/* hairline — 중앙에서 좌우로 sweep */}
+      {/* ─── 포스터 → 푸터 호흡 + hairline sweep ─── */}
+      <div className="relative px-side-m md:px-side-t xl:px-side-d" style={{ height: '30vh' }}>
         <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 px-side-m md:px-side-t xl:px-side-d">
-          <div
-            data-footer-sweep
-            className="h-px w-full"
-            style={{ background: 'rgba(248, 247, 244, 0.12)' }}
-          />
+          <div data-footer-sweep className="h-px w-full" style={{ background: 'rgba(248,247,244,0.12)' }} />
         </div>
-
-        {/* status whisper — sweep 아래 정중앙 */}
-        <p
-          data-footer-status
-          className="absolute left-1/2 top-1/2 mt-6 -translate-x-1/2 whitespace-nowrap font-mono text-[13px] uppercase tracking-[0.16em] text-ink-inverse/55"
-        >
-          {footer.status}
-        </p>
       </div>
 
-      {/* ─── [2] 한 줄 footer — 좌·중·우 분할 ─── */}
-      <div className="px-side-m py-14 md:px-side-t md:py-16 xl:px-side-d">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-10 gap-y-5">
-          {/* 좌: 이름 · 위치 */}
-          <div
-            data-footer-left
-            className="font-mono text-base uppercase tracking-[0.08em] text-ink-inverse/80"
-          >
-            Park Minjoo
-            <span className="mx-2 text-ink-inverse/40">·</span>
-            {footer.location}
+      {/* ─── 메인 — 좌 Thank You / 우 연락처 ─── */}
+      <div className="px-side-m pb-24 md:px-side-t xl:px-side-d">
+        <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-14">
+          {/* 좌 */}
+          <div data-footer-left>
+            <h2
+              className="font-display font-medium leading-[0.9] tracking-tight text-ink-inverse"
+              style={{ fontSize: 'clamp(56px, 9vw, 168px)' }}
+            >
+              {footer.thanks}
+            </h2>
+            <p className="mt-4 font-kr text-ink-inverse/55" style={{ fontSize: 'clamp(15px, 1.2vw, 20px)' }}>
+              {footer.thanksKr}
+            </p>
           </div>
 
-          {/* 중: 보조 채널 (Mail · Notion · GitHub) */}
-          <div data-footer-middle className="flex items-baseline gap-8">
+          {/* 우 */}
+          <div data-footer-right className="flex flex-col items-end gap-5 text-right">
             <a
               href={`mailto:${footer.email}`}
-              className="group relative font-mono text-base uppercase tracking-[0.08em] text-ink-inverse/80 transition-colors hover:text-ink-inverse"
+              className="group relative font-mono uppercase tracking-[0.08em] text-ink-inverse/80 transition-colors hover:text-ink-inverse"
+              style={{ fontSize: 'clamp(15px, 1.05vw, 17px)' }}
             >
-              Mail
+              {footer.email}
               <span
                 aria-hidden
-                className="absolute -bottom-1 left-0 h-px w-0 bg-ink-inverse transition-all duration-300 group-hover:w-full"
+                className="absolute -bottom-1 right-0 h-px w-0 bg-ink-inverse transition-all duration-300 group-hover:w-full"
               />
             </a>
-            {footer.links.map(link => (
+            <a
+              href={footer.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative font-mono uppercase tracking-[0.08em] text-ink-inverse/80 transition-colors hover:text-ink-inverse"
+              style={{ fontSize: 'clamp(15px, 1.05vw, 17px)' }}
+            >
+              {footer.githubLabel}
+              <span
+                aria-hidden
+                className="absolute -bottom-1 right-0 h-px w-0 bg-ink-inverse transition-all duration-300 group-hover:w-full"
+              />
+            </a>
+
+            {/* 이력서 — 보기 / 다운로드 */}
+            <div className="flex items-center gap-5">
               <a
-                key={link.label}
-                href={link.url}
+                href={footer.resume}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative font-mono text-base uppercase tracking-[0.08em] text-ink-inverse/80 transition-colors hover:text-ink-inverse"
+                className="group relative font-kr text-ink-inverse/80 transition-colors hover:text-ink-inverse"
+                style={{ fontSize: 'clamp(15px, 1.05vw, 17px)' }}
               >
-                {link.label}
+                {footer.resumeLabel} · PDF 보기
                 <span
                   aria-hidden
-                  className="absolute -bottom-1 left-0 h-px w-0 bg-ink-inverse transition-all duration-300 group-hover:w-full"
+                  className="absolute -bottom-1 right-0 h-px w-0 bg-ink-inverse transition-all duration-300 group-hover:w-full"
                 />
               </a>
-            ))}
-          </div>
+              <a
+                href={footer.resume}
+                download
+                aria-label="이력서 PDF 다운로드"
+                className="group relative font-mono uppercase tracking-[0.08em] text-ink-inverse/55 transition-colors hover:text-ink-inverse"
+                style={{ fontSize: 'clamp(12px, 0.9vw, 14px)' }}
+              >
+                ↓ 다운로드
+                <span
+                  aria-hidden
+                  className="absolute -bottom-1 right-0 h-px w-0 bg-ink-inverse transition-all duration-300 group-hover:w-full"
+                />
+              </a>
+            </div>
 
-          {/* 우: Resume PDF — 유일한 강조 */}
-          <a
-            data-footer-right
-            href={footer.resume.url}
-            download
-            className="group relative inline-flex items-baseline gap-2 font-mono text-base font-medium uppercase tracking-[0.08em] text-ink-inverse"
-          >
-            <span>{footer.resume.label}</span>
-            <span
-              aria-hidden
-              className="inline-block transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5"
+            {/* Notion 전용 포트폴리오 — 큰 아이콘 + 라벨 */}
+            <a
+              href={footer.notion}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Notion 전용 포트폴리오"
+              className="group mt-3 inline-flex items-center gap-3 text-ink-inverse/70 transition-colors hover:text-ink-inverse"
             >
-              ↗
-            </span>
-            <span
-              aria-hidden
-              className="absolute -bottom-1 left-0 h-px w-0 bg-ink-inverse transition-all duration-300 group-hover:w-full"
-            />
-          </a>
+              <span
+                className="font-mono uppercase tracking-[0.08em]"
+                style={{ fontSize: 'clamp(12px, 0.9vw, 14px)' }}
+              >
+                Notion Portfolio
+              </span>
+              <NotionIcon className="h-12 w-12 transition-transform duration-300 group-hover:scale-105" />
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* ─── [3] bottom micro — copyright ─── */}
-      <div className="px-side-m pb-10 md:px-side-t xl:px-side-d">
+      {/* ─── bottom micro — copyright ─── */}
+      <div className="px-side-m pb-12 md:px-side-t xl:px-side-d">
         <p
           data-footer-bottom
-          className="font-mono text-[12px] uppercase tracking-[0.1em] text-ink-inverse/45"
+          className="font-mono uppercase tracking-[0.1em] text-ink-inverse/45"
+          style={{ fontSize: '12px' }}
         >
           {footer.copyright}
         </p>

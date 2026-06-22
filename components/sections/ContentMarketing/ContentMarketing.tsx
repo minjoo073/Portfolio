@@ -16,7 +16,7 @@ import { useLenis } from '@/lib/hooks/useLenis'
  *       - 우측 자연 스크롤 (핀/스냅/내부 overflow 스크롤 전부 폐기 → 버벅임 구조적 제거)
  *       - 진입 시 좌우 "갈라짐" clip-path 리빌 유지
  *       - scrollspy(IntersectionObserver): 우측 현재 그룹 → 좌측 라벨 진해짐
- *       - 좌측 라벨 hover → 해당 그룹으로 스크롤 점프(부드럽게)
+ *       - 좌측 라벨 click → 해당 그룹으로 스크롤 점프(부드럽게). hover 점프는 폐기 — 스크롤 중 커서가 라벨에 얹히면 튕기던 버그 제거.
  */
 export function ContentMarketing() {
   const [activeId, setActiveId] = useState(contentGroups[0].id)
@@ -118,7 +118,7 @@ export function ContentMarketing() {
     return () => io.disconnect()
   }, [])
 
-  // 좌측 라벨 hover → 해당 그룹으로 스크롤 점프
+  // 좌측 라벨 click → 해당 그룹으로 스크롤 점프
   const jumpToGroup = (id: string) => {
     const el = rightColRef.current?.querySelector<HTMLElement>(`[data-cm-group="${id}"]`)
     if (!el) return
@@ -191,7 +191,7 @@ export function ContentMarketing() {
                 groups={contentGroups}
                 variant="stage2"
                 activeId={activeId}
-                onHover={jumpToGroup}
+                onSelect={jumpToGroup}
               />
             </div>
           </div>

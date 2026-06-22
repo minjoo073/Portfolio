@@ -198,7 +198,7 @@ export function AppLaunchPreview({ apps }: Props) {
               <div className="border-t border-dashed border-ink-inverse/25" aria-hidden />
 
               {/* ─── 4-2. 바코드 ASCII + PLAY STORE CTA ─── */}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-6">
                 <span
                   data-al-barcode
                   aria-hidden

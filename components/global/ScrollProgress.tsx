@@ -4,14 +4,17 @@ import { useEffect, useState } from 'react'
 import { useLenis } from '@/lib/hooks/useLenis'
 
 /**
- * ScrollProgress — 포폴 전체 진행 인디케이터 (좌측 고정).
+ * ScrollProgress — 포폴 진행 인디케이터 (B안: 진행선 + 떠다니는 라벨, 좌측 고정).
  *
- * - 세로 hairline 트랙 + 스크롤% 채움
- * - 섹션 경계마다 틱(dot), 현재 섹션 강조 + 섹션명 라벨
- * - 다크/라이트 교차 배경 대응: mix-blend-difference (흰색만 사용)
- * - 틱 클릭 → 해당 섹션으로 부드럽게 점프 (Lenis)
- * - 박스·글라스 X — hairline·dot·텍스트만 (디자인 규칙 준수)
+ * - 얇은 세로 선(트랙) + 스크롤% 채움
+ * - 현재 섹션명 라벨이 진행 위치를 따라 미끄러져 이동
+ * - 정적 목록/틱 없음 → 콘텐츠 방해 최소
+ * - Hero(intro)에선 숨김 → About 부터 표시
+ * - 다크/라이트 교차 대응: mix-blend-difference (흰색만)
+ * - 박스·글라스 X (디자인 규칙)
  */
+const MONO = 'var(--font-mono), var(--font-pretendard), monospace'
+
 const SECTIONS = [
   { id: 'intro', label: 'Intro' },
   { id: 'about', label: 'About' },
@@ -24,26 +27,19 @@ const SECTIONS = [
 
 export function ScrollProgress() {
   const [progress, setProgress] = useState(0)
-  const [fracs, setFracs] = useState<number[]>([])
   const [activeIdx, setActiveIdx] = useState(0)
   const lenis = useLenis()
 
   useEffect(() => {
     const compute = (scrollY: number, max: number) => {
       setProgress(max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0)
-      const next: number[] = []
       let active = 0
       SECTIONS.forEach((s, i) => {
         const el = document.getElementById(s.id)
-        if (!el) {
-          next.push(Number.NaN)
-          return
-        }
+        if (!el) return
         const top = el.getBoundingClientRect().top + scrollY
-        next.push(max > 0 ? Math.min(1, Math.max(0, top / max)) : 0)
-        if (scrollY >= top - window.innerHeight * 0.4) active = i
+        if (scrollY >= top - window.innerHeight * 0.3) active = i
       })
-      setFracs(next)
       setActiveIdx(active)
     }
     const fromWindow = () => {
@@ -54,7 +50,6 @@ export function ScrollProgress() {
     let raf = 0
     let detach: (() => void) | null = null
     if (lenis) {
-      // Lenis 부드러운 스크롤 값으로 매 프레임 구동 (window scroll 누락 방지)
       const onLenis = (e: { scroll: number; limit: number }) => compute(e.scroll, e.limit)
       lenis.on('scroll', onLenis)
       detach = () => lenis.off('scroll', onLenis)
@@ -68,7 +63,7 @@ export function ScrollProgress() {
     }
     const onResize = () => fromWindow()
     window.addEventListener('resize', onResize)
-    fromWindow() // 초기 1회 + 레이아웃 정착 후 재계산
+    fromWindow()
     const t1 = setTimeout(fromWindow, 600)
     const t2 = setTimeout(fromWindow, 1800)
     return () => {
@@ -80,26 +75,17 @@ export function ScrollProgress() {
     }
   }, [lenis])
 
-  const jump = (id: string) => {
-    const el = document.getElementById(id)
-    if (!el) return
-    if (lenis) lenis.scrollTo(el, { duration: 1.0 })
-    else el.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const activeFrac = fracs[activeIdx]
-  // Hero(intro=0)에선 숨김 → About(1) 이상부터 표시
   const visible = activeIdx >= 1
 
   return (
-    <nav
-      aria-label="섹션 진행"
+    <div
+      aria-hidden
       className="fixed z-40 hidden md:block"
       style={{
-        left: 'clamp(16px, 2vw, 40px)',
+        left: 'clamp(16px, 2vw, 36px)',
         top: '50%',
         transform: 'translateY(-50%)',
-        height: '44vh',
+        height: '42vh',
         mixBlendMode: 'difference',
         pointerEvents: 'none',
         opacity: visible ? 1 : 0,
@@ -119,66 +105,25 @@ export function ScrollProgress() {
             transition: 'height 120ms linear',
           }}
         />
-        {/* 섹션 틱 */}
-        {SECTIONS.map((s, i) => {
-          const f = fracs[i]
-          if (f === undefined || Number.isNaN(f)) return null
-          const isActive = i === activeIdx
-          return (
-            <button
-              key={s.id}
-              onClick={() => jump(s.id)}
-              aria-label={s.label}
-              aria-current={isActive ? 'true' : undefined}
-              style={{
-                position: 'absolute',
-                top: `${f * 100}%`,
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '16px',
-                height: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                pointerEvents: visible ? 'auto' : 'none',
-              }}
-            >
-              <span
-                style={{
-                  width: isActive ? '7px' : '4px',
-                  height: isActive ? '7px' : '4px',
-                  borderRadius: '50%',
-                  background: isActive ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.36)',
-                  transition: 'all 220ms ease',
-                }}
-              />
-            </button>
-          )
-        })}
-        {/* 현재 섹션명 */}
-        {activeFrac !== undefined && !Number.isNaN(activeFrac) && (
-          <span
-            style={{
-              position: 'absolute',
-              top: `${activeFrac * 100}%`,
-              left: '16px',
-              transform: 'translateY(-50%)',
-              whiteSpace: 'nowrap',
-              fontFamily: 'var(--font-mono), var(--font-pretendard), monospace',
-              fontSize: '11px',
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.6)',
-            }}
-          >
-            {SECTIONS[activeIdx].label}
-          </span>
-        )}
+        {/* 떠다니는 현재 섹션 라벨 */}
+        <span
+          style={{
+            position: 'absolute',
+            top: `${progress * 100}%`,
+            left: '14px',
+            transform: 'translateY(-50%)',
+            whiteSpace: 'nowrap',
+            fontFamily: MONO,
+            fontSize: '9.5px',
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.6)',
+            transition: 'top 120ms linear',
+          }}
+        >
+          {SECTIONS[activeIdx]?.label ?? ''}
+        </span>
       </div>
-    </nav>
+    </div>
   )
 }

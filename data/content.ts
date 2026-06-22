@@ -19,10 +19,10 @@ export const contentMarqueeWords = [
   'Promotion'
 ] as const
 
-/** Content & Marketing 진입 한글 paragraph — placeholder */
+/** Content & Marketing 진입 한글 paragraph */
 export const contentBody = [
-  '디자인 외의 영역에서도',
-  '앱 출시와 SNS 운영, 마케팅 콘텐츠 제작 경험을 통해',
+  '디자인 외의 영역에서도,',
+  '앱 출시부터 SNS 운영, 마케팅 콘텐츠 기획과 숏폼 영상 제작까지,',
   '브랜드가 사용자에게 닿는 과정을 직접 만들어 왔습니다.'
 ] as const
 
@@ -70,7 +70,7 @@ export const contentGroups: ContentGroup[] = [
   {
     id: 'promotion',
     index: '02',
-    label: 'PROMOTION',
+    label: 'SNS MARKETING',
     receiptMeta: '대표 4편',
     subLines: [
       '1인 진행 (기획 → 촬영 → 편집)',
@@ -110,7 +110,7 @@ export const contentGroups: ContentGroup[] = [
       cta: { label: 'Watch Campaign', href: '#' },
       // 통합안 (강팀 회의)
       editionNumber: '02',
-      titleKr: '공개 제작',
+      titleKr: '런칭 캠페인',
       titleSubKr: '티저 시리즈',
       titleEn: 'JARINGOBI · TEASER',
       releaseDate: 'May 2026',

@@ -1,23 +1,18 @@
-import type { FooterLink } from '@/lib/types/nav'
-
 export const footer = {
-  /** 구직 상태 라벨 — 채용 담당자에게 즉시 신호 */
-  status: 'Available for design opportunities',
+  /** 좌측 인사 */
+  thanks: 'Thank You',
+  thanksKr: '감사합니다',
 
-  /** 위치 */
-  location: 'Seoul, Korea',
+  /** 연락처 */
+  email: 'minju7731@naver.com',
+  github: 'https://github.com/minjoo073',
+  githubLabel: 'github.com/minjoo073',
+  /** 노션 전용 포트폴리오 — TODO(CEO): 실제 링크로 교체 */
+  notion: 'https://notion.so/parkminjoo',
 
-  /** 이메일 — 보통 사이즈로 노출 */
-  email: 'hello@parkminjoo.com',
+  /** 이력서 PDF — public/docs/park-minjoo-resume.pdf 에 파일 넣으면 작동 */
+  resume: '/docs/park-minjoo-resume.pdf',
+  resumeLabel: '이력서',
 
-  /** 강조 행 — 신입 포폴 메인 CTA */
-  resume: { label: 'Resume PDF', url: '/resume.pdf' },
-
-  /** 보조 채널 */
-  links: [
-    { label: 'GitHub', url: 'https://github.com/minjoo073' },
-    { label: 'Notion', url: 'https://notion.so/parkminjoo' }
-  ] satisfies FooterLink[],
-
-  copyright: '© 2026 Park Minjoo · Designed and built solo'
+  copyright: '© 2026 Park Minjoo · Designed and built solo',
 }

@@ -1,22 +1,70 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
 import { experienceGroups } from '@/data/experience'
+import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
 
 /**
  * Experience & Activities — About ↔ Web Projects 사이.
  *
  * 구조: 섹션 타이틀 → 카테고리별(라벨 + hairline) 3열 그리드.
  * 각 항목: 기간(mono) · 제목(테두리 선 박스 — 채움·글라스 X) · 세부 bullet.
- * 정적 렌더(애니 없음) — 기존 섹션 로직과 격리.
+ *
+ * 등장 효과 (A+B):
+ *  - 타이틀/라벨/항목 스태거 페이드업
+ *  - 카테고리 hairline 좌→우 그려짐(scaleX)
+ *  - 제목 선 박스 테두리가 좌→우로 그려짐(clip-path wipe)
+ *  - scroll-enter 1회, prefers-reduced-motion 폴백(정적)
  */
 export function Experience() {
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return // 정적 폴백
+
+    registerGsap()
+    const ctx = gsap.context(() => {
+      const title = root.querySelector('[data-ex-title]')
+      const hairlines = root.querySelectorAll('[data-ex-hairline]')
+      const labels = root.querySelectorAll('[data-ex-label]')
+      const items = root.querySelectorAll('[data-ex-item]')
+      const boxes = root.querySelectorAll('[data-ex-box]')
+
+      // 초기 상태
+      if (title) gsap.set(title, { opacity: 0, y: 18 })
+      gsap.set(labels, { opacity: 0, y: 10 })
+      gsap.set(hairlines, { scaleX: 0, transformOrigin: 'left center' })
+      gsap.set(items, { opacity: 0, y: 16 })
+      gsap.set(boxes, { clipPath: 'inset(0 100% 0 0 round 0.5rem)' })
+
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: root, start: 'top 75%', once: true },
+      })
+      if (title) tl.to(title, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0)
+      tl.to(hairlines, { scaleX: 1, duration: 0.7, ease: 'power3.inOut', stagger: 0.12 }, 0.15)
+      tl.to(labels, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.12 }, 0.2)
+      tl.to(items, { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out', stagger: 0.07 }, 0.3)
+      tl.to(boxes, { clipPath: 'inset(0 0% 0 0 round 0.5rem)', duration: 0.6, ease: 'power3.inOut', stagger: 0.07 }, 0.38)
+
+      gsap.delayedCall(0.3, () => ScrollTrigger.refresh())
+    }, root)
+
+    return () => ctx.revert()
+  }, [])
+
   return (
     <section
+      ref={rootRef}
       id="experience"
       data-section="experience"
-      className="relative bg-dark px-side-m py-[16vh] text-ink-inverse md:px-side-t xl:px-side-d"
+      className="relative z-20 bg-dark px-side-m pb-[12vh] pt-[24vh] text-ink-inverse md:px-side-t xl:px-side-d"
     >
       <div className="mx-auto max-w-[1680px]">
         {/* 섹션 타이틀 */}
         <h2
+          data-ex-title
           className="font-display font-medium leading-[0.95] tracking-tight text-ink-inverse"
           style={{ fontSize: 'clamp(40px, 4.4vw, 72px)' }}
         >
@@ -29,26 +77,31 @@ export function Experience() {
             <div key={group.category}>
               {/* 카테고리 라벨 + hairline */}
               <div className="flex items-center gap-5">
-                <span className="font-mono text-label uppercase tracking-[0.16em] text-ink-inverse/70">
+                <span
+                  data-ex-label
+                  className="font-mono font-medium uppercase tracking-[0.18em] text-ink-inverse"
+                  style={{ fontSize: 'clamp(13px, 0.95vw, 15px)' }}
+                >
                   {group.category}
                 </span>
-                <span className="h-px flex-1 bg-ink-inverse/15" aria-hidden />
+                <span data-ex-hairline className="h-px flex-1 bg-ink-inverse/15" aria-hidden />
               </div>
 
               {/* 3열 그리드 */}
               <div className="mt-9 grid grid-cols-1 gap-x-gutter-d gap-y-12 md:grid-cols-3">
                 {group.items.map((item, i) => (
-                  <div key={i}>
+                  <div key={i} data-ex-item>
                     {/* 기간 */}
                     <span
                       className="block font-mono uppercase tracking-[0.1em] text-ink-inverse/45"
-                      style={{ fontSize: 'clamp(11px, 0.72vw, 13px)' }}
+                      style={{ fontSize: 'clamp(10px, 0.6vw, 11px)', minHeight: '14px' }}
                     >
-                      {item.period}
+                      {item.period || ' '}
                     </span>
 
                     {/* 제목 — 테두리 선 박스 (채움·글라스 X) */}
                     <div
+                      data-ex-box
                       className="mt-3 rounded-lg border border-ink-inverse/40 px-5 py-3.5 text-center font-kr font-medium text-ink-inverse transition-colors duration-300 hover:border-ink-inverse/70"
                       style={{ fontSize: 'clamp(14px, 1vw, 16px)', lineHeight: 1.4 }}
                     >

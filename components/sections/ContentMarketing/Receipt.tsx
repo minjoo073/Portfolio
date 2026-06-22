@@ -8,7 +8,7 @@ interface Props {
   /** stage1: 큰 사이즈 viewport 가운데 / stage2: 작은 사이즈 좌측 */
   variant: 'stage1' | 'stage2'
   activeId?: string
-  onHover?: (id: string) => void
+  onSelect?: (id: string) => void
 }
 
 /**
@@ -18,10 +18,10 @@ interface Props {
  * 푸터 2줄 (TOTAL + SUMMARY)
  *
  * variant:
- *   stage1: 큰 사이즈, hover X — 시각 임팩트 우선
- *   stage2: 작은 사이즈, hover → onHover 콜백
+ *   stage1: 큰 사이즈, 인터랙션 X — 시각 임팩트 우선
+ *   stage2: 작은 사이즈, click → onSelect 콜백 (hover 점프 폐기 — 스크롤 중 튕김 방지)
  */
-export function Receipt({ groups, variant, activeId, onHover }: Props) {
+export function Receipt({ groups, variant, activeId, onSelect }: Props) {
   const isStage1 = variant === 'stage1'
 
   const width = isStage1
@@ -78,7 +78,19 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
                   !isStage1 && (isActive ? 'opacity-100' : 'opacity-40 hover:opacity-100'),
                   !isStage1 && 'cursor-pointer'
                 )}
-                onMouseEnter={isStage1 ? undefined : () => onHover?.(group.id)}
+                onClick={isStage1 ? undefined : () => onSelect?.(group.id)}
+                onKeyDown={
+                  isStage1
+                    ? undefined
+                    : (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          onSelect?.(group.id)
+                        }
+                      }
+                }
+                role={isStage1 ? undefined : 'button'}
+                tabIndex={isStage1 ? undefined : 0}
                 data-group-id={group.id}
                 data-active={isActive || undefined}
               >

@@ -282,7 +282,7 @@ export function PromotionVideoPreview(props: Props) {
         <div className="border-t border-dashed border-ink-inverse/25" aria-hidden />
 
         {/* ─── 바코드 + 영수증 번호 + CTA ─── */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-6">
           <span
             data-pv-barcode
             aria-hidden
