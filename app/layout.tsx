@@ -3,6 +3,7 @@ import { inter, display, pretendard, mono } from './fonts'
 import { ReducedMotionProvider } from '@/components/global/ReducedMotionProvider'
 import { SmoothScrollProvider } from '@/components/global/SmoothScrollProvider'
 import { Navigation } from '@/components/global/Navigation'
+import { ScrollProgress } from '@/components/global/ScrollProgress'
 import { SvgFilters } from '@/components/global/SvgFilters'
 import './globals.css'
 
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SmoothScrollProvider>
             <SvgFilters />
             <Navigation />
+            <ScrollProgress />
             {/* CustomCursor 제거(CEO 2026-06-17) — lerp 지연 체감 개선. 복구하려면 재마운트. */}
             <main>{children}</main>
           </SmoothScrollProvider>

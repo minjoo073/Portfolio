@@ -179,77 +179,45 @@ function HeroCard({ project, total }: ProjectCardProps) {
     </div>
   )
 
-  /* ── 메타 레일 (세로 스택, 12px row-gap) ── */
-  const metaRail = (
-    <div
-      className="flex flex-col"
-      style={{ width: '100%', gap: '12px' }}
-      data-meta
-    >
-      {/* 연월 */}
-      <span
-        className="font-mono text-ink-inverse/50"
-        style={{ fontSize: vw(14, 12), lineHeight: 1.8, letterSpacing: '0.08em' }}
-      >
-        {krDate(project.date)}
-      </span>
-      {/* 카테고리 */}
-      <span
-        className="font-kr text-ink-inverse/50"
-        style={{ fontSize: vw(14, 12), lineHeight: 1.8, letterSpacing: '0.08em' }}
-      >
-        {project.category}
-      </span>
-      {/* 오리지널 / 리디자인 */}
-      <span
-        className="font-kr"
-        style={{
-          fontSize: vw(14, 12),
-          lineHeight: 1.8,
-          letterSpacing: '0.08em',
-          color: project.workType === 'original'
-            ? 'rgba(248,247,244,0.9)'
-            : 'rgba(248,247,244,0.5)',
-        }}
-      >
-        {project.workType === 'original' ? '오리지널' : '리디자인'}
-      </span>
-      {/* 1인 / 팀 + 기여도 — 정직성 헌장 */}
-      {project.scale && (
-        <span
-          className="font-kr"
-          style={{
-            fontSize: vw(14, 12),
-            lineHeight: 1.8,
-            letterSpacing: '0.08em',
-            color: project.scale.includes('팀')
-              ? 'rgba(248,247,244,0.7)'
-              : 'rgba(248,247,244,0.5)',
-          }}
-        >
-          {project.scale}
-        </span>
-      )}
-      {/* 역할 레일용 축약 (역할 있을 때만) */}
-      {roleStr && (
-        <span
-          className="font-kr text-ink-inverse/50"
-          style={{ fontSize: vw(14, 12), lineHeight: 1.8, letterSpacing: '0.08em' }}
-        >
-          {roleStr}
-        </span>
-      )}
-    </div>
-  )
-
   /* ── 본문 컬럼 ── */
   const bodyCol = (
     <div className="relative flex flex-col" style={{ width: '100%' }}>
 
-      {/* 회차 카운터 (우상단 — 본문 컬럼 내 우측 정렬) */}
-      <div className="flex justify-end">
-        {/* perspective wrapper — Index Flip (Option 5) */}
-        <div style={{ perspective: '600px' }}>
+      {/* eyebrow(핵심 메타: 작업 성격·규모·기여도) + 회차 카운터 */}
+      <div className="flex items-baseline justify-between gap-4" data-meta>
+        <div className="flex flex-wrap items-baseline" style={{ gap: '8px' }}>
+          <span
+            className="font-kr"
+            style={{
+              fontSize: vw(15, 13),
+              letterSpacing: '0.04em',
+              color: project.workType === 'original'
+                ? 'rgba(248,247,244,0.9)'
+                : 'rgba(248,247,244,0.55)',
+            }}
+          >
+            {project.workType === 'original' ? '오리지널' : '리디자인'}
+          </span>
+          {project.scale && (
+            <>
+              <span className="font-kr" style={{ fontSize: vw(15, 13), color: 'rgba(248,247,244,0.25)' }}>·</span>
+              <span
+                className="font-kr"
+                style={{
+                  fontSize: vw(15, 13),
+                  letterSpacing: '0.04em',
+                  color: project.scale.includes('팀')
+                    ? 'rgba(248,247,244,0.85)'
+                    : 'rgba(248,247,244,0.55)',
+                }}
+              >
+                {project.scale}
+              </span>
+            </>
+          )}
+        </div>
+        {/* perspective wrapper — Index Flip */}
+        <div style={{ perspective: '600px', flexShrink: 0 }}>
           <span
             className="font-mono text-ink-inverse/40"
             style={{
@@ -274,12 +242,21 @@ function HeroCard({ project, total }: ProjectCardProps) {
           lineHeight: 0.88,
           letterSpacing: '-0.02em',
           fontWeight: 400,
-          marginTop: vw(16, 12),
+          marginTop: vw(20, 14),
         }}
         data-title
       >
         {wordmark}
       </h3>
+
+      {/* 연월 · 카테고리 (강등 — 보조 1줄) */}
+      <p
+        className="font-kr text-ink-inverse/45"
+        style={{ fontSize: vw(14, 12), letterSpacing: '0.06em', marginTop: vw(18, 14) }}
+        data-meta
+      >
+        {krDate(project.date)} · {project.category}
+      </p>
 
       {/* 한 줄 카피 */}
       {project.tagline && (
@@ -364,16 +341,15 @@ function HeroCard({ project, total }: ProjectCardProps) {
    *
    * DOM 순서도 grid-template-columns 순서에 맞춰 분기.
    */
-  const RAIL   = `clamp(105px, 7.29vw, 140px)`
-  const GAP1   = `clamp(45px, 3.125vw, 60px)`
-  const BODY   = `minmax(0, clamp(360px, 25vw, 480px))`
-  const GAP2   = `clamp(38px, 2.604vw, 50px)`
-  // 1fr — 남는 공간 전체를 차지. vw 계산식 대신 fail-safe.
-  // 비주얼 박스 자체는 maxWidth clamp(660px,45.83vw,880px) 로 캡.
+  // metaRail 제거(핵심 메타는 타이틀 위 eyebrow로 이동) → 2컬럼 구조.
+  // 좌측 rail 자리는 전역 ScrollProgress 인디케이터에 양보.
+  const BODY   = `minmax(0, clamp(380px, 28vw, 540px))`
+  const GAP2   = `clamp(48px, 4vw, 96px)`
+  // 1fr — 남는 공간 전체를 차지. 비주얼 박스는 maxWidth clamp(660px,45.83vw,880px) 로 캡.
   const VISUAL = `minmax(0, 1fr)`
 
-  const gridColsLeft  = `${RAIL} ${GAP1} ${BODY} ${GAP2} ${VISUAL}`
-  const gridColsRight = `${VISUAL} ${GAP2} ${BODY} ${GAP1} ${RAIL}`
+  const gridColsLeft  = `${BODY} ${GAP2} ${VISUAL}`
+  const gridColsRight = `${VISUAL} ${GAP2} ${BODY}`
 
   return (
     <article
@@ -395,19 +371,15 @@ function HeroCard({ project, total }: ProjectCardProps) {
         }}
       >
         {isRight ? (
-          /* ── right variant: [visual] [gap2] [body] [gap1] [rail] ── */
+          /* ── right variant: [visual] [gap2] [body] ── */
           <>
             {visualBlock}
             <div aria-hidden />
             {bodyCol}
-            <div aria-hidden />
-            {metaRail}
           </>
         ) : (
-          /* ── left variant: [rail] [gap1] [body] [gap2] [visual] ── */
+          /* ── left variant: [body] [gap2] [visual] ── */
           <>
-            {metaRail}
-            <div aria-hidden />
             {bodyCol}
             <div aria-hidden />
             {visualBlock}
