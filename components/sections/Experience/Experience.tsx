@@ -11,7 +11,8 @@ import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
  * 각 항목: 기간(mono) · 제목(테두리 선 박스 — 채움·글라스 X) · 세부 bullet.
  *
  * 등장 효과 (A+B):
- *  - 타이틀/라벨/항목 스태거 페이드업
+ *  - 타이틀: 단어별 fade+rise 스태거 (overflow 마스크 X → 글자 잘림 방지)
+ *  - 라벨/항목 스태거 페이드업
  *  - 카테고리 hairline 좌→우 그려짐(scaleX)
  *  - 제목 선 박스 테두리가 좌→우로 그려짐(clip-path wipe)
  *  - scroll-enter 1회, prefers-reduced-motion 폴백(정적)
@@ -26,14 +27,14 @@ export function Experience() {
 
     registerGsap()
     const ctx = gsap.context(() => {
-      const title = root.querySelector('[data-ex-title]')
+      const titleWords = root.querySelectorAll('[data-ex-title-word]')
       const hairlines = root.querySelectorAll('[data-ex-hairline]')
       const labels = root.querySelectorAll('[data-ex-label]')
       const items = root.querySelectorAll('[data-ex-item]')
       const boxes = root.querySelectorAll('[data-ex-box]')
 
-      // 초기 상태
-      if (title) gsap.set(title, { opacity: 0, y: 18 })
+      // 초기 상태 — 타이틀 단어 살짝 아래 + 투명 (overflow 마스크 X → 글자 잘림 없음)
+      gsap.set(titleWords, { opacity: 0, y: 30 })
       gsap.set(labels, { opacity: 0, y: 10 })
       gsap.set(hairlines, { scaleX: 0, transformOrigin: 'left center' })
       gsap.set(items, { opacity: 0, y: 16 })
@@ -42,11 +43,12 @@ export function Experience() {
       const tl = gsap.timeline({
         scrollTrigger: { trigger: root, start: 'top 75%', once: true },
       })
-      if (title) tl.to(title, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0)
-      tl.to(hairlines, { scaleX: 1, duration: 0.7, ease: 'power3.inOut', stagger: 0.12 }, 0.15)
-      tl.to(labels, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.12 }, 0.2)
-      tl.to(items, { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out', stagger: 0.07 }, 0.3)
-      tl.to(boxes, { clipPath: 'inset(0 0% 0 0 round 0.5rem)', duration: 0.6, ease: 'power3.inOut', stagger: 0.07 }, 0.38)
+      // 타이틀 단어 fade+rise — 차례로 떠오름 (속도 살짝 늦춤)
+      tl.to(titleWords, { opacity: 1, y: 0, duration: 1.1, ease: 'power4.out', stagger: 0.16 }, 0)
+      tl.to(hairlines, { scaleX: 1, duration: 0.9, ease: 'power3.inOut', stagger: 0.16 }, 0.2)
+      tl.to(labels, { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out', stagger: 0.16 }, 0.28)
+      tl.to(items, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', stagger: 0.1 }, 0.42)
+      tl.to(boxes, { clipPath: 'inset(0 0% 0 0 round 0.5rem)', duration: 0.78, ease: 'power3.inOut', stagger: 0.1 }, 0.52)
 
       gsap.delayedCall(0.3, () => ScrollTrigger.refresh())
     }, root)
@@ -61,14 +63,23 @@ export function Experience() {
       data-section="experience"
       className="relative z-20 bg-dark px-side-m pb-[12vh] pt-[24vh] text-ink-inverse md:px-side-t xl:px-side-d"
     >
-      <div className="mx-auto max-w-[1680px]">
+      <div>
         {/* 섹션 타이틀 */}
         <h2
           data-ex-title
           className="font-display font-medium leading-[0.95] tracking-tight text-ink-inverse"
           style={{ fontSize: 'clamp(40px, 4.4vw, 72px)' }}
         >
-          Experience &amp; Activities
+          {['Experience', '&', 'Activities'].map((word, i, arr) => (
+            <span
+              key={i}
+              data-ex-title-word
+              className="inline-block"
+              style={{ marginRight: i < arr.length - 1 ? '0.25em' : 0 }}
+            >
+              {word}
+            </span>
+          ))}
         </h2>
 
         {/* 카테고리 그룹 */}

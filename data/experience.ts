@@ -24,7 +24,7 @@ export const experienceGroups: ExperienceGroup[] = [
         period: '2026.03 – 05',
         title: '개인 SNS 채널 운영 · @fancy._ju',
         details: [
-          'UI/UX 학습 일상을 담은 스터디로그 채널 — 3개월 만에 80K 도달 (80,193 views)',
+          'UI/UX 학습 일상을 담은 스터디로그 채널 — 3개월 만에 80K 도달',
           '주 3–4회 발행 · 기획·촬영·편집 전 과정 1인 운영',
           '메디큐브 올리브영 · Ponder AI 등 브랜드 협업 제안 인바운드',
         ],
