@@ -16,6 +16,9 @@
 
 # misc
 .DS_Store
+._*
+# macOS custom folder icon (resource-fork file; invalid filename on Windows)
+Icon?
 *.pem
 
 # debug
