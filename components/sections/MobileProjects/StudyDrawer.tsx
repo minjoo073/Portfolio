@@ -147,26 +147,39 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
         ×
       </button>
 
-      {/* drawer panel */}
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${title} 제작과정`}
+      {/* off-canvas 클리핑 래퍼 — 닫힘(translateX(100%)) 시 화면 밖 패널이
+          문서 가로 스크롤을 만들지 않도록 viewport 폭으로 클립.
+          fixed 요소라 body overflow-x:clip 으로는 안 잡혀서 국소 래퍼 필요.
+          overflow-x:clip = 스크롤 컨테이너 미생성 → 세로 그림자/스크롤 영향 없음. */}
+      <div
         style={{
           position: 'fixed',
-          top: 0,
-          right: 0,
-          height: '100vh',
-          width: 'min(80%, 1400px)',
-          background: '#fff',
+          inset: 0,
           zIndex: 101,
-          transform: open ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 450ms cubic-bezier(0.22,0.61,0.36,1)',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '-24px 0 80px rgba(0,0,0,0.32)',
+          pointerEvents: 'none',
+          overflowX: 'clip',
         }}
       >
+        {/* drawer panel */}
+        <aside
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${title} 제작과정`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            height: '100%',
+            width: 'min(80%, 1400px)',
+            background: '#fff',
+            transform: open ? 'translateX(0)' : 'translateX(100%)',
+            transition: 'transform 450ms cubic-bezier(0.22,0.61,0.36,1)',
+            pointerEvents: open ? 'auto' : 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '-24px 0 80px rgba(0,0,0,0.32)',
+          }}
+        >
         {/* iframe 영역 — wrapper 에도 data-lenis-prevent (closest 매칭용 안전망) */}
         <div
           style={{ flex: 1, position: 'relative', overflow: 'hidden' }}
@@ -237,6 +250,7 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
           )}
         </div>
       </aside>
+      </div>
     </>,
     document.body
   )

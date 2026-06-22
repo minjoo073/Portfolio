@@ -29,6 +29,9 @@
   body {
     font-family: var(--font-inter), var(--font-pretendard), system-ui, sans-serif;
     overscroll-behavior: none;
+    /* off-canvas StudyDrawer(translateX(100%)) 등 화면 밖 fixed 요소가 만드는
+       가로 스크롤바 차단. clip 은 스크롤 컨테이너를 안 만들어 sticky/Lenis 영향 없음. */
+    overflow-x: clip;
   }
 
   /* 커스텀 커서 제거(CEO 2026-06-17) — lerp 지연이 "마우스 막힘" 느낌 유발. 네이티브 커서 복원. */
