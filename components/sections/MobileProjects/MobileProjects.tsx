@@ -37,7 +37,7 @@ import { mobileProjects } from '@/data/mobile-projects'
 import { AppPage } from './AppPage'
 
 const TOTAL_PAGES = 2
-const COOLDOWN_MS = 900
+const COOLDOWN_MS = 1050
 const MIN_DELTA   = 5
 const TOUCH_THRESHOLD = 50
 
@@ -105,22 +105,24 @@ export function MobileProjects() {
       const goTo = (nextIndex: number) => {
         const prevIndex = currentPageRef.current
 
-        // reset 직전 페이지
         const prevEl = getPageEl(prevIndex)
-        if (prevEl) resetPage(prevEl)
 
-        // track 이동 (50% 단위)
+        // track 이동 (50% 단위) — 이전 페이지는 *보인 채* 슬라이드되고,
+        // 화면 밖으로 빠진 뒤에 reset (깜빡임 방지 + 재방문 시 재등장용)
         gsap.to(track, {
           x: `${nextIndex * -50}%`,
-          duration: 0.85,
-          ease: 'power3.inOut',
+          duration: 1.0,
+          ease: 'power2.inOut',
           overwrite: 'auto',
+          onComplete: () => {
+            if (prevEl) resetPage(prevEl)
+          },
         })
 
         // 실제 scrollY 도 동기 — sticky 가 page N 위치에 머물게 (역스크롤 시 page 0 로 자연 복귀)
         const targetY = sectionTop + nextIndex * window.innerHeight
         lenisRef.current?.scrollTo(targetY, {
-          duration: 0.85,
+          duration: 1.0,
           easing: (t: number) =>
             t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
           lock: false,
@@ -350,8 +352,12 @@ export function MobileProjects() {
                 if (!track) return
                 const nextIndex = 1
                 const prevEl = sectionRef.current?.querySelector<HTMLElement>('[data-page="0"]')
-                if (prevEl) gsap.set(prevEl.querySelectorAll('[data-reveal]'), { y: 20, opacity: 0 })
-                gsap.to(track, { x: '-50%', duration: 0.85, ease: 'power3.inOut', overwrite: 'auto' })
+                gsap.to(track, {
+                  x: '-50%', duration: 1.0, ease: 'power2.inOut', overwrite: 'auto',
+                  onComplete: () => {
+                    if (prevEl) gsap.set(prevEl.querySelectorAll('[data-reveal]'), { y: 20, opacity: 0 })
+                  },
+                })
                 const nextEl = sectionRef.current?.querySelector<HTMLElement>('[data-page="1"]')
                 if (nextEl) gsap.delayedCall(0.15, () => {
                   const targets = nextEl.querySelectorAll('[data-reveal]')
