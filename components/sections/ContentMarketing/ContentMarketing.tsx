@@ -67,35 +67,35 @@ export function ContentMarketing() {
       if (stage2Left) gsap.set(stage2Left, { clipPath: 'inset(0% 0% 0% 100%)' })
       if (stage2Right) gsap.set(stage2Right, { clipPath: 'inset(0% 100% 0% 0%)' })
 
-      // outer height 250vh = sticky 100vh + 진행 150vh
-      // sticky 잡힘 = outer top 0 ~ -150vh (timeline 0 ~ 0.6)
-      // sticky 풀린 후 자연 scroll = -150 ~ -250vh (timeline 0.6 ~ 1.0, 100vh)
+      // outer height 260vh = sticky 100vh + 진행 160vh
+      // sticky 잡힘 = outer top 0 ~ -160vh (timeline 0 ~ 0.615)
+      // sticky 풀린 후 자연 scroll = -160 ~ -260vh (timeline 0.615 ~ 1.0, 100vh)
       // 단계:
-      //  0 ~ 0.4   Stage 1 자라남 (sticky 잡힘, 100vh)
-      //  0.4 ~ 0.6 정착 hold *짧게* (sticky 잡힘 끝, 50vh — 영수증 *완전 visible 한 번 봄*)
-      //  0.6 = sticky 풀림 = 영수증 *자연 위로 이동 시작*
-      //  0.62 ~ 0.95 영수증 자연 위로 이동 + *잉크 stagger 동시* (= 사용자 의도, 83vh)
-      //  0.95 ~ 1.0 hairline + 캡션 (viewport 하단)
+      //  0 ~ 0.56    Stage 1 자라남 (sticky 잡힘)
+      //  0.56 ~ 0.615 짧은 정착 hold (영수증 *완전 visible 한 번 봄*)
+      //  0.615 = sticky 풀림 = 영수증 *자연 위로 이동 시작*
+      //  0.64 ~ 0.82 영수증 자연 위로 이동 + *잉크 stagger 동시*
+      //  0.82 ~ 1.0  hairline + 캡션 (viewport 하단)
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: outer,
           start: 'top top',
-          end: '+=380%',
+          end: '+=260%',
           scrub: 0.6,
           invalidateOnRefresh: true,
         },
       })
 
-      // Stage 1 자라남 — 380vh outer 안 sticky 풀림 = progress 0.74
-      // 자라남 끝 ≤ 0.74 보장 (sticky 잡힌 동안 자라남 완료)
-      //   선 0 ~ 0.25 (천천히 좌→우 벌어짐)
-      //   paragraph 0.28 ~ 0.55
-      //   receipt 0.3 ~ 0.7 (자라남 끝 = sticky 풀림 직전)
-      tl.to(line, { width: '60vw', ease: 'power3.inOut', duration: 0.25 }, 0)
-      tl.to(paragraph, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.27 }, 0.28)
-      tl.to(receipt, { maxHeight: '90vh', ease: 'power2.out', duration: 0.4 }, 0.3)
+      // Stage 1 자라남 — 260vh outer 안 sticky 풀림 = progress 0.615
+      // 자라남 끝 ≤ 0.615 보장 (sticky 잡힌 동안 자라남 완료)
+      //   선 0 ~ 0.2 (천천히 좌→우 벌어짐)
+      //   paragraph 0.22 ~ 0.44
+      //   receipt 0.24 ~ 0.56 (자라남 끝 = sticky 풀림 직전, 짧은 hold 후 풀림)
+      tl.to(line, { width: '60vw', ease: 'power3.inOut', duration: 0.2 }, 0)
+      tl.to(paragraph, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.22 }, 0.22)
+      tl.to(receipt, { maxHeight: '90vh', ease: 'power2.out', duration: 0.32 }, 0.24)
 
-      // 잉크 회수 — 자라남 끝 (0.7) → hold 0.15 → sticky 풀림 (0.74) 후 잉크 fade 시작 (0.85)
+      // 잉크 회수 — 자라남 끝 (0.56) → 짧은 hold → sticky 풀림 (0.615) 직후 잉크 fade 시작 (0.64)
       // sticky 풀림 후 영수증 자연 위로 이동 + 잉크 fade 동시 진행
       if (receiptLines && receiptLines.length > 0) {
         tl.to(receiptLines, {
@@ -103,16 +103,16 @@ export function ContentMarketing() {
           filter: 'blur(1.2px)',
           stagger: { each: 0.012, from: 'start' },
           ease: 'power1.in',
-        }, 0.85)
+        }, 0.64)
       }
 
 
       // 영수증 사라진 후 hairline + 캡션
       if (nextEntryLine) {
-        tl.to(nextEntryLine, { width: '30vw', opacity: 1, ease: 'power2.out' }, 0.95)
+        tl.to(nextEntryLine, { width: '30vw', opacity: 1, ease: 'power2.out' }, 0.82)
       }
       if (nextEntryCaption) {
-        tl.to(nextEntryCaption, { opacity: 1, ease: 'power1.out' }, 0.97)
+        tl.to(nextEntryCaption, { opacity: 1, ease: 'power1.out' }, 0.85)
       }
 
       // Stage 2 — 가운데에서 양쪽 갈라짐 (한 번만 play, 역방향 스크롤 시 reveal 유지)
@@ -130,9 +130,9 @@ export function ContentMarketing() {
         tl2.to(stage2Left, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' }, 0)
         tl2.to(stage2Right, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' }, 0)
 
-        // Stage 2 pin + snap — pin 영역 *적정* (momentum 흡수 + 단축 균형)
-        // pin 영역 200vh = 그룹당 67vh (강 swipe momentum 50vh 정도 흡수 가능)
-        // snap delay 0.03 + duration 0.2~0.35 = 가장 빠른 정착
+        // Stage 2 pin + snap — pin 영역 단축 (전환 마찰 ↓, 내부 스크롤 콘텐츠는 100% 유지)
+        // pin 영역 120vh = 그룹당 60vh (전환에 필요한 페이지 스크롤량 축소)
+        // snap delay 0 + duration 0.15~0.25 = 빠른 정착
         // snapTo ±1 clamp = momentum 으로 1 그룹 통과 시도 시 clamp 가 다음 그룹만 허용
         ScrollTrigger.create({
           trigger: stage2,
@@ -140,7 +140,7 @@ export function ContentMarketing() {
           pinSpacing: true,
           anticipatePin: 1,
           start: 'top top',
-          end: '+=200%',
+          end: '+=120%',
           invalidateOnRefresh: true,
           snap: {
             snapTo: (progress) => {
@@ -151,9 +151,9 @@ export function ContentMarketing() {
               const clamped = Math.max(last - 1, Math.min(last + 1, desired))
               return clamped / groupCount
             },
-            duration: { min: 0.2, max: 0.35 },
+            duration: { min: 0.15, max: 0.25 },
             ease: 'power2.inOut',
-            delay: 0.03,
+            delay: 0,
             directional: false,
           },
           onSnapComplete: (self) => {
@@ -183,7 +183,7 @@ export function ContentMarketing() {
       <div
         ref={stage1OuterRef}
         className="relative"
-        style={{ height: '380vh' }}
+        style={{ height: '260vh' }}
       >
         <div className="sticky top-0 h-screen w-full px-side-m md:px-side-t xl:px-side-d">
           {/* paragraph — absolute 위쪽 고정 */}
@@ -272,22 +272,22 @@ export function ContentMarketing() {
         </div>
       </div>
 
-      {/* ─── Spacer 100vh — 영수증 자연 사라지고 Stage 2 진입 사이 빈 영역 ─── */}
-      <div aria-hidden style={{ height: '100vh' }} />
+      {/* ─── Spacer 40vh — 영수증 자연 사라지고 Stage 2 진입 사이 짧은 호흡 ─── */}
+      <div aria-hidden style={{ height: '40vh' }} />
 
       {/* ─── [2] Receipt compact (좌) + PreviewArea (우) — 가운데에서 양쪽 갈라짐 ─── */}
       <div
         data-cm-stage2-wrap
-        className="relative grid min-h-screen-dvh grid-cols-12 gap-gutter-d px-side-m py-[10vh] md:px-side-t xl:px-side-d"
+        className="relative mx-auto grid min-h-screen-dvh max-w-[1680px] grid-cols-12 gap-gutter-d px-side-m py-[6vh] md:items-center md:content-center md:px-side-t xl:px-side-d"
         data-stage="2"
       >
         {/* 좌 — Receipt compact (clip-path: 가운데 → 좌측 으로 열림) */}
         <div
           data-cm-stage2-left
-          className="col-span-12 md:col-span-5 md:pr-6"
+          className="col-span-12 md:col-span-6 md:pr-14"
           style={{ clipPath: 'inset(0% 0% 0% 100%)', willChange: 'clip-path' }}
         >
-          <div className="sticky" style={{ top: '6vh' }}>
+          <div>
             <Receipt
               groups={contentGroups}
               variant="stage2"
@@ -300,7 +300,7 @@ export function ContentMarketing() {
         {/* 우 — PreviewArea (clip-path: 가운데 → 우측 으로 열림) */}
         <div
           data-cm-stage2-right
-          className="col-span-12 md:col-span-7 md:pl-6"
+          className="col-span-12 md:col-span-6 md:pl-14"
           style={{ clipPath: 'inset(0% 100% 0% 0%)', willChange: 'clip-path' }}
         >
           <PreviewArea group={activeGroup} />

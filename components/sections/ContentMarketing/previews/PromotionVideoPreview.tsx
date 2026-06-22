@@ -138,7 +138,7 @@ export function PromotionVideoPreview(props: Props) {
 
   return (
     <div ref={containerRef} className="flex flex-col" data-preview="promotion-video">
-      <article className="flex max-w-[640px] flex-col gap-[4vh] py-[3vh]">
+      <article className="flex max-w-[720px] flex-col gap-[4vh] py-[3vh]">
         {/* ─── 1. META strip ─── */}
         <div
           data-pv-meta

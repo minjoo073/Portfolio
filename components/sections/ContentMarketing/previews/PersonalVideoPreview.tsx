@@ -141,7 +141,7 @@ export function PersonalVideoPreview(props: Props) {
   return (
     <div ref={containerRef} className="flex flex-col" data-preview="personal-video">
       {/* ─── 01/02 영수증 구조 통일 ─── */}
-      <article className="flex max-w-[640px] flex-col gap-[4vh] py-[3vh]">
+      <article className="flex max-w-[720px] flex-col gap-[4vh] py-[3vh]">
 
         {/* ─── 1. META strip (01/02 동일) ─── */}
         <div

@@ -26,7 +26,7 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
 
   const width = isStage1
     ? 'clamp(280px, 42vw, 540px)'
-    : 'clamp(280px, 32vw, 460px)'
+    : 'clamp(320px, 40vw, 640px)'
 
   return (
     <div
@@ -42,7 +42,7 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
       <div
         className={cn(
           'border-b border-dashed border-ink-primary/25 px-6 md:px-8',
-          isStage1 ? 'py-5 md:py-6' : 'py-6 md:py-8'
+          isStage1 ? 'py-5 md:py-6' : 'py-8 md:py-12'
         )}
       >
         <p data-cm-receipt-line className={cn(
@@ -52,13 +52,13 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
           PARK MINJOO / RECORD
         </p>
         <p data-cm-receipt-line className={cn(
-          'mt-1 font-kr tracking-[0.02em] text-ink-muted/80',
+          'mt-2 font-kr tracking-[0.02em] text-ink-muted/80',
           isStage1 ? 'text-label' : 'text-label md:text-[12.5px]'
         )}>
           발행 · 2026
         </p>
         <p data-cm-receipt-line className={cn(
-          'mt-0.5 font-kr tracking-[0.02em] text-ink-muted/80',
+          'mt-1 font-kr tracking-[0.02em] text-ink-muted/80',
           isStage1 ? 'text-label' : 'text-label md:text-[12.5px]'
         )}>
           카테고리 · 콘텐츠 &amp; 마케팅
@@ -66,8 +66,8 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
       </div>
 
       {/* ─── 본문 ─── */}
-      <div className={cn('px-6 md:px-8', isStage1 ? 'py-6 md:py-8' : 'py-7 md:py-9')}>
-        <ul className={cn('flex flex-col', isStage1 ? 'gap-4 md:gap-5' : 'gap-4 md:gap-6')}>
+      <div className={cn('px-6 md:px-8', isStage1 ? 'py-6 md:py-8' : 'py-8 md:py-12')}>
+        <ul className={cn('flex flex-col', isStage1 ? 'gap-4 md:gap-5' : 'gap-8 md:gap-12')}>
           {groups.map(group => {
             const isActive = group.id === activeId
             return (
@@ -110,7 +110,7 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
                 {/* sub-lines (라벨 아래 들여쓰기) — L4: 가장 작은 메타 */}
                 <ul className={cn(
                   'flex flex-col',
-                  isStage1 ? 'ml-8 gap-1 md:ml-12' : 'ml-8 gap-1.5 md:ml-10'
+                  isStage1 ? 'ml-8 gap-1 md:ml-12' : 'ml-8 gap-2.5 md:ml-10'
                 )}>
                   {group.subLines.map((line, i) => (
                     <li
@@ -120,7 +120,7 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
                         'font-kr tracking-[0.02em] text-ink-muted/70',
                         isStage1
                           ? 'text-[11px] md:text-xs'
-                          : 'text-xs md:text-[13px]'
+                          : 'text-xs md:text-sm'
                       )}
                     >
                       └ {line}
@@ -137,7 +137,7 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
       <div
         className={cn(
           'border-t border-dashed border-ink-primary/25 px-6 md:px-8',
-          isStage1 ? 'py-5 md:py-6' : 'py-6 md:py-8'
+          isStage1 ? 'py-5 md:py-6' : 'py-8 md:py-12'
         )}
       >
         <div data-cm-receipt-line className="flex items-baseline justify-between gap-4">

@@ -96,7 +96,7 @@ export function AppLaunchPreview({ apps }: Props) {
         return (
           <article
             key={app.name}
-            className="relative max-w-[640px] py-[3vh]"
+            className="relative max-w-[720px] py-[3vh]"
           >
             {/* ─── Content wrapper ─── */}
             <div className="relative flex flex-col gap-[4vh]" style={{ zIndex: 10 }}>

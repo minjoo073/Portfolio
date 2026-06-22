@@ -166,7 +166,7 @@ export function AboutIndex() {
               }}
             >
               <Column en="About" kr="기본정보">
-                <div className="font-kr text-ink-inverse flex flex-col gap-2 text-[16px]">
+                <div className="font-kr text-ink-inverse flex flex-col gap-2 text-[17px]">
                   <span>{about.basicInfo.birth}</span>
                   <span>{about.basicInfo.name}</span>
                   <span>{about.basicInfo.phone}</span>
@@ -183,8 +183,8 @@ export function AboutIndex() {
                 <ul className="flex flex-col gap-3">
                   {about.education.map((e) => (
                     <li key={e.name} className="flex flex-col gap-0.5">
-                      <span className="font-kr text-ink-inverse text-[16px]">{e.name}</span>
-                      <span className="font-kr text-ink-inverse/55 text-[13px]">{e.status}</span>
+                      <span className="font-kr text-ink-inverse text-[17px]">{e.name}</span>
+                      <span className="font-kr text-ink-inverse/55 text-[14px]">{e.status}</span>
                     </li>
                   ))}
                 </ul>
@@ -194,11 +194,11 @@ export function AboutIndex() {
                 <ul className="flex flex-col gap-2.5">
                   {about.certificates.map((c) => (
                     <li key={c.name} className="flex flex-col gap-0.5">
-                      <span className="font-kr text-ink-inverse text-[15px] leading-[1.35]">
+                      <span className="font-kr text-ink-inverse text-[16px] leading-[1.35]">
                         {c.name}
                       </span>
                       {(c.issuer || c.date) && (
-                        <span className="font-kr text-ink-inverse/55 text-[13px]">
+                        <span className="font-kr text-ink-inverse/55 text-[14px]">
                           {c.issuer ?? ''}
                           {c.issuer && c.date ? ' ㅣ ' : ''}
                           {c.date ?? ''}
@@ -213,10 +213,10 @@ export function AboutIndex() {
                 <div className="flex flex-col gap-3">
                   {Object.entries(about.skills).map(([cat, items]) => (
                     <div key={cat} className="flex flex-col gap-1">
-                      <span className="font-kr text-ink-inverse/55 text-[13px]">{cat}</span>
+                      <span className="font-kr text-ink-inverse/55 text-[14px]">{cat}</span>
                       <div className="flex flex-wrap gap-x-2.5 gap-y-0.5">
                         {(items as readonly string[]).map((t, idx, arr) => (
-                          <span key={t} className="font-kr text-ink-inverse text-[15px]">
+                          <span key={t} className="font-kr text-ink-inverse text-[16px]">
                             {t}
                             {idx < arr.length - 1 && (
                               <span className="text-ink-inverse/30 ml-2.5">·</span>
