@@ -237,19 +237,19 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
   // 좌/우 콘텐츠 패딩 — iframe-left(또는 right) + 48px
   const sidePad = 'calc(max(48px, (100vw - 1824px) / 2) + 48px)'
 
-  function handleNext() {
-    if (!nextWork) {
-      // 마지막 케이스(mathhub) → 홈 Web Projects 섹션
-      sessionStorage.setItem('postNavScrollId', 'work')
-      router.push('/', { scroll: false })
-      return
-    }
+  function handleCaseJump(targetSlug: string) {
+    if (targetSlug === work.slug) return
     // 케이스 → 케이스 전환: 로고 상승 애니메이션 후 라우터 이동
-    // 1100ms = 상승 transition 900ms + 정착 hold 200ms
     setIsTransitioning(true)
     setTimeout(() => {
-      router.push(`/work/${nextWork.slug}`)
+      router.push(`/work/${targetSlug}`)
     }, 1100)
+  }
+
+  function handleNext() {
+    // 마지막 케이스 = 첫 케이스로 순환 (홈 X)
+    const target = nextWork || works[0]
+    handleCaseJump(target.slug)
   }
 
   return (
@@ -518,7 +518,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
                     visibility: 'hidden',
                   }}
                 >
-                  {nextWork ? nextWork.label : '↑ 처음으로'}
+                  {nextWork ? nextWork.label : works[0].label}
                 </h2>
                 {/* idle 레이어 — 옅은 회색 솔리드. outline 폐기로 stem 안 라인 해소 */}
                 <h2
@@ -530,7 +530,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
                     visibility: reduced ? 'hidden' : 'visible',
                   }}
                 >
-                  {nextWork ? nextWork.label : '↑ 처음으로'}
+                  {nextWork ? nextWork.label : works[0].label}
                 </h2>
                 {/* hover 레이어 — 검정 솔리드, 좌→우 wipe 로 채워짐 */}
                 <h2
@@ -546,42 +546,53 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
                       : 'clip-path 800ms cubic-bezier(0.22, 1, 0.36, 1)',
                   }}
                 >
-                  {nextWork ? nextWork.label : '↑ 처음으로'}
+                  {nextWork ? nextWork.label : works[0].label}
                 </h2>
               </div>
             </div>
 
-            {/* 우중 — 메타 (year/role/tagline) — nextWork 있을 때만 */}
-            {nextWork && (
-              <div
-                className="absolute text-right"
-                style={{
-                  top: '38vh',
-                  right: sidePad,
-                  maxWidth: 'min(28vw, 340px)',
-                  transform: atEnd ? 'translateY(0)' : 'translateY(16px)',
-                  opacity: atEnd ? 1 : 0,
-                  transition: 'transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms',
-                  transitionDelay: atEnd ? '800ms' : '0ms',
-                }}
-              >
-                <dl className="space-y-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted">
-                  <div className="flex justify-end gap-3">
-                    <dt>YEAR</dt>
-                    <dt className="text-ink-primary/30">—</dt>
-                    <dd className="text-ink-primary">{nextWork.year}</dd>
-                  </div>
-                  <div className="flex justify-end gap-3">
-                    <dt>ROLE</dt>
-                    <dt className="text-ink-primary/30">—</dt>
-                    <dd className="text-ink-primary">{nextWork.role}</dd>
-                  </div>
-                </dl>
-                <p className="mt-6 font-sans text-[13px] leading-relaxed text-ink-primary/80 tracking-tight">
-                  {nextWork.tagline}
-                </p>
-              </div>
-            )}
+            {/* 우측 가장자리 — 케이스 5개 인디케이터 (세로 가운데, 번호 + 프로젝트 이름) */}
+            <div
+              className="absolute"
+              style={{
+                top: '50%',
+                right: '32px',
+                transform: atEnd ? 'translateY(-50%)' : 'translateY(calc(-50% + 16px))',
+                opacity: atEnd ? 1 : 0,
+                transition: 'transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms',
+                transitionDelay: atEnd ? '800ms' : '0ms',
+              }}
+            >
+              <ul className="flex flex-col gap-3.5">
+                {works.map((w, i) => {
+                  const isCurrent = w.slug === work.slug
+                  return (
+                    <li key={w.slug}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleCaseJump(w.slug)
+                        }}
+                        disabled={isCurrent}
+                        aria-label={`${w.label} 케이스로 이동`}
+                        className={cn(
+                          'group flex items-baseline gap-4 font-mono uppercase tracking-[0.14em] text-[11px] transition-all duration-200',
+                          isCurrent
+                            ? 'text-ink-primary cursor-default'
+                            : 'text-ink-primary/35 hover:text-ink-primary hover:-translate-x-1 cursor-pointer'
+                        )}
+                      >
+                        <span className="w-6 text-right tabular-nums">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-left min-w-[88px]">{w.label}</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
 
             {/* 우하 — ↳ TURN PAGE (클릭 트리거 #2, 로고와 좌우 대칭)
              *  좌하 로고(마침표) ↔ 우하 CTA(다음으로) 분리.
@@ -615,7 +626,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
                   }}
                 >
                   <span style={{ opacity: 0.55 }}>↳</span>
-                  <span>{nextWork ? 'turn page' : 'back to index'}</span>
+                  <span>{nextWork ? 'turn page' : 'back to first'}</span>
                 </p>
                 {/* 우측 → 화살표 — hover 시 8px 우측 슬라이드 */}
                 <span

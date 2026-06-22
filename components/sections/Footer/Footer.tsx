@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
 import { footer } from '@/data/footer'
 
@@ -24,6 +24,19 @@ function NotionIcon({ className }: { className?: string }) {
 
 export function Footer() {
   const containerRef = useRef<HTMLElement>(null)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyEmail = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    try {
+      await navigator.clipboard.writeText(footer.email)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch {
+      // fallback — clipboard 미지원 시 mailto 폴백
+      window.location.href = `mailto:${footer.email}`
+    }
+  }
 
   useEffect(() => {
     const container = containerRef.current
@@ -99,18 +112,36 @@ export function Footer() {
             </p>
           </div>
 
-          {/* 우 */}
-          <div data-footer-right className="flex flex-col items-end gap-5 text-right">
+          {/* 우 — 살짝 왼쪽으로 (margin-right) */}
+          <div
+            data-footer-right
+            className="flex flex-col items-end gap-5 text-right"
+            style={{ marginRight: 'clamp(2vw, 5vw, 8vw)' }}
+          >
+            {/* 메일 = 가장 큼 (연락 강조). 클릭 시 클립보드 복사 + COPIED 피드백 */}
             <a
               href={`mailto:${footer.email}`}
-              className="group relative font-mono uppercase tracking-[0.08em] text-ink-inverse/80 transition-colors hover:text-ink-inverse"
-              style={{ fontSize: 'clamp(15px, 1.05vw, 17px)' }}
+              onClick={handleCopyEmail}
+              aria-label={copied ? '이메일 복사됨' : `${footer.email} 복사하기`}
+              className="group relative font-mono normal-case tracking-[0.04em] text-ink-inverse transition-colors hover:text-ink-inverse"
+              style={{ fontSize: 'clamp(22px, 2.2vw, 34px)' }}
             >
               {footer.email}
               <span
                 aria-hidden
                 className="absolute -bottom-1 right-0 h-px w-0 bg-ink-inverse transition-all duration-300 group-hover:w-full"
               />
+              {/* 복사 피드백 — 이메일 우측 위 floating */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -top-5 right-0 font-mono uppercase tracking-[0.16em] text-ink-inverse/70 transition-opacity duration-200"
+                style={{
+                  fontSize: '11px',
+                  opacity: copied ? 1 : 0,
+                }}
+              >
+                ✓ Copied
+              </span>
             </a>
             <a
               href={footer.github}
@@ -156,21 +187,21 @@ export function Footer() {
               </a>
             </div>
 
-            {/* Notion 전용 포트폴리오 — 큰 아이콘 + 라벨 */}
+            {/* Notion 전용 포트폴리오 — 살짝 키움 */}
             <a
               href={footer.notion}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Notion 전용 포트폴리오"
-              className="group mt-3 inline-flex items-center gap-3 text-ink-inverse/70 transition-colors hover:text-ink-inverse"
+              className="group mt-3 inline-flex items-center gap-3 text-ink-inverse/80 transition-colors hover:text-ink-inverse"
             >
               <span
                 className="font-mono uppercase tracking-[0.08em]"
-                style={{ fontSize: 'clamp(12px, 0.9vw, 14px)' }}
+                style={{ fontSize: 'clamp(14px, 1.05vw, 17px)' }}
               >
                 Notion Portfolio
               </span>
-              <NotionIcon className="h-12 w-12 transition-transform duration-300 group-hover:scale-105" />
+              <NotionIcon className="h-14 w-14 transition-transform duration-300 group-hover:scale-105" />
             </a>
           </div>
         </div>

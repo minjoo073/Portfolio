@@ -100,7 +100,7 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0,0,0,0.55)',
+          background: 'rgba(0,0,0,0.82)',
           zIndex: 100,
           opacity: open ? 1 : 0,
           pointerEvents: open ? 'auto' : 'none',
@@ -108,44 +108,6 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
         }}
       />
 
-      {/* 닫기 — drawer 좌측 dim 영역에 floating */}
-      <button
-        onClick={onClose}
-        aria-label="닫기"
-        style={{
-          position: 'fixed',
-          top: '32px',
-          left: '32px',
-          zIndex: 102,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '44px',
-          height: '44px',
-          borderRadius: '50%',
-          border: '1px solid rgba(248,247,244,0.32)',
-          background: 'transparent',
-          cursor: 'pointer',
-          color: '#F8F7F4',
-          fontSize: '20px',
-          lineHeight: 1,
-          opacity: open ? 1 : 0,
-          pointerEvents: open ? 'auto' : 'none',
-          transition: 'opacity 350ms ease, background 200ms ease, border-color 200ms ease',
-        }}
-        onMouseEnter={(e) => {
-          const el = e.currentTarget as HTMLButtonElement
-          el.style.background = 'rgba(248,247,244,0.10)'
-          el.style.borderColor = 'rgba(248,247,244,0.55)'
-        }}
-        onMouseLeave={(e) => {
-          const el = e.currentTarget as HTMLButtonElement
-          el.style.background = 'transparent'
-          el.style.borderColor = 'rgba(248,247,244,0.32)'
-        }}
-      >
-        ×
-      </button>
 
       {/* off-canvas 클리핑 래퍼 — 닫힘(translateX(100%)) 시 화면 밖 패널이
           문서 가로 스크롤을 만들지 않도록 viewport 폭으로 클립.
@@ -180,6 +142,65 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
             boxShadow: '-24px 0 80px rgba(0,0,0,0.32)',
           }}
         >
+        {/* 닫기 — drawer 좌측 edge 바깥 (dim 영역, drawer 와 함께 slide) */}
+        <button
+          onClick={onClose}
+          aria-label="닫기"
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '100%',          // drawer 의 좌측 edge 에 button right edge 맞춤
+            marginRight: '16px',    // drawer 와 간격
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 12px 6px 8px',
+            borderRadius: '999px',
+            border: 'none',
+            background: '#0a0a0a',
+            color: '#F8F7F4',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-jetbrains), monospace',
+            fontSize: '11px',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            lineHeight: 1,
+            whiteSpace: 'nowrap',
+            opacity: open ? 1 : 0,
+            pointerEvents: open ? 'auto' : 'none',
+            transition: 'opacity 300ms ease',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.opacity = '0.82'
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.opacity = '1'
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '18px',
+              height: '18px',
+              borderRadius: '50%',
+              background: '#F8F7F4',
+              color: '#0a0a0a',
+              fontSize: '12px',
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </span>
+          <span>Close</span>
+          <span aria-hidden="true" style={{ opacity: 0.5, fontSize: '9px' }}>
+            ESC
+          </span>
+        </button>
+
         {/* iframe 영역 — wrapper 에도 data-lenis-prevent (closest 매칭용 안전망) */}
         <div
           style={{ flex: 1, position: 'relative', overflow: 'hidden' }}
