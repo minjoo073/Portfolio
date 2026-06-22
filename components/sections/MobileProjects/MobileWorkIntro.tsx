@@ -91,7 +91,7 @@ export function MobileWorkIntro() {
         <h2
           data-mwi-head
           style={{
-            fontFamily: 'var(--font-display), serif',
+            fontFamily: 'var(--font-display), var(--font-pretendard), sans-serif',
             fontSize: 'clamp(48px, 11vw, 196px)',
             fontWeight: 400,
             lineHeight: 0.96,

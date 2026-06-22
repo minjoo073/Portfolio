@@ -92,7 +92,7 @@ export function WorkIntro() {
           data-wi-head
           className="text-ink-inverse"
           style={{
-            fontFamily: 'var(--font-display), serif',
+            fontFamily: 'var(--font-display), var(--font-pretendard), sans-serif',
             fontWeight: 400,
             fontSize: 'clamp(48px, 11vw, 196px)',
             lineHeight: 0.96,

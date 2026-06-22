@@ -80,7 +80,7 @@ export function PageIndicator({ currentPage, total }: PageIndicatorProps) {
         ref={textRef}
         style={{
           display: 'block',
-          fontFamily: 'var(--font-mono), monospace',
+          fontFamily: 'var(--font-mono), var(--font-pretendard), monospace',
           fontSize: 'clamp(11px, 0.7vw, 13px)',
           letterSpacing: '0.18em',
           color: 'rgba(248,247,244,0.40)',

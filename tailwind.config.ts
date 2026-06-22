@@ -31,13 +31,14 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'sans-serif'],
+        sans: ['var(--font-inter)', 'var(--font-pretendard)', 'sans-serif'],
         // PP Editorial New 영문 → Pretendard 한글 폴백 (글자별 자동 fallback)
         display: ['var(--font-display)', 'var(--font-pretendard)', 'sans-serif'],
         kr: ['var(--font-pretendard)', 'sans-serif'],
         // IBM Plex Mono 우선 — cross-platform 통일, PP Editorial 에디토리얼 톤 완성
         mono: [
           'var(--font-mono)',
+          'var(--font-pretendard)',
           'ui-monospace',
           'SFMono-Regular',
           'Menlo',

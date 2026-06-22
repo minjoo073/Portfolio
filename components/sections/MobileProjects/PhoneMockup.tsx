@@ -18,33 +18,53 @@ interface PhoneMockupProps {
  *
  * 레이어:
  *   1. 썸네일 div (backgroundImage cover) — 항상 풀스크린
- *   2. video — 호버 시 fade-in 으로 위에 겹쳐 재생
- *   3. hint 라벨 ("↗ Hover to play") — 폰 박스 안 우하단, 호버 시만 사라짐
+ *   2. video — *클릭* 시 재생/일시정지 토글 (마우스 떠나도 계속 재생)
+ *   3. hint 라벨 ("▶ Click to play") — 재생 전까지 표시, 재생 중 fade-out
+ *
+ * 클릭 토글 이유(CEO 2026-06-22): hover 재생은 마우스가 떠나면 멈춰 시청 경험이 끊김.
  */
 export function PhoneMockup({ project, dimmed = false, width, maxHeight }: PhoneMockupProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [hovered, setHovered] = useState(false)
+  const [playing, setPlaying] = useState(false)
+  const [hover, setHover] = useState(false)
 
-  function handleEnter() {
-    if (!project.previewVideo) return
-    setHovered(true)
-    videoRef.current?.play().catch(() => {})
-  }
-
-  function handleLeave() {
-    if (!project.previewVideo) return
-    setHovered(false)
+  function toggle() {
     const v = videoRef.current
-    if (v) {
+    if (!project.previewVideo || !v) return
+    if (v.paused) {
+      v.play().catch(() => {})
+      setPlaying(true)
+    } else {
       v.pause()
-      v.currentTime = 0
+      setPlaying(false)
     }
   }
 
+  const interactive = !!project.previewVideo
+
   return (
     <div
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
+      onClick={interactive ? toggle : undefined}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                toggle()
+              }
+            }
+          : undefined
+      }
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-label={
+        interactive
+          ? `${project.title} 미리보기 영상 ${playing ? '일시정지' : '재생'}`
+          : undefined
+      }
+      aria-pressed={interactive ? playing : undefined}
       style={{
         ...(maxHeight
           ? {
@@ -65,7 +85,7 @@ export function PhoneMockup({ project, dimmed = false, width, maxHeight }: Phone
         filter: dimmed ? 'brightness(0.85)' : undefined,
         flexShrink: 0,
         background: '#111',
-        cursor: project.previewVideo ? 'pointer' : 'default',
+        cursor: interactive ? 'pointer' : 'default',
       }}
       data-phone-mockup
       data-project-id={project.id}
@@ -83,7 +103,7 @@ export function PhoneMockup({ project, dimmed = false, width, maxHeight }: Phone
         aria-label={`${project.title} 썸네일`}
       />
 
-      {/* 호버 시 fade-in video */}
+      {/* 클릭 시 재생되는 video (재생 중 fade-in, 마우스 떠나도 유지) */}
       {project.previewVideo && (
         <video
           ref={videoRef}
@@ -99,7 +119,7 @@ export function PhoneMockup({ project, dimmed = false, width, maxHeight }: Phone
             height: '100%',
             objectFit: 'contain',
             objectPosition: 'bottom',
-            opacity: hovered ? 1 : 0,
+            opacity: playing ? 1 : 0,
             transition: 'opacity 300ms ease',
             pointerEvents: 'none',
             transform: project.videoZoom ? `scale(${project.videoZoom})` : undefined,
@@ -110,34 +130,28 @@ export function PhoneMockup({ project, dimmed = false, width, maxHeight }: Phone
         </video>
       )}
 
-      {/* hint 라벨 — 폰 박스 안 우하단, 호버 시만 fade-out */}
+      {/* 중앙 플레이 글리프 — 박스·글라스 X, 맨 ▶/⏸ + 그림자(대비). 재생 중 fade-out, 호버 시 ⏸ */}
       {project.previewVideo && (
         <span
           aria-hidden
           style={{
             position: 'absolute',
-            bottom: 'clamp(10px, 1.5vh, 18px)',
-            right: 'clamp(10px, 1vw, 16px)',
-            fontFamily: 'var(--font-mono), monospace',
-            fontSize: 'clamp(10px, 0.75vw, 12px)',
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: 'rgba(248,247,244,0.7)',
-            background: 'rgba(0,0,0,0.42)',
-            backdropFilter: 'blur(3px)',
-            paddingLeft: '10px',
-            paddingRight: '10px',
-            paddingTop: '5px',
-            paddingBottom: '5px',
-            borderRadius: '4px',
-            opacity: hovered ? 0 : 1,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'rgba(248,247,244,0.95)',
+            fontSize: 'clamp(30px, 3vw, 46px)',
+            lineHeight: 1,
+            letterSpacing: playing ? '0.12em' : '0',
+            textShadow: '0 2px 18px rgba(0,0,0,0.6)',
+            paddingLeft: playing ? '0' : '4px',
+            opacity: playing && !hover ? 0 : 1,
             transition: 'opacity 300ms ease',
             pointerEvents: 'none',
-            whiteSpace: 'nowrap',
             zIndex: 2,
           }}
         >
-          ↗ Hover to play
+          {playing ? '❚❚' : '▶'}
         </span>
       )}
     </div>

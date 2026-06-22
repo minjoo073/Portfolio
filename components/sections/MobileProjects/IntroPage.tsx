@@ -60,7 +60,7 @@ export function IntroPage({ onNext, hasNext = true }: IntroPageProps) {
       >
         <span
           style={{
-            fontFamily: 'var(--font-mono), monospace',
+            fontFamily: 'var(--font-mono), var(--font-pretendard), monospace',
             fontSize: '12px',
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
@@ -71,7 +71,7 @@ export function IntroPage({ onNext, hasNext = true }: IntroPageProps) {
         </span>
         <span
           style={{
-            fontFamily: 'var(--font-mono), monospace',
+            fontFamily: 'var(--font-mono), var(--font-pretendard), monospace',
             fontSize: '11px',
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
@@ -105,7 +105,7 @@ export function IntroPage({ onNext, hasNext = true }: IntroPageProps) {
       >
         <h2
           style={{
-            fontFamily: 'var(--font-display), serif',
+            fontFamily: 'var(--font-display), var(--font-pretendard), sans-serif',
             fontSize: vw(120, 64),
             fontWeight: 400,
             lineHeight: 0.96,
@@ -149,7 +149,7 @@ export function IntroPage({ onNext, hasNext = true }: IntroPageProps) {
       >
         <span
           style={{
-            fontFamily: 'var(--font-mono), monospace',
+            fontFamily: 'var(--font-mono), var(--font-pretendard), monospace',
             fontSize: '11px',
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
@@ -171,7 +171,7 @@ export function IntroPage({ onNext, hasNext = true }: IntroPageProps) {
               border: 'none',
               cursor: 'pointer',
               padding: 0,
-              fontFamily: 'var(--font-mono), monospace',
+              fontFamily: 'var(--font-mono), var(--font-pretendard), monospace',
               fontSize: '13px',
               letterSpacing: '0.14em',
               color: INK_55,

@@ -6,7 +6,9 @@
  * 구조:
  *   좌 50vw: 폰 mock (중앙 정렬, maxHeight 78vh, 9:19.5)
  *   책등 hairline 60vh (수직 중앙)
- *   우 50vw: meta rail + body(워드마크 + tagline + uxIntent + CTA)
+ *   우 50vw: 단일 컬럼 위계 (2026-06-22 재편 — A안: Editorial Spec Sheet)
+ *     top 메타(1줄) → 워드마크 → tagline → uxIntent → 크레딧(1인 워크플로우 강조)
+ *     → 기술 메타(1줄) → 제작과정 풀폭 바 CTA → try 링크
  *
  * data-reveal: MobileProjects 에서 revealPage()/resetPage() 대상 수집
  */
@@ -21,58 +23,18 @@ const vw = (basePx: number, minPx: number) =>
   `clamp(${minPx}px, ${((basePx / 1920) * 100).toFixed(4)}vw, ${basePx}px)`
 
 /* ── 토큰 ──────────────────────────────────────────────────────────── */
-const INK_100  = 'rgba(248,247,244,1.00)'
-const INK_80   = 'rgba(248,247,244,0.80)'
-const INK_60   = 'rgba(248,247,244,0.60)'
-const INK_55   = 'rgba(248,247,244,0.55)'
-const INK_30   = 'rgba(248,247,244,0.30)'
-const INK_25   = 'rgba(248,247,244,0.25)'
-const HAIR     = 'rgba(248,247,244,0.08)'
+const INK_100 = 'rgba(248,247,244,1.00)'
+const INK_85  = 'rgba(248,247,244,0.85)'
+const INK_80  = 'rgba(248,247,244,0.80)'
+const INK_60  = 'rgba(248,247,244,0.60)'
+const INK_55  = 'rgba(248,247,244,0.55)'
+const INK_45  = 'rgba(248,247,244,0.45)'
+const INK_30  = 'rgba(248,247,244,0.30)'
 const HAIR_STR = 'rgba(248,247,244,0.14)'
 
-/* ── StackChip ──────────────────────────────────────────────────────── */
-function StackChip({ label }: { label: string }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignSelf: 'flex-start',
-        alignItems: 'center',
-        fontFamily: 'var(--font-mono), monospace',
-        fontSize: vw(13, 12),
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: INK_60,
-        background: 'rgba(255,255,255,0.06)',
-        paddingLeft: '10px',
-        paddingRight: '10px',
-        paddingTop: '4px',
-        paddingBottom: '4px',
-        borderRadius: '4px',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {label}
-    </span>
-  )
-}
-
-/* ── PlatformBadge ──────────────────────────────────────────────────── */
-function PlatformBadge({ label }: { label: string }) {
-  return (
-    <span
-      style={{
-        fontFamily: 'var(--font-mono), monospace',
-        fontSize: vw(13, 12),
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
-        color: INK_55,
-      }}
-    >
-      {label}
-    </span>
-  )
-}
+const MONO = 'var(--font-mono), var(--font-pretendard), monospace'
+const KR = 'var(--font-pretendard), sans-serif'
+const DISPLAY = 'var(--font-display), var(--font-pretendard), sans-serif'
 
 /* ── ExtLink ────────────────────────────────────────────────────────── */
 function ExtLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -84,10 +46,10 @@ function ExtLink({ href, children }: { href: string; children: React.ReactNode }
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '4px',
-        fontFamily: 'var(--font-mono), monospace',
-        fontSize: vw(18, 16),
-        letterSpacing: '0.14em',
+        gap: '6px',
+        fontFamily: MONO,
+        fontSize: vw(15, 13),
+        letterSpacing: '0.12em',
         textTransform: 'uppercase',
         color: INK_55,
         textDecoration: 'none',
@@ -101,166 +63,99 @@ function ExtLink({ href, children }: { href: string; children: React.ReactNode }
       }}
     >
       <span>{children}</span>
-      <span style={{ display: 'inline-block', fontSize: '11px', transition: 'transform 300ms ease' }}>
-        ↗
-      </span>
+      <span style={{ display: 'inline-block', fontSize: '11px' }}>↗</span>
     </a>
   )
 }
 
-/* ── StudyCta ───────────────────────────────────────────────────────── */
-function StudyCta({ onClick }: { onClick: () => void }) {
+/* ── PrimaryCta — 핵심 CTA (박스·글라스 X). 큰 텍스트 + 밑줄 + 화살표 ──────
+   editorial 링크 어포던스. drawer(onClick) 또는 외부 링크(href) 겸용.
+   자린고비 = 제작과정 보기(drawer) / TripMate = 웹앱 바로가기(외부 링크). */
+function PrimaryCta({
+  label,
+  caption,
+  href,
+  onClick,
+  external = false,
+}: {
+  label: string
+  caption: string
+  href?: string
+  onClick?: () => void
+  external?: boolean
+}) {
+  const [hover, setHover] = useState(false)
+  const inner = (
+    <>
+      <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: '14px' }}>
+        <span style={{ position: 'relative', display: 'inline-block', paddingBottom: '7px' }}>
+          <span style={{ fontFamily: KR, fontSize: vw(25, 21), fontWeight: 500, letterSpacing: '0.01em', color: INK_100 }}>
+            {label}
+          </span>
+          {/* 상시 밑줄(링크 신호) — 호버 시 밝아짐 */}
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute',
+              left: 0,
+              bottom: 0,
+              width: '100%',
+              height: '1.5px',
+              background: hover ? 'rgba(248,247,244,0.9)' : 'rgba(248,247,244,0.3)',
+              transition: 'background 300ms ease',
+            }}
+          />
+        </span>
+        <span
+          aria-hidden
+          style={{
+            fontFamily: MONO,
+            fontSize: vw(20, 17),
+            color: hover ? INK_100 : INK_55,
+            transform: hover ? 'translateX(6px)' : 'translateX(0)',
+            transition: 'transform 350ms cubic-bezier(0.22,1,0.36,1), color 300ms ease',
+          }}
+        >
+          {external ? '↗' : '→'}
+        </span>
+      </span>
+      <span style={{ display: 'block', marginTop: '10px', fontFamily: KR, fontSize: vw(13, 12), color: INK_45 }}>
+        {caption}
+      </span>
+    </>
+  )
+
+  if (href) {
+    return (
+      <a
+        data-reveal
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        aria-label={label}
+        style={{ marginTop: '46px', display: 'block', textAlign: 'left', textDecoration: 'none', cursor: 'pointer' }}
+      >
+        {inner}
+      </a>
+    )
+  }
   return (
     <button
+      data-reveal
       onClick={onClick}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '10px',
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        padding: 0,
-        fontFamily: 'var(--font-mono), monospace',
-        fontSize: vw(18, 16),
-        letterSpacing: '0.14em',
-        textTransform: 'uppercase',
-        color: INK_80,
-        transition: 'color 300ms ease',
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLButtonElement
-        el.style.color = INK_100
-        const line = el.querySelector<HTMLSpanElement>('[data-line]')
-        if (line) line.style.width = '40px'
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLButtonElement
-        el.style.color = INK_80
-        const line = el.querySelector<HTMLSpanElement>('[data-line]')
-        if (line) line.style.width = '20px'
-      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      aria-label={label}
+      style={{ marginTop: '46px', display: 'block', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
     >
-      <span
-        data-line
-        style={{
-          display: 'block',
-          width: '20px',
-          height: '1px',
-          background: 'currentColor',
-          transition: 'width 500ms cubic-bezier(0.16,1,0.3,1)',
-          flexShrink: 0,
-        }}
-      />
-      제작과정 →
+      {inner}
     </button>
   )
 }
 
-/* ── MetaRail ───────────────────────────────────────────────────────── */
-function MetaRail({ project }: { project: MobileProject }) {
-  const labelSize = vw(12, 11)
-  const valueSize = vw(13, 12)
-
-  const row = (label: string, value: React.ReactNode, preWrap = false) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <span
-        style={{
-          fontFamily: 'var(--font-mono), monospace',
-          fontSize: labelSize,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: INK_25,
-        }}
-      >
-        {label}
-      </span>
-      <span
-        style={{
-          fontFamily: 'var(--font-mono), monospace',
-          fontSize: valueSize,
-          letterSpacing: '0.10em',
-          color: INK_55,
-          whiteSpace: preWrap ? 'pre-line' : undefined,
-        }}
-      >
-        {value}
-      </span>
-    </div>
-  )
-
-  return (
-    <div
-      style={{
-        width: vw(130, 105),
-        flexShrink: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px',
-        paddingTop: '4px',
-      }}
-      data-reveal
-    >
-      {/* 인덱스 */}
-      <span
-        style={{
-          fontFamily: 'var(--font-mono), monospace',
-          fontSize: vw(13, 12),
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          color: INK_30,
-        }}
-      >
-        {project.index}
-      </span>
-
-      {/* Released */}
-      {project.releaseDate && row('Released', project.releaseDate)}
-
-      {/* Category */}
-      {row('Category', project.category)}
-
-      {/* Platform */}
-      {project.platforms.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono), monospace',
-              fontSize: labelSize,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              color: INK_25,
-            }}
-          >
-            Platform
-          </span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {project.platforms.map((p) => (
-              <PlatformBadge key={p} label={p} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Duration (period) — 신규 */}
-      {project.period && row('Duration', project.period)}
-
-      {/* Role — 신규, 줄바꿈 허용 */}
-      {project.role && row('Role', project.role, true)}
-
-      {/* Stack chips — 맨 아래 */}
-      {project.stack && project.stack.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {project.stack.map((s) => (
-            <StackChip key={s} label={s} />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ── ProjectBody ────────────────────────────────────────────────────── */
+/* ── ProjectBody — 우측 단일 컬럼 (A안 위계) ────────────────────────── */
 function ProjectBody({
   project,
   onStudyOpen,
@@ -268,42 +163,72 @@ function ProjectBody({
   project: MobileProject
   onStudyOpen: () => void
 }) {
+  // 기술 메타 1줄 — platform + stack 중복 제거
+  const techLine = Array.from(
+    new Set([...(project.platforms ?? []), ...(project.stack ?? [])])
+  ).join('  ·  ')
+
   return (
     <div
       style={{
         flex: 1,
-        maxWidth: vw(460, 320),
+        maxWidth: vw(560, 320),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        gap: 0,
       }}
     >
-      {/* 워드마크 */}
-      <h2
+      {/* ① top 메타 — index · category · release (1줄, 강등) */}
+      <div
+        data-reveal
         style={{
-          fontFamily: 'var(--font-display), serif',
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: '10px',
+          fontFamily: MONO,
+          fontSize: vw(13, 12),
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          color: INK_55,
+        }}
+      >
+        <span style={{ color: INK_80 }}>{project.index}</span>
+        <span style={{ color: INK_30 }}>—</span>
+        <span>{project.category}</span>
+        {project.releaseDate && (
+          <>
+            <span style={{ color: INK_30 }}>·</span>
+            <span>{project.releaseDate}</span>
+          </>
+        )}
+      </div>
+
+      {/* ② 워드마크 */}
+      <h2
+        data-reveal
+        style={{
+          fontFamily: DISPLAY,
           fontSize: vw(98, 66),
           fontWeight: 400,
           lineHeight: 0.94,
           letterSpacing: '-0.03em',
           color: INK_100,
           margin: 0,
-          marginBottom: '24px',
+          marginTop: '26px',
+          marginBottom: '30px',
           wordBreak: 'keep-all',
         }}
-        data-reveal
       >
         {project.comingSoon && (
           <span
             style={{
-              fontFamily: 'var(--font-mono), monospace',
+              fontFamily: MONO,
               fontSize: '12px',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
               color: INK_30,
               verticalAlign: 'middle',
-              marginLeft: '8px',
+              marginRight: '10px',
             }}
           >
             Coming Soon
@@ -312,39 +237,33 @@ function ProjectBody({
         {project.title}
       </h2>
 
-      {/* Tagline */}
+      {/* ③ tagline */}
       <p
+        data-reveal
         style={{
-          fontFamily: 'var(--font-pretendard), sans-serif',
+          fontFamily: KR,
           fontSize: vw(26, 19),
           fontWeight: 400,
-          lineHeight: 1.55,
-          color: INK_60,
+          lineHeight: 1.5,
+          color: INK_80,
           margin: 0,
-          marginBottom: project.uxIntent ? '28px' : '40px',
         }}
-        data-reveal
       >
         {project.tagline}
       </p>
 
-      {/* uxIntent — hairline + 인용구 (신규) */}
+      {/* ④ uxIntent — hairline + 인용 */}
       {project.uxIntent && (
-        <div style={{ marginBottom: '40px' }} data-reveal>
+        <div style={{ marginTop: '42px' }} data-reveal>
           <div
-            style={{
-              width: vw(20, 16),
-              height: '1px',
-              background: HAIR_STR,
-              marginBottom: '12px',
-            }}
+            style={{ width: vw(24, 18), height: '1px', background: HAIR_STR, marginBottom: '12px' }}
             aria-hidden
           />
           <p
             style={{
-              fontFamily: 'var(--font-pretendard), sans-serif',
-              fontSize: vw(14, 13),
-              fontWeight: 400,
+              fontFamily: KR,
+              fontWeight: 300,
+              fontSize: vw(15, 13),
               lineHeight: 1.6,
               color: INK_60,
               margin: 0,
@@ -355,20 +274,72 @@ function ProjectBody({
         </div>
       )}
 
-      {/* CTA 묶음 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} data-reveal>
-        {project.studyHref && <StudyCta onClick={onStudyOpen} />}
+      {/* ⑤ 크레딧 — 1인 워크플로우 강조 + 기술 메타(강등) */}
+      <div
+        data-reveal
+        style={{ marginTop: '46px', display: 'flex', flexDirection: 'column', gap: '8px' }}
+      >
+        {project.role && (
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: vw(15, 13),
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: INK_85,
+            }}
+          >
+            {project.role}
+            {project.period ? `  ·  ${project.period}` : ''}
+          </span>
+        )}
+        {techLine && (
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: vw(12, 11),
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: INK_45,
+            }}
+          >
+            {techLine}
+          </span>
+        )}
+      </div>
+
+      {/* ⑥ 핵심 CTA — 제작과정(studyHref) 또는 웹앱 바로가기(web) */}
+      {project.studyHref ? (
+        <PrimaryCta
+          label="제작과정 보기"
+          caption="기획 · 디자인 · 개발 전 과정 기록"
+          onClick={onStudyOpen}
+        />
+      ) : project.downloadLinks.web ? (
+        <PrimaryCta
+          label="웹앱 바로가기"
+          caption="출시된 서비스 둘러보기"
+          href={project.downloadLinks.web}
+          external
+        />
+      ) : null}
+
+      {/* ⑦ try 링크 — 보조 */}
+      <div
+        data-reveal
+        style={{ marginTop: '34px', display: 'flex', flexWrap: 'wrap', gap: '20px 28px' }}
+      >
         {project.downloadLinks.playStore && (
           <ExtLink href={project.downloadLinks.playStore}>Google Play</ExtLink>
         )}
         {project.downloadLinks.appStore && (
           <ExtLink href={project.downloadLinks.appStore}>App Store</ExtLink>
         )}
-        {project.downloadLinks.web && (
-          <ExtLink href={project.downloadLinks.web}>웹/앱 바로가기</ExtLink>
+        {project.studyHref && project.downloadLinks.web && (
+          <ExtLink href={project.downloadLinks.web}>웹 바로가기</ExtLink>
         )}
-        {project.downloadLinks.landingPage && (
-          <ExtLink href={project.downloadLinks.landingPage}>랜딩페이지 바로가기</ExtLink>
+        {project.downloadLinks.landingPage && project.downloadLinks.landingPage !== '#' && (
+          <ExtLink href={project.downloadLinks.landingPage}>랜딩페이지</ExtLink>
         )}
       </div>
     </div>
@@ -399,9 +370,6 @@ export function AppPage({
 }: AppPageProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const pageLabel = String(pageIndex + 1).padStart(2, '0')
-  const totalLabel = String(total).padStart(2, '0')
-
   return (
     <>
       <div
@@ -418,20 +386,10 @@ export function AppPage({
         aria-label={`${project.title} 앱 소개`}
       >
         {/* ── 상단 spacer — Nav 자리 + 본체 수직 균형 (하단 row 와 대칭) ── */}
-        <div
-          style={{ height: 'clamp(60px, 6.5vh, 88px)', flexShrink: 0 }}
-          aria-hidden
-        />
+        <div style={{ height: 'clamp(60px, 6.5vh, 88px)', flexShrink: 0 }} aria-hidden />
 
         {/* ── 본체 — 좌:폰 우:정보 ─────────────────────────────────── */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            overflow: 'hidden',
-            position: 'relative',
-          }}
-        >
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
           {/* 좌 페이지 — 폰 mock */}
           <div
             style={{
@@ -461,27 +419,25 @@ export function AppPage({
               transform: 'translate(-50%, -50%)',
               width: '1px',
               height: '60vh',
-              background: HAIR,
+              background: 'rgba(248,247,244,0.08)',
               pointerEvents: 'none',
             }}
           />
 
-          {/* 우 페이지 — meta + body */}
+          {/* 우 페이지 — 단일 컬럼 정보 */}
           <div
             style={{
               width: '50%',
               height: '100%',
               display: 'flex',
               alignItems: 'center',
-              paddingLeft: 'clamp(32px, 3vw, 56px)',
+              paddingLeft: 'clamp(40px, 4vw, 80px)',
               paddingRight: 'clamp(56px, 6vw, 112px)',
               paddingBlock: 'clamp(80px, 8vh, 120px)',
               boxSizing: 'border-box',
               flexShrink: 0,
-              gap: 'clamp(56px, 4vw, 96px)',
             }}
           >
-            <MetaRail project={project} />
             <ProjectBody project={project} onStudyOpen={() => setDrawerOpen(true)} />
           </div>
         </div>
@@ -509,7 +465,7 @@ export function AppPage({
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
-                fontFamily: 'var(--font-mono), monospace',
+                fontFamily: MONO,
                 fontSize: '20px',
                 color: INK_55,
                 transition: 'color 200ms ease, transform 200ms ease',
@@ -528,14 +484,7 @@ export function AppPage({
               →
             </button>
           ) : (
-            <span
-              aria-hidden
-              style={{
-                fontFamily: 'var(--font-mono), monospace',
-                fontSize: '20px',
-                color: INK_55,
-              }}
-            >
+            <span aria-hidden style={{ fontFamily: MONO, fontSize: '20px', color: INK_55 }}>
               ↓
             </span>
           )}
