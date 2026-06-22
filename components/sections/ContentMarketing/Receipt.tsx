@@ -74,7 +74,7 @@ export function Receipt({ groups, variant, activeId, onHover }: Props) {
               <li
                 key={group.id}
                 className={cn(
-                  'group flex flex-col transition-opacity duration-300 ease-out gap-1.5',
+                  'group flex flex-col transition-opacity duration-700 ease-out gap-1.5',
                   !isStage1 && (isActive ? 'opacity-100' : 'opacity-40 hover:opacity-100'),
                   !isStage1 && 'cursor-pointer'
                 )}

@@ -264,7 +264,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
           ref={logoRef}
           className="fixed z-50 select-none"
           style={{
-            top: '30px',
+            top: '22px',
             // iframe-box 좌측 가장자리에 정렬 (상좌우 30px 통일)
             left: 'max(30px, calc((100vw - 1860px) / 2))',
             transform: dropTransform,
@@ -358,8 +358,8 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
           aria-label="뒤로가기"
         >
           <svg
-            width="64"
-            height="44"
+            width="48"
+            height="33"
             viewBox="0 0 64 44"
             fill="none"
             className="opacity-70 group-hover:opacity-100 group-hover:-translate-x-1 transition-[opacity,transform] duration-200"

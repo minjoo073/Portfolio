@@ -2,123 +2,83 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { contentBody, contentGroups } from '@/data/content'
-import { SectionLabel } from '@/components/primitives/SectionLabel'
 import { Receipt } from './Receipt'
 import { PreviewArea } from './PreviewArea'
 import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
 import { useLenis } from '@/lib/hooks/useLenis'
 
 /**
- * Content & Marketing — 옵션 D 2단계 시퀀스.
+ * Content & Marketing — 좌 고정 / 우 스크롤 구조 (2026-06-22 재설계).
  *
- *   [0] 진입 단독 라벨 — viewport 중앙 (About Me 패턴)
- *   [1] 한글 paragraph + 분할 라벨 + Receipt (large, viewport 가운데)
- *       Phase 3 GSAP: 영수증이 펄럭이며 떨어져 착지
- *   [2] Receipt (compact, 좌) + PreviewArea (우)
- *       Receipt 항목 hover → active group 변경 → PreviewArea 갱신
- *
- * Phase 2: 정적 마크업 + useState 호버 인터랙션.
- * Phase 3: 영수증 떨어짐 모션, [1]→[2] 전환 모션 (좌측 이동·축소 + preview slide-in).
+ *   [1] 진입부: "(Content ——— & Marketing)" 선이 좌우로 벌어짐 + 한글 paragraph.
+ *       (영수증 드롭 모션은 폐기 — 영수증의 첫 등장은 Stage 2 좌측 고정 레일)
+ *   [2] 본문: 좌측 영수증 sticky 고정 + 우측에 01·02·03 콘텐츠를 자연 높이로 세로 스택.
+ *       - 우측 자연 스크롤 (핀/스냅/내부 overflow 스크롤 전부 폐기 → 버벅임 구조적 제거)
+ *       - 진입 시 좌우 "갈라짐" clip-path 리빌 유지
+ *       - scrollspy(IntersectionObserver): 우측 현재 그룹 → 좌측 라벨 진해짐
+ *       - 좌측 라벨 hover → 해당 그룹으로 스크롤 점프(부드럽게)
  */
 export function ContentMarketing() {
   const [activeId, setActiveId] = useState(contentGroups[0].id)
-  const activeGroup = contentGroups.find(g => g.id === activeId) ?? contentGroups[0]
   const stage1OuterRef = useRef<HTMLDivElement>(null)
+  const rightColRef = useRef<HTMLDivElement>(null)
   const lenis = useLenis()
   const lenisRef = useRef(lenis)
-  // snap 진행 추적 — ±1 그룹 제한 위해 직전 정착 그룹 idx 유지
-  const lastSnapIdxRef = useRef(0)
   useEffect(() => {
     lenisRef.current = lenis
   }, [lenis])
 
-  // Stage [1] sticky + scrub timeline — RayRayLab 영수증 패턴
-  // 0~30%: paragraph + 좌우 라벨 등장
-  // 30~60%: 중앙 선 scaleX 0 → 1 (좌→우)
-  // 60~100%: 영수증 drop (opacity + translateY)
+  // ── [1] 선 벌어짐 + paragraph 리빌 (scrub) + [2] 갈라짐 clip 리빌 ──────────
   useEffect(() => {
     const outer = stage1OuterRef.current
     if (!outer) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     registerGsap()
 
+    const section = outer.closest('section')
+    const paragraph = outer.querySelector('[data-cm-paragraph]')
+    const line = outer.querySelector('[data-cm-line]')
+    const stage2 = section?.querySelector('[data-cm-stage2-wrap]')
+    const left = section?.querySelector('[data-cm-stage2-left-reveal]')
+    const right = section?.querySelector('[data-cm-stage2-right]')
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    // reduced-motion: 정적 표시(모션 skip) — 콘텐츠 숨김 방지
+    if (reduced) {
+      if (paragraph) gsap.set(paragraph, { opacity: 1, y: 0 })
+      if (line) gsap.set(line, { width: '60vw' })
+      gsap.set([left, right].filter(Boolean), { clipPath: 'inset(0% 0% 0% 0%)' })
+      return
+    }
+
     const ctx = gsap.context(() => {
-      const paragraph = outer.querySelector('[data-cm-paragraph]')
-      const labelL = outer.querySelector('[data-cm-label-left]')
-      const labelR = outer.querySelector('[data-cm-label-right]')
-      const line = outer.querySelector('[data-cm-line]')
-      const receipt = outer.querySelector('[data-cm-receipt]')
-      const receiptLines = receipt?.querySelectorAll('[data-cm-receipt-line]')
-      const nextEntryLine = outer.querySelector('[data-cm-next-entry-line]')
-      const nextEntryCaption = outer.querySelector('[data-cm-next-entry-caption]')
-      const section = outer.closest('section')
-      const stage2 = section?.querySelector('[data-cm-stage2-wrap]')
-      const stage2Left = section?.querySelector('[data-cm-stage2-left]')
-      const stage2Right = section?.querySelector('[data-cm-stage2-right]')
-      if (!paragraph || !labelL || !labelR || !line || !receipt) return
+      if (!paragraph || !line) return
 
       // 초기 상태
-      gsap.set(paragraph, { opacity: 0, y: 20 })
       gsap.set(line, { width: 0 })
-      gsap.set(receipt, { maxHeight: 0 })
-      if (nextEntryLine) gsap.set(nextEntryLine, { width: 0, opacity: 0 })
-      if (nextEntryCaption) gsap.set(nextEntryCaption, { opacity: 0 })
-      if (stage2Left) gsap.set(stage2Left, { clipPath: 'inset(0% 0% 0% 100%)' })
-      if (stage2Right) gsap.set(stage2Right, { clipPath: 'inset(0% 100% 0% 0%)' })
+      gsap.set(paragraph, { opacity: 0, y: 20 })
+      if (left) gsap.set(left, { clipPath: 'inset(0% 0% 0% 100%)' })
+      if (right) gsap.set(right, { clipPath: 'inset(0% 100% 0% 0%)' })
 
-      // outer height 260vh = sticky 100vh + 진행 160vh
-      // sticky 잡힘 = outer top 0 ~ -160vh (timeline 0 ~ 0.615)
-      // sticky 풀린 후 자연 scroll = -160 ~ -260vh (timeline 0.615 ~ 1.0, 100vh)
-      // 단계:
-      //  0 ~ 0.56    Stage 1 자라남 (sticky 잡힘)
-      //  0.56 ~ 0.615 짧은 정착 hold (영수증 *완전 visible 한 번 봄*)
-      //  0.615 = sticky 풀림 = 영수증 *자연 위로 이동 시작*
-      //  0.64 ~ 0.82 영수증 자연 위로 이동 + *잉크 stagger 동시*
-      //  0.82 ~ 1.0  hairline + 캡션 (viewport 하단)
+      // 선 벌어짐 + paragraph — *sticky 잡힌 구간(70vh)* 안에서 완료 후 hold.
+      // outer 170vh, sticky 100vh → sticky 잡힘 = 70vh.
+      // ScrollTrigger end='+=70%' = 잡힘 구간과 일치 → 타임라인 progress 1.0 = sticky 풀림 지점.
+      //   선 0~0.55, 문단 0.28~0.8 에 완료 → 0.8~1.0 동안 *완전히 벌어진 채 hold* 후 풀림.
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: outer,
           start: 'top top',
-          end: '+=260%',
+          end: '+=70%',
           scrub: 0.6,
           invalidateOnRefresh: true,
         },
       })
+      tl.to(line, { width: '60vw', ease: 'power3.inOut', duration: 0.55 }, 0)
+      tl.to(paragraph, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.52 }, 0.28)
 
-      // Stage 1 자라남 — 260vh outer 안 sticky 풀림 = progress 0.615
-      // 자라남 끝 ≤ 0.615 보장 (sticky 잡힌 동안 자라남 완료)
-      //   선 0 ~ 0.2 (천천히 좌→우 벌어짐)
-      //   paragraph 0.22 ~ 0.44
-      //   receipt 0.24 ~ 0.56 (자라남 끝 = sticky 풀림 직전, 짧은 hold 후 풀림)
-      tl.to(line, { width: '60vw', ease: 'power3.inOut', duration: 0.2 }, 0)
-      tl.to(paragraph, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.22 }, 0.22)
-      tl.to(receipt, { maxHeight: '90vh', ease: 'power2.out', duration: 0.32 }, 0.24)
-
-      // 잉크 회수 — 자라남 끝 (0.56) → 짧은 hold → sticky 풀림 (0.615) 직후 잉크 fade 시작 (0.64)
-      // sticky 풀림 후 영수증 자연 위로 이동 + 잉크 fade 동시 진행
-      if (receiptLines && receiptLines.length > 0) {
-        tl.to(receiptLines, {
-          opacity: 0,
-          filter: 'blur(1.2px)',
-          stagger: { each: 0.012, from: 'start' },
-          ease: 'power1.in',
-        }, 0.64)
-      }
-
-
-      // 영수증 사라진 후 hairline + 캡션
-      if (nextEntryLine) {
-        tl.to(nextEntryLine, { width: '30vw', opacity: 1, ease: 'power2.out' }, 0.82)
-      }
-      if (nextEntryCaption) {
-        tl.to(nextEntryCaption, { opacity: 1, ease: 'power1.out' }, 0.85)
-      }
-
-      // Stage 2 — 가운데에서 양쪽 갈라짐 (한 번만 play, 역방향 스크롤 시 reveal 유지)
-      // scrub 사용 시 역방향 시 clip-path 다시 닫힘 → Stage 1 영수증/Spacer 잠깐 visible
-      // → toggleActions: 'play none none none' = 한 번 열리면 영영 유지
-      if (stage2 && stage2Left && stage2Right) {
+      // Stage 2 좌우 갈라짐 — 진입 시 1회 (CSS sticky 와 충돌 없는 단순 clip 리빌)
+      if (stage2 && left && right) {
         const tl2 = gsap.timeline({
           scrollTrigger: {
             trigger: stage2,
@@ -127,50 +87,48 @@ export function ContentMarketing() {
             invalidateOnRefresh: true,
           },
         })
-        tl2.to(stage2Left, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' }, 0)
-        tl2.to(stage2Right, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' }, 0)
-
-        // Stage 2 pin + snap — pin 영역 단축 (전환 마찰 ↓, 내부 스크롤 콘텐츠는 100% 유지)
-        // pin 영역 120vh = 그룹당 60vh (전환에 필요한 페이지 스크롤량 축소)
-        // snap delay 0 + duration 0.15~0.25 = 빠른 정착
-        // snapTo ±1 clamp = momentum 으로 1 그룹 통과 시도 시 clamp 가 다음 그룹만 허용
-        ScrollTrigger.create({
-          trigger: stage2,
-          pin: true,
-          pinSpacing: true,
-          anticipatePin: 1,
-          start: 'top top',
-          end: '+=120%',
-          invalidateOnRefresh: true,
-          snap: {
-            snapTo: (progress) => {
-              const groupCount = contentGroups.length - 1
-              const exact = progress * groupCount
-              const desired = Math.round(exact)
-              const last = lastSnapIdxRef.current
-              const clamped = Math.max(last - 1, Math.min(last + 1, desired))
-              return clamped / groupCount
-            },
-            duration: { min: 0.15, max: 0.25 },
-            ease: 'power2.inOut',
-            delay: 0,
-            directional: false,
-          },
-          onSnapComplete: (self) => {
-            const groupIndex = Math.round(self.progress * (contentGroups.length - 1))
-            lastSnapIdxRef.current = groupIndex
-            const newId = contentGroups[groupIndex].id
-            setActiveId(prev => (prev === newId ? prev : newId))
-          },
-        })
+        tl2.to(left, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' }, 0)
+        tl2.to(right, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' }, 0)
       }
 
-      // Lenis 와 sync 위해 살짝 지연 후 refresh
       gsap.delayedCall(0.3, () => ScrollTrigger.refresh())
     }, outer)
 
     return () => ctx.revert()
   }, [])
+
+  // ── scrollspy: 우측 현재 그룹 감지 → 좌측 라벨 active ─────────────────────
+  useEffect(() => {
+    const rightCol = rightColRef.current
+    if (!rightCol) return
+    const sections = Array.from(rightCol.querySelectorAll<HTMLElement>('[data-cm-group]'))
+    if (!sections.length) return
+
+    // 뷰포트 중앙 10% 밴드에 들어온 그룹을 active 로
+    const io = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.filter((e) => e.isIntersecting)
+        if (!hit.length) return
+        const id = hit[hit.length - 1].target.getAttribute('data-cm-group')
+        if (id) setActiveId((prev) => (prev === id ? prev : id))
+      },
+      { rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+    )
+    sections.forEach((s) => io.observe(s))
+    return () => io.disconnect()
+  }, [])
+
+  // 좌측 라벨 hover → 해당 그룹으로 스크롤 점프
+  const jumpToGroup = (id: string) => {
+    const el = rightColRef.current?.querySelector<HTMLElement>(`[data-cm-group="${id}"]`)
+    if (!el) return
+    const offset = -window.innerHeight * 0.35 // 그룹이 뷰포트 중앙 밴드에 오도록
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(el, { offset, duration: 0.8 })
+    } else {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
 
   return (
     <section
@@ -178,15 +136,10 @@ export function ContentMarketing() {
       className="relative bg-dark text-ink-inverse"
       data-section="content-marketing"
     >
-
-      {/* ─── [1] sticky 100vh 안 — 라벨 가운데 *고정*, paragraph 위, 영수증 bottom 부터 자라남 ─── */}
-      <div
-        ref={stage1OuterRef}
-        className="relative"
-        style={{ height: '260vh' }}
-      >
+      {/* ─── [1] 진입부 — 선 벌어짐 + paragraph (sticky 100vh) ─── */}
+      <div ref={stage1OuterRef} className="relative" style={{ height: '170vh' }}>
         <div className="sticky top-0 h-screen w-full px-side-m md:px-side-t xl:px-side-d">
-          {/* paragraph — absolute 위쪽 고정 */}
+          {/* paragraph — 상단 */}
           <p
             data-cm-paragraph
             className="absolute left-1/2 max-w-[720px] text-center font-kr text-body-l leading-relaxed text-ink-inverse/95"
@@ -205,107 +158,68 @@ export function ContentMarketing() {
             ))}
           </p>
 
-          {/* 분할 라벨 — absolute 가운데 *고정* (z-index 10, 영수증 위 통과 시 visible) */}
+          {/* 분할 라벨 — 가운데, 선이 좌우로 벌어짐 */}
           <div
             className="absolute left-0 right-0 flex items-center justify-center font-mono text-base md:text-lg uppercase tracking-[0.08em] text-ink-inverse/95"
-            style={{
-              top: '50vh',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-            }}
+            style={{ top: '50vh', transform: 'translateY(-50%)', zIndex: 10 }}
           >
             <span data-cm-label-left>(Content&nbsp;</span>
-            <div
-              data-cm-line
-              className="h-px bg-ink-inverse/60"
-              style={{ width: 0 }}
-            />
+            <div data-cm-line className="h-px bg-ink-inverse/60" style={{ width: 0 }} />
             <span data-cm-label-right>&nbsp;&amp; Marketing)</span>
           </div>
-
-          {/* Receipt — wrapper top: 50vh (라벨 위치 고정) + maxHeight 자라남 *아래로* + flex-end (푸터부터 visible) */}
-          <div
-            data-cm-receipt
-            className="absolute left-1/2"
-            style={{
-              top: '50vh',
-              transform: 'translateX(-50%)',
-              maxHeight: 0,
-              overflow: 'hidden',
-              zIndex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <div className="receipt-sway">
-              <Receipt groups={contentGroups} variant="stage1" />
-            </div>
-          </div>
-
-          {/* 가운데 hairline + next entry 캡션 — viewport 하단 (다음 챕터 신호) */}
-          <div
-            data-cm-next-entry-line
-            className="absolute left-1/2 h-px bg-ink-inverse/40"
-            style={{
-              top: '88vh',
-              transform: 'translate(-50%, -50%)',
-              width: 0,
-              opacity: 0,
-              zIndex: 6,
-            }}
-          />
-          <span
-            data-cm-next-entry-caption
-            className="absolute font-mono text-label uppercase tracking-[0.12em] text-ink-inverse/60"
-            style={{
-              top: 'calc(88vh + 1.2em)',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              opacity: 0,
-              zIndex: 6,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {'// next entry — 02'}
-          </span>
         </div>
       </div>
 
-      {/* ─── Spacer 40vh — 영수증 자연 사라지고 Stage 2 진입 사이 짧은 호흡 ─── */}
-      <div aria-hidden style={{ height: '40vh' }} />
+      {/* Stage1(선) → Stage2 호흡 */}
+      <div aria-hidden style={{ height: '24vh' }} />
 
-      {/* ─── [2] Receipt compact (좌) + PreviewArea (우) — 가운데에서 양쪽 갈라짐 ─── */}
+      {/* ─── [2] 좌 고정 영수증 + 우 스크롤 콘텐츠 ─── */}
       <div
         data-cm-stage2-wrap
-        className="relative mx-auto grid min-h-screen-dvh max-w-[1680px] grid-cols-12 gap-gutter-d px-side-m py-[6vh] md:items-center md:content-center md:px-side-t xl:px-side-d"
+        className="relative mx-auto grid max-w-[1680px] grid-cols-12 gap-gutter-d px-side-m pb-[8vh] md:px-side-t xl:px-side-d"
         data-stage="2"
       >
-        {/* 좌 — Receipt compact (clip-path: 가운데 → 좌측 으로 열림) */}
-        <div
-          data-cm-stage2-left
-          className="col-span-12 md:col-span-6 md:pr-14"
-          style={{ clipPath: 'inset(0% 0% 0% 100%)', willChange: 'clip-path' }}
-        >
-          <div>
-            <Receipt
-              groups={contentGroups}
-              variant="stage2"
-              activeId={activeId}
-              onHover={setActiveId}
-            />
+        {/* 좌 — Receipt sticky 고정 (clip: 가운데 → 좌측 으로 열림) */}
+        <div data-cm-stage2-left className="col-span-12 md:col-span-6 md:pr-14">
+          <div className="md:sticky md:top-0">
+            <div
+              data-cm-stage2-left-reveal
+              className="flex items-center md:h-screen-dvh"
+              style={{ willChange: 'clip-path' }}
+            >
+              <Receipt
+                groups={contentGroups}
+                variant="stage2"
+                activeId={activeId}
+                onHover={jumpToGroup}
+              />
+            </div>
           </div>
         </div>
 
-        {/* 우 — PreviewArea (clip-path: 가운데 → 우측 으로 열림) */}
+        {/* 우 — 01·02·03 콘텐츠 세로 스택, 자연 스크롤 (clip: 가운데 → 우측 으로 열림) */}
         <div
+          ref={rightColRef}
           data-cm-stage2-right
           className="col-span-12 md:col-span-6 md:pl-14"
-          style={{ clipPath: 'inset(0% 100% 0% 0%)', willChange: 'clip-path' }}
+          style={{ willChange: 'clip-path' }}
         >
-          <PreviewArea group={activeGroup} />
+          {contentGroups.map((group, i) => (
+            <div
+              key={group.id}
+              data-cm-group={group.id}
+              className={i === 0 ? 'pt-[30vh] md:pt-[40vh]' : 'pt-[24vh] md:pt-[32vh]'}
+            >
+              <PreviewArea group={group} />
+            </div>
+          ))}
+          {/* exit 호흡 — 마지막 그룹이 좌측 고정된 채 끝까지 보인 뒤 섹션 이탈 */}
+          <div aria-hidden className="h-[36vh] md:h-[44vh]" />
         </div>
       </div>
+
+      {/* Stage2 → 다음 섹션(Visual Works) 호흡 — 03 충분히 보고 + sweep 진입 전 여백 */}
+      <div aria-hidden style={{ height: '24vh' }} />
     </section>
   )
 }

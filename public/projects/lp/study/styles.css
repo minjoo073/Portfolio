@@ -20,6 +20,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip; /* 루트=뷰포트 스크롤 컨테이너에 직접 가드 (body→뷰포트 전파 쿼크 회피) */
 }
 
 body {
@@ -29,6 +30,7 @@ body {
   font-family: "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 400;
   line-height: 1.5;
+  overflow-x: clip; /* 전 섹션의 삐져나간 장식 + 100vw 스크롤바 폭만 잘라 가로 스크롤 제거 (clip=스크롤 컨테이너 안 만듦, sticky 안전) */
 }
 
 p,
@@ -68,6 +70,7 @@ ol {
   padding-top: 12px;
   padding-bottom: 120px;
   position: relative;
+  overflow-x: clip; /* 삐져나간 장식 레코드만 잘라 가로 스크롤 제거 (걸침 디자인은 유지, 스크롤 컨테이너 안 만듦) */
 }
 
 /* hero 상하단 텍스트는 LP보다 위 layer로 보장 */
@@ -1252,6 +1255,7 @@ em,
 
 .ui-note--mobile h4 {
   font-size: 1.2rem;
+  margin-left: -20px;
 }
 
 .ui-note-column--right .ui-note--mobile::before,
@@ -2235,8 +2239,8 @@ em,
 
 .hero-visual {
   position: absolute;
-  /* LP를 뷰포트 우측 끝 + 40px 더 오른쪽으로 */
-  right: calc(50% - 50vw - 40px);
+  /* LP 보이는 원판을 뷰포트 우측 끝에서 60px 안쪽으로 (잘림 없이 풀 노출) */
+  right: calc(50% - 50vw + 60px);
   bottom: -12px;
   z-index: 1;
 }
@@ -2244,7 +2248,7 @@ em,
 .record-visual {
   display: block;
   position: relative;
-  width: min(42vw, 720px);
+  width: min(42vw, 690px);
   aspect-ratio: 1;
   object-fit: contain;
   filter: drop-shadow(-14px 24px 50px rgba(0, 0, 0, 0.18));
@@ -2277,12 +2281,12 @@ em,
   }
 
   .hero-visual {
-    right: calc(50% - 50vw);
+    right: calc(50% - 50vw + 24px);
     bottom: 0;
   }
 
   .record-visual {
-    width: min(54vw, 620px);
+    width: min(50vw, 560px);
   }
 }
 

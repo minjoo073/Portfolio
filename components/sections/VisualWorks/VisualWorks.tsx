@@ -26,32 +26,41 @@ export function VisualWorks() {
   const transitionRef = useRef<HTMLDivElement>(null)
   const labelRef = useRef<HTMLDivElement>(null)
 
-  // hairline sweep transition (03 → 04)
+  // hairline sweep transition (03 → 04) — sticky 로 *제자리에서 그려지는* 챕터 전환
+  // outer 180vh / sticky 100vh → 잡힘 80vh. 선이 화면 가운데 머문 채 좌→우로 그려지고
+  // 라벨이 페이드 → 다 그려진 뒤 짧게 hold 후 풀림. (단순 scrub 1개 — 핀+스냅 조합 아님)
   useEffect(() => {
     const el = transitionRef.current
     if (!el) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     registerGsap()
+    const line = el.querySelector<HTMLElement>('[data-vw-sweep]')
+    const label = el.querySelector<HTMLElement>('[data-vw-sweep-label]')
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (reduced) {
+      if (line) gsap.set(line, { scaleX: 1 })
+      if (label) gsap.set(label, { opacity: 1, y: 0 })
+      return
+    }
+
     const ctx = gsap.context(() => {
-      const hairline = el.querySelector<HTMLElement>('[data-vw-sweep]')
-      if (!hairline) return
+      if (!line) return
+      gsap.set(line, { scaleX: 0, transformOrigin: 'left center' })
+      if (label) gsap.set(label, { opacity: 0, y: 8 })
 
-      // fromTo 패턴 = scrub 양방향 보장 + 초기 상태 명시
-      ScrollTrigger.create({
-        trigger: el,
-        start: 'top 95%',
-        end: 'bottom 40%',
-        scrub: 2,
-        invalidateOnRefresh: true,
-        animation: gsap.fromTo(
-          hairline,
-          { scaleX: 0, transformOrigin: 'left center' },
-          { scaleX: 1, ease: 'power2.out' }
-        ),
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: el,
+          start: 'top top',
+          end: '+=80%',
+          scrub: 0.8,
+          invalidateOnRefresh: true,
+        },
       })
+      tl.to(line, { scaleX: 1, ease: 'power2.inOut', duration: 0.7 }, 0)
+      if (label) tl.to(label, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.3 }, 0.45)
 
-      // 다른 trigger 의 pin 변경 영향 받지 않도록 mount 후 refresh
       gsap.delayedCall(0.4, () => ScrollTrigger.refresh())
     }, el)
 
@@ -160,11 +169,22 @@ export function VisualWorks() {
       <div
         ref={transitionRef}
         className="relative bg-dark"
-        style={{ height: '60vh' }}
+        style={{ height: '180vh' }}
         aria-hidden
       >
-        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 px-side-m md:px-side-t xl:px-side-d">
-          <div data-vw-sweep className="h-px w-full bg-ink-inverse/40" />
+        <div className="sticky top-0 flex h-screen flex-col items-center justify-center gap-5 px-side-m md:px-side-t xl:px-side-d">
+          <span
+            data-vw-sweep-label
+            className="font-mono text-label uppercase tracking-[0.2em] text-ink-inverse/55"
+            style={{ opacity: 0 }}
+          >
+            04 — Visual Works
+          </span>
+          <div
+            data-vw-sweep
+            className="h-[2px] w-full bg-ink-inverse/45"
+            style={{ transform: 'scaleX(0)', transformOrigin: 'left center' }}
+          />
         </div>
       </div>
 
