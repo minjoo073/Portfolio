@@ -34,6 +34,16 @@
     overflow-x: clip;
   }
 
+  /* 네이티브 세로 스크롤바 숨김 — Lenis 부드러운 스크롤 사용, 미관 목적.
+     스크롤 *동작*은 그대로 유지 (휠/터치/키보드 정상). */
+  html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* old Edge/IE */
+  }
+  html::-webkit-scrollbar {
+    display: none; /* Chrome / Safari / Edge Chromium */
+  }
+
   /* 커스텀 커서 제거(CEO 2026-06-17) — lerp 지연이 "마우스 막힘" 느낌 유발. 네이티브 커서 복원. */
 
   /* iOS dvh fallback */
