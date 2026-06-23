@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { contentBody, contentGroups } from '@/data/content'
+import { useIsMobile } from '@/lib/hooks/useMediaQuery'
 import { Receipt } from './Receipt'
 import { PreviewArea } from './PreviewArea'
 import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
@@ -20,6 +21,9 @@ import { useLenis } from '@/lib/hooks/useLenis'
  */
 export function ContentMarketing() {
   const [activeId, setActiveId] = useState(contentGroups[0].id)
+  const isMobile = useIsMobile()
+  // 모바일: 선이 짧게 벌어져 "& Marketing)" 이 줄바꿈/하단 이탈하지 않게
+  const lineWidth = isMobile ? '30vw' : '60vw'
   const stage1OuterRef = useRef<HTMLDivElement>(null)
   const rightColRef = useRef<HTMLDivElement>(null)
   const lenis = useLenis()
@@ -47,7 +51,7 @@ export function ContentMarketing() {
     // reduced-motion: 정적 표시(모션 skip) — 콘텐츠 숨김 방지
     if (reduced) {
       if (paragraph) gsap.set(paragraph, { opacity: 1, y: 0 })
-      if (line) gsap.set(line, { width: '60vw' })
+      if (line) gsap.set(line, { width: lineWidth })
       gsap.set([left, right].filter(Boolean), { clipPath: 'inset(0% 0% 0% 0%)' })
       return
     }
@@ -74,7 +78,7 @@ export function ContentMarketing() {
           invalidateOnRefresh: true,
         },
       })
-      tl.to(line, { width: '60vw', ease: 'power3.inOut', duration: 0.55 }, 0)
+      tl.to(line, { width: lineWidth, ease: 'power3.inOut', duration: 0.55 }, 0)
       tl.to(paragraph, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.52 }, 0.28)
 
       // Stage 2 좌우 갈라짐 — 진입 시 1회 (CSS sticky 와 충돌 없는 단순 clip 리빌)
@@ -95,7 +99,7 @@ export function ContentMarketing() {
     }, outer)
 
     return () => ctx.revert()
-  }, [])
+  }, [isMobile, lineWidth])
 
   // ── scrollspy: 우측 현재 그룹 감지 → 좌측 라벨 active ─────────────────────
   useEffect(() => {
@@ -172,9 +176,9 @@ export function ContentMarketing() {
             className="absolute left-0 right-0 flex items-center justify-center font-mono text-base md:text-lg uppercase tracking-[0.08em] text-ink-inverse/95"
             style={{ top: '50vh', transform: 'translateY(-50%)', zIndex: 10 }}
           >
-            <span data-cm-label-left>(Content&nbsp;</span>
+            <span data-cm-label-left className="whitespace-nowrap">(Content&nbsp;</span>
             <div data-cm-line className="h-px bg-ink-inverse/60" style={{ width: 0 }} />
-            <span data-cm-label-right>&nbsp;&amp; Marketing)</span>
+            <span data-cm-label-right className="whitespace-nowrap">&nbsp;&amp; Marketing)</span>
           </div>
         </div>
       </div>
