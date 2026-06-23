@@ -32,6 +32,10 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
   useEffect(() => setMounted(true), [])
   // 매 open 시점에 새 timestamp → GitHub Pages 캐시 강제 무효화
   const [bustKey, setBustKey] = useState(0)
+  // 닫기 버튼 hover — React state 로 관리(imperative style.opacity 변형 금지).
+  // 닫는 순간 drawer 가 커서 밑에서 슬라이드해 나가며 mouseleave 가 발생,
+  // 직접 style.opacity='1' 로 되돌리면 React 가 재렌더 안 해 버튼이 화면에 남던 버그 방지.
+  const [closeHover, setCloseHover] = useState(false)
 
   lenisRef.current = lenis
 
@@ -167,16 +171,12 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
             textTransform: 'uppercase',
             lineHeight: 1,
             whiteSpace: 'nowrap',
-            opacity: open ? 1 : 0,
+            opacity: open ? (closeHover ? 0.82 : 1) : 0,
             pointerEvents: open ? 'auto' : 'none',
             transition: 'opacity 300ms ease',
           }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.opacity = '0.82'
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.opacity = '1'
-          }}
+          onMouseEnter={() => setCloseHover(true)}
+          onMouseLeave={() => setCloseHover(false)}
         >
           <span
             aria-hidden="true"
