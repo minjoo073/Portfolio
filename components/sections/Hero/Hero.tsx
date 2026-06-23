@@ -76,7 +76,8 @@ export function Hero() {
        */
       const para = select('[data-hero-para]')[0] as HTMLElement | undefined
 
-      if (reduced) {
+      // reduced 또는 모바일: 패럴랙스/스크롤 페이드 미부착 (모바일은 한 화면 중앙정렬 브랜치)
+      if (reduced || isMobile) {
         if (para) gsap.set(para, { opacity: 1, y: 0 })
       } else {
         if (para) {
@@ -205,6 +206,72 @@ export function Hero() {
    * ⚠️ Hero section에 overflow-hidden 금지: 타이틀 패럴랙스 클리핑됨.
    *    마퀴 overflow 클립은 data-hero-belt 자체 컨테이너에서 처리.
    */
+  /* ── 모바일: 패럴랙스 없이 한 화면 세로 중앙 정렬 (PORTFOLIO·벨트·문단) ──── */
+  if (isMobile) {
+    return (
+      <section
+        ref={sectionRef}
+        id="intro"
+        data-section="intro"
+        className="relative h-screen-dvh bg-hero-bg flex flex-col overflow-hidden"
+      >
+        <div className="flex-1 flex flex-col items-center justify-center gap-[5vh] w-full">
+          {/* 워드마크 — 폭맞춤 */}
+          <h1
+            data-hero-title
+            className="select-none font-sans font-black tracking-[-0.04em] text-ink-primary text-[15vw] leading-[0.92] text-center w-full px-side-m"
+          >
+            PORTFOLIO
+          </h1>
+
+          {/* 흰 벨트 마퀴 (마퀴 애니는 공용 useEffect 가 구동) */}
+          <div
+            data-hero-belt
+            className="w-full overflow-hidden bg-white py-1 flex flex-col gap-0"
+            aria-label="skill keywords"
+          >
+            <div data-marquee-row="1" className="flex gap-10 whitespace-nowrap will-change-transform">
+              {[...heroMarqueeRow1, ...heroMarqueeRow1].map((label, i) => (
+                <span key={i} className="font-mono text-label font-light uppercase tracking-[0.1em] text-ink-primary">
+                  {label}
+                </span>
+              ))}
+            </div>
+            <div data-marquee-row="2" className="flex gap-10 whitespace-nowrap will-change-transform">
+              {[...heroMarqueeRow2, ...heroMarqueeRow2].map((label, i) => (
+                <span key={i} className="font-mono text-label font-light uppercase tracking-[0.1em] text-ink-muted">
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* 문단 */}
+          <p
+            data-hero-para
+            className="w-[90%] max-w-[640px] text-center font-mono text-body uppercase leading-relaxed tracking-[0.08em] text-ink-primary"
+          >
+            {heroBody[0]}
+            <br />
+            {heroBody[1]}
+          </p>
+        </div>
+
+        {/* scroll cue — 하단 고정 */}
+        <div className="shrink-0 pb-10 flex justify-center">
+          <div className="flex flex-col items-center gap-2 animate-bounce-slow text-ink-muted opacity-50">
+            <span className="font-mono text-label font-light uppercase tracking-[0.14em]">
+              please scroll down
+            </span>
+            <svg className="block" width="9" height="12" viewBox="0 0 10 14" fill="none" aria-hidden="true">
+              <path d="M5 0V13M5 13L1 9M5 13L9 9" stroke="currentColor" strokeWidth="1" strokeLinecap="square" />
+            </svg>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section
       ref={sectionRef}
@@ -251,7 +318,8 @@ export function Hero() {
             'pointer-events-none select-none absolute z-0',
             'top-[18%] px-side-m md:px-side-t xl:px-side-d',
             'font-sans font-black tracking-[-0.04em]',
-            'text-ink-primary text-display-xl',
+            // 모바일: 화면 폭에 맞춰 한 줄로 채움(잘림 방지) / md+: 기존 display-xl
+            'text-ink-primary text-[15vw] leading-[0.92] md:text-display-xl',
             useWebGL ? 'sr-only' : ''
           ].join(' ').trim()}
         >
@@ -267,8 +335,7 @@ export function Hero() {
         z-20: 타이틀(z-1) 위에. 패럴랙스 없이 자연 흐름 — 초반 스크롤에 빠르게 fade.
       */}
       <div
-        className="relative w-full z-20 flex flex-col items-center"
-        style={{ paddingTop: 'calc(18dvh + clamp(72px, 19vw, 360px) - 15px)' }}
+        className="relative w-full z-20 flex flex-col items-center pt-[calc(18dvh+15vw)] md:pt-[calc(18dvh+clamp(72px,19vw,360px)-15px)]"
       >
         {/* 흰 벨트 마퀴 — data-hero-belt(C 트윈). 풀폭 흰 띠. row1 좌행(22s), row2 우행(28s). */}
         <div

@@ -35,6 +35,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { mobileProjects } from '@/data/mobile-projects'
 import { AppPage } from './AppPage'
+import { useIsMobile } from '@/lib/hooks/useMediaQuery'
 
 const TOTAL_PAGES = 2
 const COOLDOWN_MS = 1050
@@ -43,6 +44,7 @@ const TOUCH_THRESHOLD = 50
 
 export function MobileProjects() {
   const reduced     = useReducedMotionContext()
+  const isMobile    = useIsMobile()
   const sectionRef  = useRef<HTMLDivElement>(null)
   const trackRef    = useRef<HTMLDivElement>(null)
   const lenis       = useLenis()
@@ -65,6 +67,7 @@ export function MobileProjects() {
       if (!section || !track) return
 
       if (reduced) return
+      if (isMobile) return // 모바일: 세로 스택 렌더 → 가로 페이징/sticky/wheel 미사용
 
       // ── sectionTop 추적 ──────────────────────────────────────────
       let sectionTop = section.getBoundingClientRect().top + window.scrollY
@@ -303,8 +306,32 @@ export function MobileProjects() {
       }
     },
     sectionRef,
-    [] // 마운트 1회
+    [isMobile] // isMobile 확정 시 재실행(모바일 가드)
   )
+
+  /* ── 모바일: 세로 스택 (가로 페이징/sticky 없이 자연 스크롤) ───────────── */
+  if (isMobile) {
+    return (
+      <section
+        id="mobile"
+        data-section="mobile-projects"
+        aria-label="Mobile Projects"
+        style={{ position: 'relative', background: '#0A0A0A' }}
+      >
+        <AppPage project={projectA} pageIndex={0} total={TOTAL_PAGES} mobile />
+        {/* 두 프로젝트 사이 hairline 구분 */}
+        <div
+          aria-hidden
+          style={{
+            height: '1px',
+            margin: '0 clamp(20px, 5vw, 32px)',
+            background: 'rgba(248,247,244,0.10)',
+          }}
+        />
+        <AppPage project={projectB} pageIndex={1} total={TOTAL_PAGES} mobile />
+      </section>
+    )
+  }
 
   return (
     <section

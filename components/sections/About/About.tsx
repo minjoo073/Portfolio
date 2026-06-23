@@ -25,9 +25,10 @@ export function About() {
         <WaveEdge />
       </div>
 
+      {/* 모바일: 상단 여백 축소(검정 빈공간 제거) / md+: 95vh (PORTFOLIO 리빌 여백) */}
       <div
-        className="flex min-h-screen-dvh flex-col px-side-m md:px-side-t xl:px-side-d"
-        style={{ paddingTop: '95vh', paddingBottom: '6vh', rowGap: '4vh' }}
+        className="flex min-h-screen-dvh flex-col px-side-m md:px-side-t xl:px-side-d pt-[14vh] md:pt-[95vh]"
+        style={{ paddingBottom: '6vh', rowGap: '4vh' }}
       >
         <SectionLabel className="self-center text-ink-inverse/70">About Me</SectionLabel>
 

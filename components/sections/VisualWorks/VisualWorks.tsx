@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
 import { visualWorks } from '@/data/visualWorks'
 import { VisualItem } from './VisualItem'
+import { useIsMobile } from '@/lib/hooks/useMediaQuery'
 
 /**
  * Visual Works 섹션 — 04 (절제, "이런 작업도 해봤다").
@@ -19,6 +20,7 @@ export function VisualWorks() {
   const posters = visualWorks.filter(v => v.category === 'poster')
   const banners = visualWorks.filter(v => v.category === 'banner')
   const total = visualWorks.length
+  const isMobile = useIsMobile()
 
   const outerRef = useRef<HTMLDivElement>(null)
   const stickyRef = useRef<HTMLDivElement>(null)
@@ -99,6 +101,8 @@ export function VisualWorks() {
 
   // sticky + ScrollTrigger scrub horizontal
   useEffect(() => {
+    // 모바일: 가로 스크럽 비활성 (세로 스택 + 포스터 스와이프 렌더 → ref 미존재)
+    if (isMobile) return
     const outer = outerRef.current
     const sticky = stickyRef.current
     const track = trackRef.current
@@ -161,7 +165,7 @@ export function VisualWorks() {
       window.removeEventListener('resize', onResize)
       ctx.revert()
     }
-  }, [])
+  }, [isMobile])
 
   return (
     <>
@@ -221,37 +225,60 @@ export function VisualWorks() {
           </div>
         </div>
 
-        {/* ─── sticky + scrub horizontal track ─── */}
-        <div ref={outerRef} className="relative mt-[3vh]">
-          <div
-            ref={stickyRef}
-            className="sticky top-0 flex items-center overflow-hidden bg-dark"
-            style={{ height: '100vh' }}
-          >
+        {isMobile ? (
+          /* ─── 모바일: 포스터 손가락 가로 스와이프(scroll-snap) + 배너 2열 ─── */
+          <div className="mt-[4vh]">
             <div
-              ref={trackRef}
-              className="flex shrink-0 items-center gap-[4vw] px-side-m md:px-side-t xl:px-side-d"
-              data-horizontal-track
-              style={{ willChange: 'transform' }}
+              data-lenis-prevent
+              className="flex snap-x snap-mandatory overflow-x-auto gap-[5vw] px-side-m [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              style={{ scrollPaddingLeft: '20px', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
             >
-              {/* 시작 호흡 — 역스크롤 시 포스터 01 완전 visible 후 sticky 풀림 보장 */}
-              <div className="shrink-0" style={{ width: '8vw' }} aria-hidden />
-
-              {/* 포스터 8장 — 각 카드 */}
               {posters.map(item => (
-                <VisualItem key={item.id} item={item} total={total} />
+                <div key={item.id} className="shrink-0 w-[76vw] snap-center">
+                  <VisualItem item={item} total={total} mobile />
+                </div>
               ))}
+            </div>
 
-              {/* 배너 grid — 2 col × N row (2개씩 위아래 = 한 view 안 그리드) */}
-              {banners.length > 0 && (
-                <BannerGrid banners={banners} total={total} />
-              )}
+            {banners.length > 0 && (
+              <div className="mt-[6vh] px-side-m">
+                <BannerGrid banners={banners} total={total} mobile />
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ─── 데스크탑: sticky + scrub horizontal track ─── */
+          <div ref={outerRef} className="relative mt-[3vh]">
+            <div
+              ref={stickyRef}
+              className="sticky top-0 flex items-center overflow-hidden bg-dark"
+              style={{ height: '100vh' }}
+            >
+              <div
+                ref={trackRef}
+                className="flex shrink-0 items-center gap-[4vw] px-side-m md:px-side-t xl:px-side-d"
+                data-horizontal-track
+                style={{ willChange: 'transform' }}
+              >
+                {/* 시작 호흡 — 역스크롤 시 포스터 01 완전 visible 후 sticky 풀림 보장 */}
+                <div className="shrink-0" style={{ width: '8vw' }} aria-hidden />
 
-              {/* 끝 호흡 — 배너 grid 완전 visible 보장 + footer 진입 buffer */}
-              <div className="shrink-0" style={{ width: '60vw' }} aria-hidden />
+                {/* 포스터 8장 — 각 카드 */}
+                {posters.map(item => (
+                  <VisualItem key={item.id} item={item} total={total} />
+                ))}
+
+                {/* 배너 grid — 2 col × N row (2개씩 위아래 = 한 view 안 그리드) */}
+                {banners.length > 0 && (
+                  <BannerGrid banners={banners} total={total} />
+                )}
+
+                {/* 끝 호흡 — 배너 grid 완전 visible 보장 + footer 진입 buffer */}
+                <div className="shrink-0" style={{ width: '60vw' }} aria-hidden />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 다음 섹션 진입 호흡 */}
         <div style={{ height: '15vh' }} aria-hidden />
@@ -269,16 +296,18 @@ export function VisualWorks() {
 function BannerGrid({
   banners,
   total,
+  mobile = false,
 }: {
   banners: Array<{ id: string; index: number; title: string; thumbnail: string; category: 'poster' | 'banner' }>
   total: number
+  mobile?: boolean
 }) {
   return (
     <article
       className="group flex shrink-0 flex-col gap-3"
       data-visual-item
       data-category="banner-grid"
-      style={{ width: '160vh' }}
+      style={{ width: mobile ? '100%' : '160vh' }}
     >
       {/* CSS columns masonry — 각 배너 width 100%, height 자연 비율, frame X */}
       <div className="columns-2 gap-3 [column-fill:balance]">

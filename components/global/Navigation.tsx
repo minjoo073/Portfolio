@@ -94,7 +94,8 @@ export function Navigation() {
       ref={ref}
       className={cn(
         'fixed top-0 left-0 right-0 z-nav',
-        'grid grid-cols-3 items-center',
+        // 모바일: flex(메뉴 폭 콘텐츠 기준 → 잘림 방지) / md+: 기존 3등분 grid
+        'flex justify-between md:grid md:grid-cols-3 items-center',
         'px-side-m py-5 md:px-side-t md:py-6 xl:px-side-d xl:py-7',
         'transition-colors duration-300',
         onLight ? 'text-ink-primary' : 'text-ink-inverse'

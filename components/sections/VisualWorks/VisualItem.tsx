@@ -3,6 +3,8 @@ import type { VisualItem as VisualItemType } from '@/lib/types/content'
 interface VisualItemProps {
   item: VisualItemType
   total: number
+  /** 모바일 스와이프 카드 — 폭 100% / 높이 자동 (데스크탑은 높이 60vh 고정) */
+  mobile?: boolean
 }
 
 /**
@@ -11,7 +13,7 @@ interface VisualItemProps {
  *   - 포스터 = 자연 세로 비율 / 배너 = 자연 가로 비율
  *   - caption 은 이미지 아래 (img width 따라감)
  */
-export function VisualItem({ item, total }: VisualItemProps) {
+export function VisualItem({ item, total, mobile = false }: VisualItemProps) {
   const isPoster = item.category === 'poster'
   const indexLabel = `${String(item.index).padStart(2, '0')} / ${String(total).padStart(2, '0')}`
   const categoryLabel = isPoster ? 'Poster' : 'Banner'
@@ -29,7 +31,7 @@ export function VisualItem({ item, total }: VisualItemProps) {
         src={item.thumbnail}
         alt={`${item.title} — ${categoryLabel}`}
         className="block bg-dark-soft"
-        style={{ height: '60vh', width: 'auto' }}
+        style={mobile ? { width: '100%', height: 'auto' } : { height: '60vh', width: 'auto' }}
         loading="lazy"
         onError={(e) => {
           ;(e.target as HTMLImageElement).style.display = 'none'

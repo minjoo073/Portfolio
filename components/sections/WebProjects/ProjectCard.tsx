@@ -488,9 +488,9 @@ export function ArchiveCard({ project }: { project: Project }) {
         </p>
       )}
 
-      {/* 스택 칩 (옵션) */}
+      {/* 스택 칩 (옵션) — 모바일에선 숨김(핵심만) */}
       {hasStacks && (
-        <div className="flex flex-wrap justify-center gap-2 mt-4" style={{ maxWidth: 'clamp(380px, 34vw, 660px)', width: '100%' }} data-meta>
+        <div className="hidden md:flex flex-wrap justify-center gap-2 mt-4" style={{ maxWidth: 'clamp(380px, 34vw, 660px)', width: '100%' }} data-meta>
           {stacks.map((s) => (
             <StackChip key={s} label={s} />
           ))}

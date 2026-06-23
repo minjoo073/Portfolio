@@ -29,6 +29,7 @@ import { useGsapContext } from '@/lib/hooks/useGsapContext'
 import { registerGsap } from '@/lib/gsap/config'
 import { useReducedMotionContext } from '@/components/global/ReducedMotionProvider'
 import { useLenis } from '@/lib/hooks/useLenis'
+import { useIsMobile } from '@/lib/hooks/useMediaQuery'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -381,6 +382,119 @@ function MetaRailPanel({ project, index }: MetaRailPanelProps) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   모바일 카드 — 펼친 그리드 대신 세로 스택 (핵심만: 비주얼+타이틀+카피+CTA)
+   ══════════════════════════════════════════════════════════════════ */
+function MobileFeaturedCard({ project, total }: { project: Project; total: number }) {
+  const totalStr = String(total).padStart(2, '0')
+  const wordmark = project.wordmark ?? project.title
+  const is4x5 = project.visualRatio === '4:5'
+  const aspect = is4x5 ? '760 / 950' : '16 / 10'
+  const studySlug = project.studyHref?.match(/^\/work\/([\w-]+)/)?.[1]
+
+  const visual = (
+    <div className="relative w-full" style={{ aspectRatio: aspect }}>
+      <div
+        className="absolute inset-0 bg-dark-soft"
+        style={{
+          backgroundImage: project.thumbnail ? `url(${project.thumbnail})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: project.dimThumb ? 'brightness(0.9)' : undefined,
+        }}
+      />
+    </div>
+  )
+
+  return (
+    <article
+      id={studySlug ? `work-${studySlug}` : undefined}
+      style={{
+        paddingInline: 'clamp(20px, 5vw, 32px)',
+        paddingBlock: 'clamp(48px, 9vh, 72px)',
+      }}
+      data-project-id={project.id}
+    >
+      {/* 회차 */}
+      <span
+        className="font-mono text-ink-inverse/40"
+        style={{ fontSize: '12px', letterSpacing: '0.16em' }}
+      >
+        {project.index} / {totalStr}
+      </span>
+
+      {/* 워드마크 */}
+      <h3
+        className="font-display text-ink-inverse"
+        style={{
+          fontSize: 'clamp(46px, 13vw, 76px)',
+          lineHeight: 0.9,
+          letterSpacing: '-0.02em',
+          fontWeight: 400,
+          marginTop: '12px',
+        }}
+      >
+        {wordmark}
+      </h3>
+
+      {/* 연월 · 카테고리 (· scale) */}
+      <p
+        className="font-kr text-ink-inverse/45"
+        style={{ fontSize: '13px', letterSpacing: '0.04em', marginTop: '12px' }}
+      >
+        {krDate(project.date)} · {project.category}
+        {project.scale ? ` · ${project.scale}` : ''}
+      </p>
+
+      {/* 비주얼 */}
+      <div style={{ marginTop: 'clamp(24px, 6vw, 32px)' }}>
+        {project.studyHref ? (
+          <a href={project.studyHref} aria-label={`${project.title} 제작과정 보기`} className="block">
+            {visual}
+          </a>
+        ) : (
+          visual
+        )}
+      </div>
+
+      {/* 한 줄 카피 */}
+      {project.tagline && (
+        <p
+          className="font-kr text-ink-inverse/65"
+          style={{ fontSize: 'clamp(15px, 4vw, 18px)', lineHeight: 1.5, marginTop: 'clamp(20px, 5vw, 28px)' }}
+        >
+          {project.tagline}
+        </p>
+      )}
+
+      {/* CTA — 제작과정 + 보조 링크 (스택 칩은 모바일에서 생략) */}
+      <div style={{ marginTop: 'clamp(24px, 6vw, 32px)' }}>
+        {project.studyHref ? (
+          <a href={project.studyHref} className="inline-flex w-fit items-center gap-3">
+            <span className="h-px w-4 bg-ink-inverse/70" />
+            <span className="font-kr text-ink-inverse" style={{ fontSize: '18px' }}>제작과정</span>
+            <span className="text-[16px] text-ink-inverse/70">→</span>
+          </a>
+        ) : (
+          <span className="inline-flex items-center gap-3">
+            <span className="h-px w-8 bg-ink-inverse/20" />
+            <span className="font-kr text-ink-inverse/35" style={{ fontSize: '18px' }}>제작과정 준비중</span>
+          </span>
+        )}
+
+        <div className="bg-ink-inverse/15" style={{ height: '1px', width: '100%', margin: '20px 0' }} aria-hidden />
+
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          {project.siteHref && <ExtLink href={project.siteHref}>실사이트</ExtLink>}
+          {project.githubHref && <ExtLink href={project.githubHref}>깃허브</ExtLink>}
+          {project.skinHref && <ExtLink href={project.skinHref}>카페24</ExtLink>}
+        </div>
+      </div>
+    </article>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════
    HeroStickyExchange — 메인 컴포넌트
    ══════════════════════════════════════════════════════════════════ */
 interface HeroStickyExchangeProps {
@@ -390,6 +504,7 @@ interface HeroStickyExchangeProps {
 
 export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps) {
   const reduced = useReducedMotionContext()
+  const isMobile = useIsMobile()
   const sectionRef = useRef<HTMLDivElement>(null)
   const lenis = useLenis()
   // Lenis 인스턴스를 ref 에 보관 — wheel 핸들러 클로저에서 최신값 접근
@@ -433,6 +548,7 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
 
       // ── reduced-motion: wheel 핸들러 없이 자연 스크롤 ──────
       if (reduced) return
+      if (isMobile) return // 모바일: 세로 스택 렌더 → sticky/그리드/wheel 미사용
 
       const count = projects.length
       if (count < 2) return
@@ -710,8 +826,31 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
       }
     },
     sectionRef,
-    [] // 마운트 1회
+    [isMobile] // isMobile 확정 시 재실행(모바일 가드)
   )
+
+  /* ── 모바일: 세로 스택 (sticky/그리드/wheel 없이 자연 스크롤) ───────────── */
+  if (isMobile) {
+    return (
+      <div data-hero-sticky-section>
+        {projects.map((project, i) => (
+          <div key={project.id}>
+            <MobileFeaturedCard project={project} total={total} />
+            {i < projects.length - 1 && (
+              <div
+                aria-hidden
+                style={{
+                  height: '1px',
+                  margin: '0 clamp(20px, 5vw, 32px)',
+                  background: 'rgba(248,247,244,0.10)',
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     /*

@@ -193,7 +193,7 @@ export function ContentMarketing() {
           <div className="md:sticky md:top-0">
             <div
               data-cm-stage2-left-reveal
-              className="flex items-center md:h-screen-dvh"
+              className="flex items-center justify-center md:justify-start md:h-screen-dvh"
               style={{ willChange: 'clip-path' }}
             >
               <Receipt

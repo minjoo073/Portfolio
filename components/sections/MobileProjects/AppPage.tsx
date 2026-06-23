@@ -443,6 +443,8 @@ interface AppPageProps {
   hasNext?: boolean
   /** 다음 페이지 콜백 */
   onNext?: () => void
+  /** 모바일 — 펼친면 대신 세로 카드(핵심만: 폰 + 타이틀 + 태그라인 + CTA) */
+  mobile?: boolean
 }
 
 export function AppPage({
@@ -451,10 +453,150 @@ export function AppPage({
   total,
   hasNext = false,
   onNext,
+  mobile = false,
 }: AppPageProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   // 영상 재생 상태 — PhoneMockup 에서 끌어올려 옆 타이핑 캡션과 동조
   const [videoPlaying, setVideoPlaying] = useState(false)
+
+  /* ── 모바일 세로 카드 — 데스크탑 펼친면(50/50) 대신 핵심만 ───────────── */
+  if (mobile) {
+    return (
+      <div
+        style={{
+          paddingTop: 'clamp(56px, 12vh, 96px)',
+          paddingBottom: 'clamp(56px, 12vh, 96px)',
+          paddingInline: 'clamp(20px, 5vw, 32px)',
+          boxSizing: 'border-box',
+        }}
+        aria-label={`${project.title} 앱 소개`}
+      >
+        {/* 메타 — index · category · release */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: '10px',
+            fontFamily: MONO,
+            fontSize: '12px',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: INK_55,
+          }}
+        >
+          <span style={{ color: INK_80 }}>{project.index}</span>
+          <span style={{ color: INK_30 }}>—</span>
+          <span>{project.category}</span>
+          {project.releaseDate && (
+            <>
+              <span style={{ color: INK_30 }}>·</span>
+              <span>{project.releaseDate}</span>
+            </>
+          )}
+        </div>
+
+        {/* 워드마크 */}
+        <h2
+          style={{
+            fontFamily: DISPLAY,
+            fontSize: 'clamp(46px, 14vw, 76px)',
+            fontWeight: 400,
+            lineHeight: 0.94,
+            letterSpacing: '-0.03em',
+            color: INK_100,
+            margin: '18px 0 0',
+            wordBreak: 'keep-all',
+          }}
+        >
+          {project.comingSoon && (
+            <span
+              style={{
+                fontFamily: MONO,
+                fontSize: '11px',
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: INK_30,
+                verticalAlign: 'middle',
+                marginRight: '10px',
+              }}
+            >
+              Coming Soon
+            </span>
+          )}
+          {project.title}
+        </h2>
+
+        {/* 태그라인 */}
+        <p
+          style={{
+            fontFamily: KR,
+            fontSize: 'clamp(16px, 4.4vw, 19px)',
+            fontWeight: 400,
+            lineHeight: 1.5,
+            color: INK_80,
+            margin: '14px 0 0',
+          }}
+        >
+          {project.tagline}
+        </p>
+
+        {/* 폰 mock (영상) — 가운데, 너비 기준 */}
+        <div
+          style={{
+            marginTop: 'clamp(32px, 8vw, 48px)',
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <PhoneMockup
+            project={project}
+            width="clamp(210px, 64vw, 300px)"
+            dimmed={false}
+            onPlayingChange={setVideoPlaying}
+          />
+        </div>
+
+        {/* CTA — 제작과정(studyHref) 또는 웹앱 바로가기(web) */}
+        {project.studyHref ? (
+          <PrimaryCta
+            label="제작과정 보기"
+            caption="기획 · 디자인 · 개발 전 과정 기록"
+            onClick={() => setDrawerOpen(true)}
+          />
+        ) : project.downloadLinks.web ? (
+          <PrimaryCta
+            label="웹앱 바로가기"
+            caption="출시된 서비스 둘러보기"
+            href={project.downloadLinks.web}
+            external
+          />
+        ) : null}
+
+        {/* try 링크 — 보조 (설치/바로가기) */}
+        <div style={{ marginTop: '28px', display: 'flex', flexWrap: 'wrap', gap: '16px 24px' }}>
+          {project.downloadLinks.playStore && (
+            <ExtLink href={project.downloadLinks.playStore}>Google Play</ExtLink>
+          )}
+          {project.downloadLinks.appStore && (
+            <ExtLink href={project.downloadLinks.appStore}>App Store</ExtLink>
+          )}
+          {project.studyHref && project.downloadLinks.web && (
+            <ExtLink href={project.downloadLinks.web}>웹 바로가기</ExtLink>
+          )}
+        </div>
+
+        {/* 제작과정 드로어 */}
+        {project.studyHref && (
+          <StudyDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            src={project.studyHref}
+            title={project.title}
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
     <>

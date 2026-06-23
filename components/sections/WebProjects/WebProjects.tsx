@@ -68,8 +68,8 @@ export function WebProjects() {
           <div
             className="flex items-center gap-4 mb-[6vh]"
             style={{
-              paddingLeft: 'clamp(64px, 6.25vw, 120px)',
-              paddingRight: 'clamp(64px, 6.25vw, 120px)',
+              paddingLeft: 'clamp(24px, 6.25vw, 120px)',
+              paddingRight: 'clamp(24px, 6.25vw, 120px)',
             }}
           >
             <span
@@ -81,17 +81,28 @@ export function WebProjects() {
             <div className="flex-1 h-px bg-ink-inverse/10" aria-hidden />
           </div>
 
-          {/* 좌50 / 우50 그리드 — hairline 없음 */}
+          {/* 모바일: 손가락 가로 스와이프(scroll-snap 캐러셀) / md+: 좌50·우50 그리드.
+              data-lenis-prevent — Lenis 가 이 컨테이너의 가로 스크롤을 가로채지 않게. */}
           <div
-            className="grid grid-cols-2"
+            data-lenis-prevent
+            className="flex snap-x snap-mandatory overflow-x-auto md:grid md:grid-cols-2 md:overflow-x-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{
-              paddingLeft: 'clamp(64px, 6.25vw, 120px)',
-              paddingRight: 'clamp(64px, 6.25vw, 120px)',
-              gap: `0 clamp(48px, 4.17vw, 80px)`,
+              paddingLeft: 'clamp(24px, 6.25vw, 120px)',
+              paddingRight: 'clamp(24px, 6.25vw, 120px)',
+              // 모바일 간격 축소 → 07 카드가 우측에 살짝 보여 스와이프 어포던스 확보
+              columnGap: 'clamp(16px, 4.17vw, 80px)',
+              scrollPaddingLeft: 'clamp(24px, 6.25vw, 120px)',
+              WebkitOverflowScrolling: 'touch',
+              touchAction: 'pan-x',
             }}
           >
             {archiveProjects.map((project) => (
-              <ArchiveCard key={project.id} project={project} />
+              <div
+                key={project.id}
+                className="shrink-0 w-[80vw] snap-center md:w-auto"
+              >
+                <ArchiveCard project={project} />
+              </div>
             ))}
           </div>
         </div>
