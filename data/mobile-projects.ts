@@ -27,6 +27,12 @@ export const mobileProjects: MobileProject[] = [
     thumbnail: '/images/mobile/01/thumbnail.png',
     previewVideo: '/images/mobile/01/preview.mp4',
     videoZoom: 1.06, // 영상 자체에 폰 mock 베젤 포함 — 살짝 확대해서 가림
+    videoCaption: [
+      '자린고비 — 절약 게임 앱',
+      '지출을 기록하면 점수가 쌓이는 구조',
+      '메인 화면 · 기록 흐름 시연 영상',
+      'Android · 1인 기획·디자인·개발',
+    ],
     studyHref: 'https://minjoo073.github.io/jaringobi_/',
     displayType: 'featured',
     period: '4주',         // TODO: CEO 확인
@@ -48,6 +54,12 @@ export const mobileProjects: MobileProject[] = [
     tagline: '여행 동행, 더 쉽게',
     thumbnail: '/images/mobile/02/thumbnail.png',
     previewVideo: '/images/mobile/02/preview.mp4',
+    videoCaption: [
+      'TripMate — 여행 동행 매칭',
+      '동행 찾기의 첫 마찰을 줄인 웹앱',
+      '매칭 흐름 · 핵심 화면 시연 영상',
+      'React Native · Expo · 1인 제작',
+    ],
     // studyHref: '',  // CEO 가 제작과정 URL 제공 시 교체
     displayType: 'side',
     period: '6주',         // TODO: CEO 확인

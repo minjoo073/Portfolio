@@ -13,7 +13,7 @@
  * data-reveal: MobileProjects 에서 revealPage()/resetPage() 대상 수집
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PhoneMockup } from './PhoneMockup'
 import { StudyDrawer } from './StudyDrawer'
 import type { MobileProject } from '@/lib/types/mobile-project'
@@ -152,6 +152,90 @@ function PrimaryCta({
     >
       {inner}
     </button>
+  )
+}
+
+/* ── TypingCaption — 영상 재생 중 폰 우측에 타이핑되는 설명 ──────────────
+   박스·글라스 X. 좌측 hairline + 라이트 텍스트(에디토리얼). 재생 시 한 글자씩.
+   prefers-reduced-motion: 타이핑 없이 즉시 전체 표시. */
+function TypingCaption({ lines, active }: { lines: string[]; active: boolean }) {
+  const full = lines.join('\n')
+  const [count, setCount] = useState(0)
+  const [caretOn, setCaretOn] = useState(true)
+
+  // 타이핑 진행
+  useEffect(() => {
+    if (!active) {
+      setCount(0)
+      return
+    }
+    const reduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced) {
+      setCount(full.length)
+      return
+    }
+    let i = 0
+    const id = setInterval(() => {
+      i += 1
+      setCount(i)
+      if (i >= full.length) clearInterval(id)
+    }, 42)
+    return () => clearInterval(id)
+  }, [active, full])
+
+  // 커서 깜빡임
+  useEffect(() => {
+    if (!active) return
+    const id = setInterval(() => setCaretOn((c) => !c), 500)
+    return () => clearInterval(id)
+  }, [active])
+
+  const shown = full.slice(0, count)
+  const done = count >= full.length
+
+  return (
+    <div
+      aria-hidden={!active}
+      style={{
+        position: 'absolute',
+        top: '50%',
+        // 폰 우측 가장자리 바로 옆 (gap → spine 쪽 다크 영역)
+        left: 'calc(100% + clamp(14px, 1.4vw, 30px))',
+        transform: 'translateY(-50%)',
+        // 각 줄을 한 줄로 유지(줄바꿈 X) → 너비는 가장 긴 줄에 맞춤
+        width: 'max-content',
+        maxWidth: '38vw',
+        opacity: active ? 1 : 0,
+        transition: 'opacity 400ms ease',
+        pointerEvents: 'none',
+      }}
+    >
+      <div
+        style={{
+          borderLeft: '1px solid rgba(248,247,244,0.16)',
+          paddingLeft: 'clamp(10px, 0.8vw, 16px)',
+        }}
+      >
+        <span
+          style={{
+            display: 'block',
+            fontFamily: KR,
+            fontWeight: 300,
+            fontSize: 'clamp(11px, 0.72vw, 13px)',
+            lineHeight: 1.85,
+            color: INK_80,
+            whiteSpace: 'pre',
+          }}
+        >
+          {shown}
+          {!done && (
+            <span style={{ opacity: caretOn ? 1 : 0, color: INK_55 }}>▍</span>
+          )}
+        </span>
+      </div>
+    </div>
   )
 }
 
@@ -369,6 +453,8 @@ export function AppPage({
   onNext,
 }: AppPageProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // 영상 재생 상태 — PhoneMockup 에서 끌어올려 옆 타이핑 캡션과 동조
+  const [videoPlaying, setVideoPlaying] = useState(false)
 
   return (
     <>
@@ -406,7 +492,18 @@ export function AppPage({
             }}
             data-reveal
           >
-            <PhoneMockup project={project} maxHeight="78vh" dimmed={false} />
+            {/* 폰 + 우측 타이핑 캡션 — 캡션은 폰 우측 가장자리 기준 절대배치(레이아웃 밀림 X) */}
+            <div style={{ position: 'relative', display: 'flex', maxWidth: '100%' }}>
+              <PhoneMockup
+                project={project}
+                maxHeight="78vh"
+                dimmed={false}
+                onPlayingChange={setVideoPlaying}
+              />
+              {project.previewVideo && project.videoCaption && (
+                <TypingCaption lines={project.videoCaption} active={videoPlaying} />
+              )}
+            </div>
           </div>
 
           {/* 책등 hairline — 60vh, 수직 중앙 */}

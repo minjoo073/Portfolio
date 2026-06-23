@@ -67,6 +67,14 @@ export const experienceGroups: ExperienceGroup[] = [
           '반응형 레이아웃 · 브랜드 톤에 맞춘 UI 구현',
         ],
       },
+      {
+        period: '2026',
+        title: 'AIAT 실무 활용 자격증 합격 예시 제작',
+        details: [
+          'Crowny AI · AIAT(AI 실무 활용 능력) 자격증 합격 사례 예시 파일 제작 지원',
+          '실제 현업 사이드에서 활용 중인 합격 예시 자료로 사용',
+        ],
+      },
     ],
   },
 ]

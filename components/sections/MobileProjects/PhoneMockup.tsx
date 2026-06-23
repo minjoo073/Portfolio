@@ -11,6 +11,8 @@ interface PhoneMockupProps {
   width?: string
   /** '70vh' 형식 — 높이 기준으로 제어 시 사용. width 보다 우선 */
   maxHeight?: string
+  /** 재생/일시정지 토글 시 부모에 알림 (영상 옆 타이핑 캡션 동조용) */
+  onPlayingChange?: (playing: boolean) => void
 }
 
 /**
@@ -23,7 +25,7 @@ interface PhoneMockupProps {
  *
  * 클릭 토글 이유(CEO 2026-06-22): hover 재생은 마우스가 떠나면 멈춰 시청 경험이 끊김.
  */
-export function PhoneMockup({ project, dimmed = false, width, maxHeight }: PhoneMockupProps) {
+export function PhoneMockup({ project, dimmed = false, width, maxHeight, onPlayingChange }: PhoneMockupProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(false)
   const [hover, setHover] = useState(false)
@@ -34,9 +36,11 @@ export function PhoneMockup({ project, dimmed = false, width, maxHeight }: Phone
     if (v.paused) {
       v.play().catch(() => {})
       setPlaying(true)
+      onPlayingChange?.(true)
     } else {
       v.pause()
       setPlaying(false)
+      onPlayingChange?.(false)
     }
   }
 

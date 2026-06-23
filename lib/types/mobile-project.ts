@@ -23,6 +23,8 @@ export interface MobileProject {
   previewVideo?: string
   /** 영상 살짝 확대 (1.05 = 5% 확대). 영상에 자체 폰 mock 베젤이 있어 가릴 때 사용 */
   videoZoom?: number
+  /** 영상 재생 중 폰 우측에 타이핑되는 설명 — 한 줄 = 한 항목 (짧게, 3~4줄) */
+  videoCaption?: string[]
   /** 제작과정 외부 URL — 없으면 CTA 미노출 */
   studyHref?: string
   displayType: 'featured' | 'side'

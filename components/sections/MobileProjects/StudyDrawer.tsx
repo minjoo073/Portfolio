@@ -50,26 +50,34 @@ export function StudyDrawer({ open, onClose, src, title }: StudyDrawerProps) {
   // iframe X-Frame-Options 차단 감지 불가 (브라우저 보안 정책)
   // 차단 시 CEO 가 iframeBlocked=true 로 수동 전환하거나 별도 프록시 처리 필요
 
-  // 스크롤 잠금 / 해제
+  // 스크롤 잠금 / 해제 — Lenis stop + body overflow 둘 다(이중 안전)
   useEffect(() => {
     const l = lenisRef.current
     if (open) {
-      if (l) {
-        l.stop()
-      } else {
-        document.body.style.overflow = 'hidden'
-      }
+      l?.stop()
+      document.body.style.overflow = 'hidden'
     } else {
-      if (l) {
-        l.start()
-      } else {
-        document.body.style.overflow = ''
-      }
+      l?.start()
+      document.body.style.overflow = ''
     }
     return () => {
       // 언마운트 시 반드시 해제
-      if (l) l.start()
-      else document.body.style.overflow = ''
+      l?.start()
+      document.body.style.overflow = ''
+    }
+  }, [open])
+
+  // 배경 스크롤 완전 차단 — 드로어 열린 동안 부모 창 wheel/touchmove preventDefault.
+  // 제작과정 iframe 내부 스크롤 이벤트는 부모 창으로 전파되지 않으므로(별도 document)
+  // 부모에서 전부 막아도 iframe 스크롤은 그대로 동작. dim 영역/뒤 메인 페이지만 멈춤.
+  useEffect(() => {
+    if (!open) return
+    const block = (e: Event) => e.preventDefault()
+    window.addEventListener('wheel', block, { passive: false })
+    window.addEventListener('touchmove', block, { passive: false })
+    return () => {
+      window.removeEventListener('wheel', block)
+      window.removeEventListener('touchmove', block)
     }
   }, [open])
 

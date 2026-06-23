@@ -19,9 +19,9 @@ export const contentMarqueeWords = [
   'Promotion'
 ] as const
 
-/** Content & Marketing 진입 한글 paragraph */
+/** Content & Marketing 진입 한글 paragraph (**...** 구절은 밝게 강조 — ContentMarketing.tsx 파서) */
 export const contentBody = [
-  '디자인 외의 영역에서도,',
+  '**디자인 외의 영역**에서도,',
   '앱 출시부터 SNS 운영, 마케팅 콘텐츠 기획과 숏폼 영상 제작까지,',
   '브랜드가 사용자에게 닿는 과정을 직접 만들어 왔습니다.'
 ] as const

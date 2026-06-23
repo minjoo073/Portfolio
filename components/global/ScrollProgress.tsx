@@ -102,7 +102,7 @@ export function ScrollProgress() {
             width: '1px',
             height: `${progress * 100}%`,
             background: 'rgba(255,255,255,0.5)',
-            transition: 'height 120ms linear',
+            // 트랜지션 제거 — Lenis 스무딩 위에 또 얹으면 딜레이 누적. 스크롤과 즉시 동기.
           }}
         />
         {/* 떠다니는 현재 섹션 라벨 */}
@@ -118,7 +118,7 @@ export function ScrollProgress() {
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
             color: 'rgba(255,255,255,0.6)',
-            transition: 'top 120ms linear',
+            // 트랜지션 제거 — 라벨도 스크롤과 즉시 동기(딜레이 제거)
           }}
         >
           {SECTIONS[activeIdx]?.label ?? ''}

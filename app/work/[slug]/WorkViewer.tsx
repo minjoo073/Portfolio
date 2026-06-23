@@ -252,6 +252,13 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
     handleCaseJump(target.slug)
   }
 
+  // 로고 / 뒤로가기 공용 — 홈 인트로 재생 없이 해당 프로젝트 카드 위치로 복귀.
+  // 홈에서 postNavScrollId/postNavCardSlug 를 읽어 work 카드로 스크롤(인트로 스킵).
+  function saveReturnTarget() {
+    sessionStorage.setItem('postNavScrollId', `work-${work.slug}`)
+    sessionStorage.setItem('postNavCardSlug', work.slug)
+  }
+
   return (
     <>
       {/*
@@ -275,6 +282,8 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
         >
           <Link
             href="/"
+            scroll={false}
+            onClick={saveReturnTarget}
             className="block leading-none"
             style={{
               fontFamily: 'var(--font-display)',
@@ -290,7 +299,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
               transition: 'color 350ms cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             tabIndex={atEnd ? -1 : 0}
-            aria-label="홈으로"
+            aria-label="프로젝트로 돌아가기"
           >
             <div>PARK</div>
             <div>MIN</div>
@@ -312,6 +321,8 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
         >
           <Link
             href="/"
+            scroll={false}
+            onClick={saveReturnTarget}
             className="block leading-none"
             style={{
               fontFamily: 'var(--font-display)',
@@ -326,7 +337,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
               transition: 'color 350ms cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             tabIndex={atEnd ? -1 : 0}
-            aria-label="홈으로"
+            aria-label="프로젝트로 돌아가기"
           >
             PARK MINJOO
           </Link>
@@ -342,11 +353,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
         <Link
           href="/"
           scroll={false}
-          onClick={() => {
-            console.log('[Back] saving slug=', work.slug)
-            sessionStorage.setItem('postNavScrollId', `work-${work.slug}`)
-            sessionStorage.setItem('postNavCardSlug', work.slug)
-          }}
+          onClick={saveReturnTarget}
           className="fixed z-50 group block"
           style={{
             top: '30px',
@@ -378,11 +385,7 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
         <Link
           href="/"
           scroll={false}
-          onClick={() => {
-            console.log('[Back] saving slug=', work.slug)
-            sessionStorage.setItem('postNavScrollId', `work-${work.slug}`)
-            sessionStorage.setItem('postNavCardSlug', work.slug)
-          }}
+          onClick={saveReturnTarget}
           className={cn(
             'fixed z-50',
             'font-mono text-[11px] uppercase tracking-[0.12em]',
