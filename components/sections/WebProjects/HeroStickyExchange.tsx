@@ -240,8 +240,8 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
       {/* 한 줄 카피 */}
       {project.tagline && (
         <p
-          className="font-kr text-ink-inverse/65"
-          style={{ fontSize: vw(18, 14), letterSpacing: '-0.01em', fontWeight: 400, marginTop: vw(32, 24) }}
+          className="font-kr text-ink-inverse/82 break-keep"
+          style={{ fontSize: vw(26, 16), letterSpacing: '-0.01em', fontWeight: 400, marginTop: vw(32, 24) }}
         >
           {project.tagline}
         </p>
@@ -460,8 +460,8 @@ function MobileFeaturedCard({ project, total }: { project: Project; total: numbe
       {/* 한 줄 카피 */}
       {project.tagline && (
         <p
-          className="font-kr text-ink-inverse/65"
-          style={{ fontSize: 'clamp(15px, 4vw, 18px)', lineHeight: 1.5, marginTop: 'clamp(20px, 5vw, 28px)' }}
+          className="font-kr text-ink-inverse/82 break-keep"
+          style={{ fontSize: 'clamp(16px, 4.4vw, 19px)', lineHeight: 1.5, marginTop: 'clamp(20px, 5vw, 28px)' }}
         >
           {project.tagline}
         </p>
@@ -731,10 +731,15 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
             if (cooldown) return
             cooldown = true
             const sectionBottom = sectionTop + section.offsetHeight
+            // 경계 전환: Lenis 멈춘 뒤 강제 스크롤 → 휠 관성 잔류로 튕기는 현상 방지
+            lenisRef.current?.stop()
             lenisRef.current?.scrollTo(sectionBottom + 1, {
               duration: 0.6, lock: false, force: true,
             })
-            setTimeout(() => { cooldown = false }, COOLDOWN_MS)
+            setTimeout(() => {
+              cooldown = false
+              lenisRef.current?.start()
+            }, COOLDOWN_MS)
             return
           }
 
@@ -756,10 +761,15 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
             e.preventDefault()
             if (cooldown) return
             cooldown = true
+            // 경계 전환: Lenis 멈춘 뒤 강제 스크롤 → 휠 관성 잔류로 튕기는 현상 방지
+            lenisRef.current?.stop()
             lenisRef.current?.scrollTo(sectionTop - window.innerHeight, {
               duration: 0.6, lock: false, force: true,
             })
-            setTimeout(() => { cooldown = false }, COOLDOWN_MS)
+            setTimeout(() => {
+              cooldown = false
+              lenisRef.current?.start()
+            }, COOLDOWN_MS)
             return
           }
 

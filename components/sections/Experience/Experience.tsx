@@ -114,7 +114,7 @@ export function Experience() {
                     <div
                       data-ex-box
                       className="mt-3 rounded-lg border border-ink-inverse/40 px-5 py-3.5 text-center font-kr font-medium text-ink-inverse transition-colors duration-300 hover:border-ink-inverse/70"
-                      style={{ fontSize: 'clamp(14px, 1vw, 16px)', lineHeight: 1.4 }}
+                      style={{ fontSize: 'clamp(15px, 1.2vw, 19px)', lineHeight: 1.4 }}
                     >
                       {item.title}
                     </div>
@@ -125,8 +125,8 @@ export function Experience() {
                         {item.details.map((d, j) => (
                           <li
                             key={j}
-                            className="font-kr text-ink-inverse/60"
-                            style={{ fontSize: 'clamp(13px, 0.8vw, 14px)', lineHeight: 1.6 }}
+                            className="font-kr text-ink-inverse/75"
+                            style={{ fontSize: 'clamp(14px, 0.95vw, 16px)', lineHeight: 1.6 }}
                           >
                             {`- ${d}`}
                           </li>

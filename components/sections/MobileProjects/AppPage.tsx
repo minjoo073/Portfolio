@@ -223,7 +223,7 @@ function TypingCaption({ lines, active }: { lines: string[]; active: boolean }) 
             display: 'block',
             fontFamily: KR,
             fontWeight: 300,
-            fontSize: 'clamp(11px, 0.72vw, 13px)',
+            fontSize: 'clamp(12px, 0.85vw, 15px)',
             lineHeight: 1.85,
             color: INK_80,
             whiteSpace: 'pre',

@@ -107,7 +107,7 @@ export function Footer() {
             >
               {footer.thanks}
             </h2>
-            <p className="mt-4 font-kr text-ink-inverse/55" style={{ fontSize: 'clamp(15px, 1.2vw, 20px)' }}>
+            <p className="mt-4 font-kr text-ink-inverse/78" style={{ fontSize: 'clamp(16px, 1.3vw, 22px)' }}>
               {footer.thanksKr}
             </p>
           </div>

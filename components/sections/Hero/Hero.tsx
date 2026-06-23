@@ -249,7 +249,7 @@ export function Hero() {
           {/* 문단 */}
           <p
             data-hero-para
-            className="w-[90%] max-w-[640px] text-center font-mono text-body uppercase leading-relaxed tracking-[0.08em] text-ink-primary"
+            className="w-[90%] max-w-[640px] text-center font-mono text-body-l uppercase leading-relaxed tracking-[0.08em] text-ink-primary"
           >
             {heroBody[0]}
             <br />
@@ -375,7 +375,7 @@ export function Hero() {
         {/* 문단 — 벨트 바로 아래(흐름, mt 간격). data-hero-para(D 트윈). */}
         <p
           data-hero-para
-          className="mt-[8vh] w-[90%] max-w-[640px] text-center font-mono text-body uppercase leading-relaxed tracking-[0.08em] text-ink-primary"
+          className="mt-[8vh] w-[90%] max-w-[640px] text-center font-mono text-body-l uppercase leading-relaxed tracking-[0.08em] text-ink-primary"
         >
           {heroBody[0]}
           <br />

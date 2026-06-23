@@ -103,7 +103,7 @@ export function AboutIndex() {
 
   const intro = (
     <div
-      className="font-kr text-ink-inverse/85 flex flex-col text-[16px] leading-[1.75]"
+      className="font-kr text-ink-inverse/85 flex flex-col text-[18px] leading-[1.75]"
       style={{ gap: 12 }}
       data-reveal
     >
@@ -283,7 +283,7 @@ function Column({
       >
         <h4
           className="font-kr text-ink-inverse font-semibold leading-[1.05] tracking-[-0.02em]"
-          style={{ fontSize: 'clamp(18px, 1.5vw, 22px)' }}
+          style={{ fontSize: 'clamp(18px, 1.8vw, 26px)' }}
         >
           {en}
         </h4>

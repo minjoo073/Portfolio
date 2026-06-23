@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { projects } from '@/data/projects'
 import { useGsapContext } from '@/lib/hooks/useGsapContext'
+import { useIsMobile } from '@/lib/hooks/useMediaQuery'
 import { ArchiveCard } from './ProjectCard'
 import { HeroStickyExchange } from './HeroStickyExchange'
 import { registerGsap } from '@/lib/gsap/config'
@@ -23,6 +24,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
  */
 export function WebProjects() {
   const rootRef = useRef<HTMLElement>(null)
+  const isMobile = useIsMobile()
 
   useGsapContext(
     () => {
@@ -82,9 +84,10 @@ export function WebProjects() {
           </div>
 
           {/* 모바일: 손가락 가로 스와이프(scroll-snap 캐러셀) / md+: 좌50·우50 그리드.
-              data-lenis-prevent — Lenis 가 이 컨테이너의 가로 스크롤을 가로채지 않게. */}
+              data-lenis-prevent 는 *모바일에서만* — 데스크탑(grid)에 붙으면 Lenis 가
+              이 영역 위 세로 휠을 무시해 06/07 하단 스크롤이 버벅임. */}
           <div
-            data-lenis-prevent
+            data-lenis-prevent={isMobile ? '' : undefined}
             className="flex snap-x snap-mandatory overflow-x-auto md:grid md:grid-cols-2 md:overflow-x-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{
               paddingLeft: 'clamp(24px, 6.25vw, 120px)',

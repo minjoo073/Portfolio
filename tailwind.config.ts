@@ -57,8 +57,8 @@ const config: Config = {
         statement: ['clamp(28px, 3.6vw, 68px)', { lineHeight: '1.12', letterSpacing: '-0.02em' }],
         'display-m': ['clamp(36px, 5vw, 72px)', { lineHeight: '1.05', letterSpacing: '-0.02em' }],
         heading: ['clamp(24px, 3vw, 40px)', { lineHeight: '1.15', letterSpacing: '-0.01em' }],
-        'body-l': ['clamp(16px, 1.4vw, 20px)', { lineHeight: '1.55' }],
-        body: ['clamp(14px, 1.1vw, 16px)', { lineHeight: '1.6' }],
+        'body-l': ['clamp(16px, 1.6vw, 24px)', { lineHeight: '1.55' }],
+        body: ['clamp(15px, 1.25vw, 19px)', { lineHeight: '1.6' }],
         label: ['12px', { lineHeight: '1.4', letterSpacing: '0.04em' }]
       },
       spacing: {

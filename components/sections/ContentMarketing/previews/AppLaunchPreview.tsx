@@ -116,7 +116,7 @@ export function AppLaunchPreview({ apps }: Props) {
                 <div className="flex flex-col gap-2">
                   <h4
                     data-al-title-kr
-                    className="font-display font-medium leading-[0.95] tracking-tight text-ink-inverse text-[clamp(40px,4.2vw,60px)]"
+                    className="font-display font-medium leading-[0.95] tracking-tight text-ink-inverse text-[clamp(40px,4.2vw,60px)] break-keep"
                   >
                     {app.titleKr ?? app.name}
                   </h4>

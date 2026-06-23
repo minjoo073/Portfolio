@@ -146,7 +146,7 @@ export function ContentMarketing() {
           {/* paragraph — 상단 */}
           <p
             data-cm-paragraph
-            className="absolute left-1/2 max-w-[720px] text-center font-kr text-body-l leading-relaxed text-ink-inverse/60"
+            className="absolute left-1/2 max-w-[720px] text-center font-kr font-light text-body-l leading-relaxed text-ink-inverse/56"
             style={{
               top: '28vh',
               transform: 'translateX(-50%)',
@@ -160,7 +160,7 @@ export function ContentMarketing() {
                 {/* **...** 구절만 밝게 강조 (나머지는 /60 톤 → 대비로 부각) */}
                 {line.split(/(\*\*[^*]+\*\*)/g).map((seg, j) =>
                   seg.startsWith('**') && seg.endsWith('**') ? (
-                    <span key={j} className="font-medium text-ink-inverse">
+                    <span key={j} className="font-semibold text-ink-inverse" style={{ fontSize: '1.06em' }}>
                       {seg.slice(2, -2)}
                     </span>
                   ) : (

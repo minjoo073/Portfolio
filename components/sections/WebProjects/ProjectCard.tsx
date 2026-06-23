@@ -480,8 +480,8 @@ export function ArchiveCard({ project }: { project: Project }) {
       {/* 한 줄 카피 */}
       {project.tagline && (
         <p
-          className="font-kr text-ink-inverse/50 mt-2 text-center"
-          style={{ fontSize: '14px', lineHeight: 1.6, maxWidth: 'clamp(380px, 34vw, 660px)', width: '100%' }}
+          className="font-kr text-ink-inverse/72 mt-2 text-center break-keep"
+          style={{ fontSize: 'clamp(15px, 1.1vw, 17px)', lineHeight: 1.6, maxWidth: 'clamp(380px, 34vw, 660px)', width: '100%' }}
           data-meta
         >
           {project.tagline}

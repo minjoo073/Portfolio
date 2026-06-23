@@ -52,7 +52,7 @@ export const contentGroups: ContentGroup[] = [
           subtitle: 'Solo design + marketing',
           // 통합안 (강팀 회의)
           editionNumber: '01',
-          titleKr: '자린고비',
+          titleKr: '앱 출시 - 자린고비',
           titleEn: 'Jaringobi',
           releaseDate: 'May 2026',
           platform: 'Android',

@@ -34,7 +34,7 @@ export function About() {
 
         <StatementText text={about.statement.join(' ')} />
 
-        <p className="max-w-[720px] font-kr text-body-l leading-relaxed text-ink-inverse/65">
+        <p className="max-w-[720px] font-kr text-body-l leading-relaxed text-ink-inverse/85">
           {about.body.map((line, i) => (
             <span key={i} className="block">
               {line}
