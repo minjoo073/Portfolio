@@ -115,7 +115,10 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
       const innerHeight = iframeWin.innerHeight
       const distFromTop = scrollY
       const distFromEnd = scrollHeight - (scrollY + innerHeight)
-      setAtEnd(distFromEnd <= 200)
+      // scrollY > 0 가드 — 진입(맨 위) 순간엔 atEnd 금지.
+      // iframe 로딩 중 scrollHeight 가 아직 작아 distFromEnd<=200 로 오판 → 로고가
+      // dropping 됐다 콘텐츠 로드 후 복귀하며 "흔들리던" 버그 방지. 드롭은 실제 끝 스크롤 시에만.
+      setAtEnd(scrollY > 0 && distFromEnd <= 200)
       // 맨 위(200 이내) 또는 끝 근처(600 이내) 에서는 opaque, 그 외 중간은 translucent
       setLogoOpaque(distFromTop <= 200 || distFromEnd <= 600)
     }

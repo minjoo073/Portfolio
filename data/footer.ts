@@ -1,7 +1,7 @@
 export const footer = {
   /** 좌측 인사 */
   thanks: 'Thank You',
-  thanksKr: '감사합니다',
+  thanksKr: '끝까지 봐주셔서 감사합니다',
 
   /** 연락처 */
   email: 'minju7731@naver.com',

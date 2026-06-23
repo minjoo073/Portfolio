@@ -217,7 +217,7 @@ export function PersonalVideoPreview(props: Props) {
                   className={
                     key === 'REACH' || key === 'ROLE'
                       ? 'shrink-0 font-mono text-sm uppercase tracking-[0.08em] text-ink-inverse'
-                      : 'shrink-0 font-mono text-label uppercase tracking-[0.08em] text-ink-inverse/85'
+                      : 'shrink-0 font-mono text-sm uppercase tracking-[0.08em] text-ink-inverse/85'
                   }
                 >
                   {value}
@@ -333,7 +333,7 @@ export function PersonalVideoPreview(props: Props) {
         {intentStatement && (
           <p
             data-pp-statement
-            className="font-display font-light leading-[1.3] tracking-tight text-ink-inverse/85 text-[clamp(15px,1.2vw,20px)]"
+            className="font-display font-light leading-[1.3] tracking-tight text-ink-inverse/90 text-[clamp(17px,1.4vw,24px)]"
           >
             {intentStatement}
           </p>
