@@ -60,8 +60,8 @@ export const experienceGroups: ExperienceGroup[] = [
         ],
       },
       {
-        period: '',
-        title: '카페24 커머스 스킨 제작',
+        period: '2025.12 – 2026.06',
+        title: '주노소프트 · 카페24 커머스 스킨 제작',
         details: [
           '커머스 브랜드 스킨 직접 퍼블리싱 (HTML / CSS)',
           '반응형 레이아웃 · 브랜드 톤에 맞춘 UI 구현',
