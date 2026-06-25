@@ -152,7 +152,14 @@ export function AboutIndex() {
           {about.certificates.map((c) => (
             <li key={c.name} className="flex flex-col gap-0.5">
               <span className="font-kr text-ink-inverse text-[16px] leading-[1.35]">
-                {c.name}
+                {c.name.includes('(예정)') ? (
+                  <>
+                    {c.name.replace(' (예정)', '')}
+                    <span className="text-ink-inverse/40"> (예정)</span>
+                  </>
+                ) : (
+                  c.name
+                )}
               </span>
               {(c.issuer || c.date) && (
                 <span className="font-kr text-ink-inverse/55 text-[14px]">
