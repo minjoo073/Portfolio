@@ -40,7 +40,7 @@ export const about = {
   certificates: [
     { name: 'HSK 4급', issuer: 'HSK 한국사무국', date: '2025.04' },
     { name: '데이터 분석 준전문가(ADsP)', issuer: '한국데이터산업진흥원', date: '2026.03' },
-    { name: '토익스피킹', issuer: 'ETS', date: '2026.06' },
+    { name: '토익스피킹 (예정)', issuer: 'ETS', date: '2026.06' },
     { name: 'GA4', issuer: '구글(Google)', date: '2026.04' },
     { name: 'CSP Barista Skills - Intermediate', issuer: 'SCA', date: '2024' },
     { name: '운전면허 2종 보통' }
