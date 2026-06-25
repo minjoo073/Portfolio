@@ -12,7 +12,7 @@ export const footer = {
 
   /** 이력서 PDF — public/docs/park-minjoo-resume.pdf 에 파일 넣으면 작동 */
   resume: '/docs/park-minjoo-resume.pdf',
-  resumeLabel: '이력서',
+  resumeLabel: '이력서 & 자기소개서',
 
   copyright: '© 2026 Park Minjoo · Designed and built solo',
 }
