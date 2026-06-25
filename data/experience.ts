@@ -60,7 +60,7 @@ export const experienceGroups: ExperienceGroup[] = [
         ],
       },
       {
-        period: '2025.12 – 2026.06',
+        period: '2026.03 – 2026.07',
         title: '주노소프트 · 카페24 커머스 스킨 제작',
         details: [
           '커머스 브랜드 스킨 직접 퍼블리싱 (HTML / CSS)',
