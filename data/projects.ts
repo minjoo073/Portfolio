@@ -91,7 +91,7 @@ export const projects: Project[] = [
     workType: 'original',
     variant: 'left',
     visualRatio: '16:10',
-    // studyHref 생략 — 제작과정 준비중
+    studyHref: '/work/kiikii',
     siteHref: 'https://kiikii-omega.vercel.app',
   },
   {
