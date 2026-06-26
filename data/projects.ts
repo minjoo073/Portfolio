@@ -1,16 +1,17 @@
 import type { Project } from '@/lib/types/project'
 
 /**
- * Web Projects — 7개
+ * Web Projects — 8개
  *
- * 순서 (CEO 결정 2026-06-18 — MathHub 를 부자관광 앞으로):
+ * 순서 (CEO 결정 2026-06-26 — KiiiKiii 를 ONVINYL 다음 03 으로 삽입):
  *   01 LUNARE   (Original — 기획+브랜딩+디자인) → /work/lunare
  *   02 ONVINYL  (Original)                     → /work/lp
- *   03 FANCIVE  (Original)                     → /work/fancive
- *   04 MathHub  (Redesign)                     → /work/mathhub
- *   05 부자관광 (Redesign — 기존 사이트 개선)   → /work/buja
- *   06 Project 06 (Redesign, archive — 케이스 없음)
- *   07 Project 07 (Redesign, archive)
+ *   03 KiiiKiii (Original — 팬 마케팅 프로모션) → 라이브만, 케이스스터디 준비중
+ *   04 FANCIVE  (Original)                     → /work/fancive
+ *   05 MathHub  (Redesign)                     → /work/mathhub
+ *   06 부자관광 (Redesign — 기존 사이트 개선)   → /work/buja
+ *   07 Project 07 (Redesign, archive — 케이스 없음)
+ *   08 Project 08 (Redesign, archive)
  *
  * thumbnail: public/images/projects/<idx>/thumbnail.webp (1920×1080 hero 캡처)
  */
@@ -67,9 +68,36 @@ export const projects: Project[] = [
     githubHref: 'https://github.com/minjoo073/lp_2',
   },
   {
-    // ── 03 FANCIVE — 기존 보존 + 새 필드 placeholder ──────────────
-    id: 'project03',
+    // ── 03 KiiiKiii — 팬 마케팅 앨범 프로모션 (2026-06-26 신규) ─────
+    //   비공식 팬메이드 인터랙티브 프로모션 웹. 케이스스터디(제작과정)는
+    //   추후 추가 → 지금은 studyHref 생략 → 카드에 "제작과정 준비중" 표기,
+    //   진입점은 siteHref(실사이트)만.
+    id: 'project08',
     index: '03',
+    total: '08',
+    type: 'web',
+    title: 'KiiiKiii',
+    wordmark: 'KiiiKiii',
+    date: 'Jun 2026',
+    category: '팬 마케팅 · 아티스트 프로모션 웹 · 오리지널',
+    tagline: '걸그룹 KiiiKiii의 무드를 팬덤 언어로 옮긴 인터랙티브 앨범 프로모션',
+    subline: '걸그룹 KiiiKiii의 무드를 팬덤 언어로 옮긴 인터랙티브 앨범 프로모션',
+    scale: '1인 제작',
+    role: ['팬덤 콘셉트 번역', '프로모션 IA', '인터랙션 · 모션'],
+    stack: ['Next.js', 'GSAP', 'Three.js'],
+    thumbnail: '/images/projects/08/thumbnail.webp',
+    detailAnchor: '#project08',
+    displayType: 'featured',
+    workType: 'original',
+    variant: 'left',
+    visualRatio: '16:10',
+    // studyHref 생략 — 제작과정 준비중
+    siteHref: 'https://kiikii-omega.vercel.app',
+  },
+  {
+    // ── 04 FANCIVE — 기존 보존 + 새 필드 placeholder ──────────────
+    id: 'project03',
+    index: '04',
     total: '07',
     type: 'web',
     title: 'FANCIVE',
@@ -94,9 +122,9 @@ export const projects: Project[] = [
   {
     // CEO 2026-06-18: MathHub 를 부자관광 앞으로. 배지(index)만 04 로 변경,
     // id/thumbnail(/05/)/studyHref 등 에셋 참조는 프로젝트에 그대로 둠.
-    // ── 04 MathHub — 기존 보존 + 새 필드 placeholder ──────────────
+    // ── 05 MathHub — 기존 보존 + 새 필드 placeholder ──────────────
     id: 'project05',
-    index: '04',
+    index: '05',
     total: '07',
     type: 'web',
     title: 'MathHub',
@@ -120,9 +148,9 @@ export const projects: Project[] = [
     dimThumb: true, // 밝은 캡처 — 검정 배경에 떠 보여 한 톤 다운
   },
   {
-    // ── 05 부자관광 — 기존 보존 + 새 필드 placeholder ──────────────
+    // ── 06 부자관광 — 기존 보존 + 새 필드 placeholder ──────────────
     id: 'project04',
-    index: '05',
+    index: '06',
     total: '07',
     type: 'web',
     title: '부자관광',
@@ -146,9 +174,9 @@ export const projects: Project[] = [
     dimThumb: true, // 밝은 캡처 — 검정 배경에 떠 보여 한 톤 다운
   },
   {
-    // ── 06 서울국제여성영화제 (리디자인) ─────────────────────────
+    // ── 07 서울국제여성영화제 (리디자인) ─────────────────────────
     id: 'project06',
-    index: '06',
+    index: '07',
     total: '07',
     type: 'web',
     title: '2026 서울국제여성영화제',
@@ -166,9 +194,9 @@ export const projects: Project[] = [
     siteHref: 'https://minjoo073.github.io/18_myhtml/',
   },
   {
-    // ── 07 CPR 캠페인 (오리지널) ────────────────────────────────
+    // ── 08 CPR 캠페인 (오리지널) ────────────────────────────────
     id: 'project07',
-    index: '07',
+    index: '08',
     total: '07',
     type: 'web',
     title: 'CPR Response Plus',

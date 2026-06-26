@@ -725,7 +725,7 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
         if (delta > MIN_DELTA) {
           if (!isPinActive()) return  // sticky 구간 밖이면 자유 스크롤
 
-          // 05(마지막) 도달 후 wheel down → Lenis 로 부드러운 Archive 진입
+          // 마지막 featured 카드 도달 후 wheel down → Lenis 로 부드러운 Archive 진입
           if (currentActive >= count - 1) {
             e.preventDefault()
             if (cooldown) return
@@ -734,12 +734,13 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
             // 경계 전환: Lenis 멈춘 뒤 강제 스크롤 → 휠 관성 잔류로 튕기는 현상 방지
             lenisRef.current?.stop()
             lenisRef.current?.scrollTo(sectionBottom + 1, {
-              duration: 0.6, lock: false, force: true,
+              duration: 1.1, lock: false, force: true,
             })
+            // 경계 글라이드(1.1s)보다 길게 — 글라이드 끝나기 전 휠 개입 방지
             setTimeout(() => {
               cooldown = false
               lenisRef.current?.start()
-            }, COOLDOWN_MS)
+            }, 1200)
             return
           }
 
@@ -764,12 +765,13 @@ export function HeroStickyExchange({ projects, total }: HeroStickyExchangeProps)
             // 경계 전환: Lenis 멈춘 뒤 강제 스크롤 → 휠 관성 잔류로 튕기는 현상 방지
             lenisRef.current?.stop()
             lenisRef.current?.scrollTo(sectionTop - window.innerHeight, {
-              duration: 0.6, lock: false, force: true,
+              duration: 1.1, lock: false, force: true,
             })
+            // 경계 글라이드(1.1s)보다 길게 — 글라이드 끝나기 전 휠 개입 방지
             setTimeout(() => {
               cooldown = false
               lenisRef.current?.start()
-            }, COOLDOWN_MS)
+            }, 1200)
             return
           }
 
