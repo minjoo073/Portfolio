@@ -148,6 +148,17 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
         intervalId = setInterval(checkScrollEnd, 250)
 
         setTimeout(checkScrollEnd, 200)
+
+        // study 내부 모션(GSAP ScrollTrigger / framer-motion whileInView) 강제 refresh.
+        // iframe 안에서는 React mount 와 ScrollTrigger.create() 가 layout 직전/직후 사이
+        // 에 일어나며 트리거 위치를 0 근처로 잘못 잡아 모든 모션이 진입 즉시 final state 로 보임
+        // (직접 접근 시엔 정상). resize 발화 → ScrollTrigger / IntersectionObserver 재계산.
+        const refreshMotion = () => {
+          try { iframeWin?.dispatchEvent(new Event('resize')) } catch {}
+        }
+        setTimeout(refreshMotion, 100)
+        setTimeout(refreshMotion, 600)
+        setTimeout(refreshMotion, 1500)
       } catch {
         // cross-origin은 발생하지 않아야 하지만 방어
       }
@@ -168,23 +179,16 @@ export function WorkViewer({ work, nextWork }: WorkViewerProps) {
     }
   }, [work.slug])
 
+  // 부모는 wheel 을 가로채지 않는다 — iframe 이 viewport 거의 다 덮으므로
+  // 휠은 자연스럽게 iframe 내부 스크롤(및 study 내부 스무드 라이브러리)로 전달된다.
+  // 가로채면 study 의 wheel 기반 모션 라이브러리가 작동하지 않아 속도/곡선이 원본과 어긋난다.
+  // 단, 케이스 → 케이스 전환 중에는 wheel 차단(스크롤 흔들림 방지).
   useEffect(() => {
-    function onWheelForward(e: WheelEvent) {
-      if (isTransitioningRef.current) {
-        e.preventDefault()
-        return
-      }
-      const iframeWin = iframeRef.current?.contentWindow
-      if (!iframeWin) return
-      e.preventDefault()
-      try {
-        iframeWin.scrollBy({ top: e.deltaY })
-      } catch {
-        // same-origin 환경
-      }
+    function onWheelGuard(e: WheelEvent) {
+      if (isTransitioningRef.current) e.preventDefault()
     }
-    window.addEventListener('wheel', onWheelForward, { passive: false })
-    return () => window.removeEventListener('wheel', onWheelForward)
+    window.addEventListener('wheel', onWheelGuard, { passive: false })
+    return () => window.removeEventListener('wheel', onWheelGuard)
   }, [])
 
   useEffect(() => {
