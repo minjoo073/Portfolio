@@ -1,4 +1,4 @@
-import { Intro } from '@/components/sections/Hero/Intro'
+import { IntroOverlay } from '@/components/intro/IntroOverlay'
 import { Hero } from '@/components/sections/Hero/Hero'
 import { About } from '@/components/sections/About/About'
 import { Experience } from '@/components/sections/Experience/Experience'
@@ -21,8 +21,8 @@ import { Footer } from '@/components/sections/Footer/Footer'
 export default function Home() {
   return (
     <>
-      {/* 균열(Fissure) 인트로 — Hero 위 오버레이. 애니 완료 후 자동 언마운트. */}
-      <Intro />
+      {/* 3D Globe 인트로 — cubiflow.com 메커니즘. 스크롤 한 바퀴 → fade → Hero. */}
+      <IntroOverlay />
 
       <Hero />
 

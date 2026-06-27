@@ -28,20 +28,41 @@
  *   - 모바일: TitleLiquid 미마운트 (GPU 부담 회피).
  */
 
-import { useEffect, useRef } from 'react'
-import { heroMarqueeRow1, heroMarqueeRow2, heroBody } from '@/data/nav'
-import { TitleLiquid } from './TitleLiquid'
-import { registerGsap, gsap } from '@/lib/gsap/config'
+import { useEffect, useRef, useState } from 'react'
+import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
 import { useReducedMotionContext } from '@/components/global/ReducedMotionProvider'
 import { useIsMobile } from '@/lib/hooks/useMediaQuery'
+import { ParticlesBg } from '@/components/global/ParticlesBg'
+
+const TITLE = 'PORTFOLIO'
 
 export function Hero() {
   const reduced  = useReducedMotionContext()
   const isMobile = useIsMobile()
   const sectionRef = useRef<HTMLElement>(null)
 
-  /* WebGL 타이틀 굴절 활성: 데스크탑 && !reduced. */
-  const useWebGL = !reduced && !isMobile
+  /* ── entrance ─────────────────────────────────────────────────────
+   * 인트로(IntroOverlay) 가 떠있는 동안에는 Hero 가 가려져 있다가,
+   * 인트로 exit 시작 시 'intro:exitStart' 이벤트로 동시에 떠오름.
+   * 인트로 없이 직접 진입(새로고침·해시 진입)이면 즉시 entered=true.
+   */
+  const [entered, setEntered] = useState(false)
+  useEffect(() => {
+    if (reduced) {
+      setEntered(true)
+      return
+    }
+    // 새 영상 인트로: z-[9999] fixed div (aria-hidden). 인트로 div 존재 여부로 감지.
+    const introExists = typeof document !== 'undefined' && !!document.querySelector('[data-intro-overlay]')
+    if (!introExists) {
+      setEntered(true)
+      return
+    }
+    // 인트로 가 완전히 사라진 뒤 (intro:exitEnd) Hero entrance — 글자 떨어짐을 처음부터 보여줌
+    const onEnd = () => setEntered(true)
+    window.addEventListener('intro:exitEnd', onEnd)
+    return () => window.removeEventListener('intro:exitEnd', onEnd)
+  }, [reduced])
 
   useEffect(() => {
     registerGsap()
@@ -51,68 +72,19 @@ export function Hero() {
     const ctx = gsap.context(() => {
       const select = gsap.utils.selector(section)
 
-      /* ── 마퀴 — double-spread seamless loop ─────────────────────── */
-      const row1 = select('[data-marquee-row="1"]')[0] as HTMLElement | undefined
-      const row2 = select('[data-marquee-row="2"]')[0] as HTMLElement | undefined
-
-      if (row2) gsap.set(row2, { xPercent: -50 })
-
-      if (!reduced) {
-        if (row1) gsap.to(row1, { xPercent: -50, duration: 22, ease: 'none', repeat: -1 })
-        if (row2) gsap.to(row2, { xPercent: 0,   duration: 28, ease: 'none', repeat: -1 })
-      }
-
-      /* ── D prep: 문단 초기 상태 & load fade-in ──────────────────────
-       *
-       * 버그 원인 (기존):
-       *   gsap.set(para, {opacity:0}) 직후 gsap.to 스크롤 트윈을 생성하면
-       *   GSAP 이 그 시점의 opacity(=0) 를 from 값으로 캡처.
-       *   스크롤 후 복귀 시 progress=0 → opacity=0 잔류.
-       *
-       * 해결:
-       *   load 애니 fromTo 로 교체, onComplete 에서 ctx.add 로 scroll trigger 부착.
-       *   → 두 트윈이 동시에 opacity 를 제어하지 않음.
-       *   reduced: 즉시 opacity 1, scroll trigger 미부착.
+      /* ── 초기 상태: 글자/캡션 invisible — 별도 useEffect[entered] 에서 등장 트윈
+       * reduced/모바일: 즉시 visible (entrance 트윈 없음)
        */
       const para = select('[data-hero-para]')[0] as HTMLElement | undefined
+      const letters = select('[data-hero-letter]') as HTMLElement[]
 
-      // reduced 또는 모바일: 패럴랙스/스크롤 페이드 미부착 (모바일은 한 화면 중앙정렬 브랜치)
       if (reduced || isMobile) {
         if (para) gsap.set(para, { opacity: 1, y: 0 })
+        if (letters.length) gsap.set(letters, { y: 0, opacity: 1 })
       } else {
-        if (para) {
-          gsap.fromTo(
-            para,
-            { opacity: 0, y: 12 },
-            {
-              opacity:  1,
-              y:        0,
-              duration: 1.2,
-              ease:     'power2.out',
-              delay:    0.5,
-              onComplete: () => {
-                /* D. 문단 scroll fade — load 완료 후 부착 (ctx 에 포함) */
-                ctx.add(() => {
-                  gsap.fromTo(
-                    para,
-                    { opacity: 1, y: 0 },
-                    {
-                      opacity: 0,
-                      y:       '-6vh',
-                      ease:    'none',
-                      scrollTrigger: {
-                        trigger: section,
-                        start:   '7% top',
-                        end:     '20% top',
-                        scrub:   1.5,
-                      },
-                    }
-                  )
-                })
-              },
-            }
-          )
-        }
+        // entrance 전 invisible — wrapper opacity 와 별개로 letters/para 가 깜빡이지 않도록
+        if (letters.length) gsap.set(letters, { y: '-110vh', opacity: 0 })
+        if (para) gsap.set(para, { opacity: 0, y: 14 })
 
         /* ── B. 타이틀 그룹 패럴랙스 3단계 안무 ────────────────────────
          * data-hero-title-group: TitleLiquid 래퍼 + h1 폴백을 묶은 그룹.
@@ -129,46 +101,20 @@ export function Hero() {
          */
         const titleGroupEl = select('[data-hero-title-group]')[0] as HTMLElement | undefined
 
-        if (titleGroupEl) {
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: section,
-              start:   'top top',
-              end:     'bottom top',
-              scrub:   1.5,
-            },
-          })
-          // Phase1 (0→20% scroll): 상단→중앙
-          tl.fromTo(titleGroupEl, { y: 0 }, { y: '80vh', ease: 'power2.inOut', duration: 0.20 }, 0)
-          // Phase2 (20→55% scroll): 중앙 고정 (스크롤 1:1)
-          tl.to(titleGroupEl, { y: '164vh', ease: 'none', duration: 0.35 }, 0.20)
-          // Phase3 (55→80% scroll): 중앙→하강 합쳐짐
-          tl.to(titleGroupEl, { y: '284vh', ease: 'power2.in', duration: 0.25 }, 0.55)
-          // 80%~100% scroll: y 284vh 유지 (placeholder — totalDuration=1.00 확보)
-          tl.to({}, { duration: 0.20 }, 0.80)
-        }
-
-        /* ── C. 벨트 마퀴 fade-out ───────────────────────────────────
-         * 7%~18% — 초반 스크롤에 빠르게 소멸. Phase1 초반 함께 사라짐.
+        /* title-group position: fixed bottom-[4vh] — viewport 항상 고정.
+         * Hero section 끝나는 시점 fade out (About 진입 직전) — 후속 섹션 위 안 남음.
          */
-        const beltEl = select('[data-hero-belt]')[0] as HTMLElement | undefined
-
-        if (beltEl) {
-          gsap.fromTo(
-            beltEl,
-            { opacity: 1 },
-            {
-              opacity: 0,
-              ease:    'none',
-              scrollTrigger: {
-                trigger: section,
-                start:   '7% top',
-                end:     '18% top',
-                scrub:   1.5,
-              },
-            }
-          )
+        if (titleGroupEl) {
+          ScrollTrigger.create({
+            trigger:    section,
+            start:      'bottom bottom',
+            end:        'bottom top',
+            onEnter:    () => gsap.to(titleGroupEl, { opacity: 0, duration: 0.4, ease: 'power2.out' }),
+            onLeaveBack:() => gsap.to(titleGroupEl, { opacity: 1, duration: 0.4, ease: 'power2.out' }),
+          })
         }
+
+        /* Section transition 폐기 — 사용자 의도 재확인 후 재구현 */
 
         /* ── E. Scroll cue fade-out ──────────────────────────────────
          * top~5% — 첫 스크롤에 즉시 소멸.
@@ -195,7 +141,84 @@ export function Hero() {
     }, section)
 
     return () => { ctx.revert() }
-  }, [reduced, isMobile, useWebGL])
+  }, [reduced, isMobile])
+
+  /* ── entrance 트윈 — entered=true 시 PORTFOLIO 글자 stagger 떨어짐 + 캡션 fade in
+   * onComplete: 캡션 scroll-fade trigger 부착 (entrance 와 scroll trigger 가 opacity 충돌 안 하도록 순차)
+   */
+  useEffect(() => {
+    if (!entered) return
+    if (reduced || isMobile) return
+    const section = sectionRef.current
+    if (!section) return
+
+    registerGsap()
+    const ctx = gsap.context(() => {
+      const letters = gsap.utils.toArray<HTMLElement>('[data-hero-letter]', section)
+      const para = section.querySelector<HTMLElement>('[data-hero-para]')
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          if (para) {
+            gsap.fromTo(
+              para,
+              { opacity: 1, y: 0 },
+              {
+                opacity: 0,
+                y: '-6vh',
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: section,
+                  start: '7% top',
+                  end: '20% top',
+                  scrub: 1.5,
+                },
+              }
+            )
+          }
+        },
+      })
+
+      // 글자 한 글자씩 뚝뚝 — stagger 0.22 (한 글자씩 또렷이 분리), duration 0.55 (떨어짐 빠르게)
+      // ease power4.out: 무게감 있게 떨어져 stop (bounce 금지)
+      if (letters.length) {
+        tl.to(
+          letters,
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.55,
+            ease: 'power4.out',
+            stagger: 0.22,
+          },
+          0
+        )
+      }
+
+      // 캡션 — 글자 거의 다 떨어진 뒤 fade in (delay 강조)
+      if (para) {
+        tl.to(
+          para,
+          { opacity: 1, y: 0, duration: 1.0, ease: 'power2.out' },
+          1.8
+        )
+      }
+    }, section)
+
+    return () => ctx.revert()
+  }, [entered, reduced, isMobile])
+
+  /* ── entrance wrapper style ─────────────────────────────────────
+   * 인트로 exit 와 동시에 Hero 가 살짝 위로 떠오르며 fade in.
+   * 인트로 카드들이 위로 흘러 사라지는 흐름의 연속 → 두 섹션 유기적 연결.
+   */
+  const entranceStyle: React.CSSProperties = {
+    // wrapper 는 즉시 등장 (글자 stagger 가 entrance 모션을 담당)
+    // 1.2s opacity fade 로 두면 글자 떨어지는 초반이 wrapper opacity 0 에 가려져 안 보임
+    opacity: entered ? 1 : 0,
+    transition: reduced ? 'none' : 'opacity 250ms ease-out',
+    willChange: entered ? 'auto' : 'opacity',
+  }
 
   /*
    * reduced: h-screen-dvh 자연 스크롤 (빈 스크롤 없음).
@@ -209,77 +232,66 @@ export function Hero() {
   /* ── 모바일: 패럴랙스 없이 한 화면 세로 중앙 정렬 (PORTFOLIO·벨트·문단) ──── */
   if (isMobile) {
     return (
+      <div style={entranceStyle}>
       <section
         ref={sectionRef}
         id="intro"
         data-section="intro"
-        className="relative h-screen-dvh bg-hero-bg flex flex-col overflow-hidden"
+        className="relative z-[2] h-screen-dvh bg-hero-bg flex flex-col overflow-hidden"
       >
-        <div className="flex-1 flex flex-col items-center justify-center gap-[5vh] w-full">
-          {/* 워드마크 — 폭맞춤 */}
+        <div className="flex-1 flex flex-col items-center justify-center gap-[6vh] w-full">
+          {/* 워드마크 — 폭맞춤. 글자별 span split → entrance stagger */}
           <h1
             data-hero-title
+            aria-label="PORTFOLIO"
             className="select-none font-sans font-black tracking-[-0.04em] text-ink-primary text-[15vw] leading-[0.92] text-center w-full px-side-m"
           >
-            PORTFOLIO
+            {TITLE.split('').map((c, i) => (
+              <span
+                key={i}
+                data-hero-letter
+                aria-hidden="true"
+                style={{ display: 'inline-block', willChange: 'transform' }}
+              >
+                {c}
+              </span>
+            ))}
           </h1>
 
-          {/* 흰 벨트 마퀴 (마퀴 애니는 공용 useEffect 가 구동) */}
+          {/* 캡션 박스 — 인트로 카드와 동일 톤 (mono 3줄) */}
           <div
-            data-hero-belt
-            className="w-full overflow-hidden bg-white py-1 flex flex-col gap-0"
-            aria-label="skill keywords"
-          >
-            <div data-marquee-row="1" className="flex gap-10 whitespace-nowrap will-change-transform">
-              {[...heroMarqueeRow1, ...heroMarqueeRow1].map((label, i) => (
-                <span key={i} className="font-mono text-label font-light uppercase tracking-[0.1em] text-ink-primary">
-                  {label}
-                </span>
-              ))}
-            </div>
-            <div data-marquee-row="2" className="flex gap-10 whitespace-nowrap will-change-transform">
-              {[...heroMarqueeRow2, ...heroMarqueeRow2].map((label, i) => (
-                <span key={i} className="font-mono text-label font-light uppercase tracking-[0.1em] text-ink-muted">
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* 문단 */}
-          <p
             data-hero-para
-            className="w-[90%] max-w-[640px] text-center font-mono text-body-l uppercase leading-relaxed tracking-[0.08em] text-ink-primary"
+            className="text-center font-mono uppercase text-ink-primary"
+            style={{ fontSize: 11, lineHeight: 1.75, letterSpacing: '0.14em' }}
           >
-            {heroBody[0]}
-            <br />
-            {heroBody[1]}
-          </p>
+            <div style={{ fontWeight: 600 }}>PARK MINJOO</div>
+            <div style={{ opacity: 0.7 }}>UX/UI Designer &amp; Web Publisher</div>
+            <div style={{ opacity: 0.4 }}>Seoul · 2026</div>
+          </div>
         </div>
 
-        {/* scroll cue — 하단 고정 */}
-        <div className="shrink-0 pb-10 flex justify-center">
-          <div className="flex flex-col items-center gap-2 animate-bounce-slow text-ink-muted opacity-50">
-            <span className="font-mono text-label font-light uppercase tracking-[0.14em]">
-              please scroll down
-            </span>
-            <svg className="block" width="9" height="12" viewBox="0 0 10 14" fill="none" aria-hidden="true">
-              <path d="M5 0V13M5 13L1 9M5 13L9 9" stroke="currentColor" strokeWidth="1" strokeLinecap="square" />
-            </svg>
-          </div>
+        {/* scroll cue — 우하단 미니멀 */}
+        <div className="shrink-0 pb-6 pr-side-m flex justify-end">
+          <span className="font-mono uppercase text-ink-muted" style={{ fontSize: 11, letterSpacing: '0.18em', opacity: 0.55 }}>
+            ↓ Scroll
+          </span>
         </div>
       </section>
+      </div>
     )
   }
 
   return (
+    <div style={entranceStyle}>
+    {/* 별가루 — Hero 진입 후 PORTFOLIO 글자 뒤로 떠다님 (cubiflow 톤) */}
+    <ParticlesBg />
     <section
       ref={sectionRef}
       id="intro"
       className={
         reduced
-          ? 'relative h-screen-dvh bg-hero-bg'
-          : 'relative h-[240vh] bg-hero-bg overflow-visible'
+          ? 'relative z-[2] h-screen-dvh bg-hero-bg'
+          : 'relative z-[2] h-[240vh] bg-hero-bg overflow-visible'
       }
       data-section="intro"
     >
@@ -291,122 +303,66 @@ export function Hero() {
       */}
       <div
         data-hero-title-group
-        className="absolute inset-x-0 top-0 h-screen-dvh z-[1] pointer-events-none"
+        className="fixed inset-x-0 bottom-[4vh] z-[30] pointer-events-none"
       >
         {/*
-          [WebGL 타이틀 래퍼] data-title-liquid — GSAP 스크롤 transform 대상.
-          canvas 는 래퍼 안에서 w-full h-full 로 채움 → 해상도 유지, scale 픽셀레이션 없음.
-          TitleLiquid 셰이더: ⛔ 수정 금지 (CEO 만족).
-        */}
-        {useWebGL && (
-          <div
-            data-title-liquid
-            className="absolute inset-0 z-0"
-          >
-            <TitleLiquid className="w-full h-full block" />
-          </div>
-        )}
-
-        {/*
-          [h1 폴백 / SEO]
-          WebGL 활성: sr-only (시각 숨김, 스크린리더·SEO 유지).
-          WebGL 비활성: 정적으로 보임 (타이틀 그룹과 함께 패럴랙스).
+          [h1] 글자별 span split — entrance 시 한 글자씩 위에서 떨어짐 (data-hero-letter).
+          fixed 부모 안 block — viewport 에 항상 같은 위치 (스크롤 시 따라옴).
         */}
         <h1
           data-hero-title
-          className={[
-            'pointer-events-none select-none absolute z-0',
-            'top-[18%] px-side-m md:px-side-t xl:px-side-d',
-            'font-sans font-black tracking-[-0.04em]',
-            // 모바일: 화면 폭에 맞춰 한 줄로 채움(잘림 방지) / md+: 기존 display-xl
-            'text-ink-primary text-[15vw] leading-[0.92] md:text-display-xl',
-            useWebGL ? 'sr-only' : ''
-          ].join(' ').trim()}
+          aria-label="PORTFOLIO"
+          className="pointer-events-none select-none block z-0 px-0 font-sans font-black tracking-[-0.05em] text-ink-primary leading-[0.92] whitespace-nowrap text-center"
+          style={{ fontSize: 'min(17.5vw, 360px)' }}
         >
-          PORTFOLIO
+          {TITLE.split('').map((c, i) => (
+            <span
+              key={i}
+              data-hero-letter
+              aria-hidden="true"
+              style={{ display: 'inline-block', willChange: 'transform' }}
+            >
+              {c}
+            </span>
+          ))}
         </h1>
       </div>{/* /타이틀 그룹 */}
 
       {/*
-        [벨트 + 문단 스택] 흐름 배치 — absolute 제거.
-        paddingTop: 18dvh(타이틀 top-[18%] of dvh) + clamp(72px,19vw,360px)(타이틀 높이).
-        → 360px 캡 동일 적용 → 넓은 화면서도 타이틀 바닥에 정확히 붙음.
-        → 기존 24vw 추정(캡 무시, 와이드서 띠지 이탈) 문제 해결.
-        z-20: 타이틀(z-1) 위에. 패럴랙스 없이 자연 흐름 — 초반 스크롤에 빠르게 fade.
+        [캡션 박스] absolute 상단 영역.
+        글자가 하단으로 떨어지므로 캡션은 상단(약 30%)에 위치 — 두 요소가 시선 위→아래로 흐름.
       */}
       <div
-        className="relative w-full z-20 flex flex-col items-center pt-[calc(18dvh+15vw)] md:pt-[calc(18dvh+clamp(72px,19vw,360px)-15px)]"
+        data-hero-para
+        className="absolute z-[31] inset-x-0 top-[28%] text-center font-mono uppercase text-ink-primary"
+        style={{ fontSize: 12, lineHeight: 1.75, letterSpacing: '0.14em' }}
       >
-        {/* 흰 벨트 마퀴 — data-hero-belt(C 트윈). 풀폭 흰 띠. row1 좌행(22s), row2 우행(28s). */}
-        <div
-          data-hero-belt
-          className="w-full overflow-hidden bg-white py-1 flex flex-col gap-0"
-          aria-label="skill keywords"
-        >
-          <div
-            data-marquee-row="1"
-            className="flex gap-10 whitespace-nowrap will-change-transform"
-          >
-            {[...heroMarqueeRow1, ...heroMarqueeRow1].map((label, i) => (
-              <span
-                key={i}
-                className="font-mono text-label font-light uppercase tracking-[0.1em] text-ink-primary"
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-
-          <div
-            data-marquee-row="2"
-            className="flex gap-10 whitespace-nowrap will-change-transform"
-          >
-            {[...heroMarqueeRow2, ...heroMarqueeRow2].map((label, i) => (
-              <span
-                key={i}
-                className="font-mono text-label font-light uppercase tracking-[0.1em] text-ink-muted"
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* 문단 — 벨트 바로 아래(흐름, mt 간격). data-hero-para(D 트윈). */}
-        <p
-          data-hero-para
-          className="mt-[8vh] w-[90%] max-w-[640px] text-center font-mono text-body-l uppercase leading-relaxed tracking-[0.08em] text-ink-primary"
-        >
-          {heroBody[0]}
-          <br />
-          {heroBody[1]}
-        </p>
-      </div>{/* /벨트+문단 스택 */}
+        <div style={{ fontWeight: 600 }}>PARK MINJOO</div>
+        <div style={{ opacity: 0.7 }}>UX/UI Designer &amp; Web Publisher</div>
+        <div style={{ opacity: 0.4 }}>Seoul · 2026</div>
+      </div>
 
       {/*
         [scroll cue] data-hero-cue — E 트윈 선택 대상.
-        top-[calc(100dvh-5rem)]: 첫 화면(dvh) 하단 기준으로 고정.
-        (기존 bottom-10은 stage 100dvh 기준이었음 — 이제 섹션이 240vh이므로 top 절대 위치로.)
+        우하단 미니멀 mono — 인트로 캡션 톤. bouncing 제거 (quiet luxury).
       */}
       <div
         data-hero-cue
-        className="absolute top-[calc(100dvh_-_5rem)] inset-x-0 z-20 flex justify-center"
+        className="absolute top-[calc(100dvh_-_3rem)] right-side-m md:right-side-t xl:right-side-d z-20"
       >
-        {/* 중앙정렬은 flex(justify-center)로 — bounce transform 과 -translate-x 충돌 방지. opacity 낮춰 융화. */}
-        <div className="flex flex-col items-center gap-2 animate-bounce-slow text-ink-muted opacity-50">
-          <span className="font-mono text-label font-light uppercase tracking-[0.14em]">
-            please scroll down
-          </span>
-          <svg className="block" width="9" height="12" viewBox="0 0 10 14" fill="none" aria-hidden="true">
-            <path
-              d="M5 0V13M5 13L1 9M5 13L9 9"
-              stroke="currentColor"
-              strokeWidth="1"
-              strokeLinecap="square"
-            />
-          </svg>
-        </div>
+        <span className="font-mono uppercase text-ink-muted" style={{ fontSize: 11, letterSpacing: '0.18em', opacity: 0.55 }}>
+          ↓ Scroll
+        </span>
       </div>
+
+      {/*
+        [Hero → About chapter marker] — A(hairline) + D(mono index) 결합.
+        Hero bottom 도달 시 hairline 좌→우 draw + mono "01 / 06 ABOUT MINJOO" fade-in.
+        About 진입 후 자동 fade out (z-[28] PORTFOLIO z-30 아래, 캡션 z-31 아래).
+        position fixed — viewport bottom 14vh 에 sticky, 잡지 챕터 표지 어휘.
+      */}
+      {/* Section transition — 사용자 의도 재확인 후 재설계 */}
     </section>
+    </div>
   )
 }
