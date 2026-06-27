@@ -3,10 +3,10 @@ import type { Project } from '@/lib/types/project'
 /**
  * Web Projects — 8개
  *
- * 순서 (CEO 결정 2026-06-26 — KiiiKiii 를 ONVINYL 다음 03 으로 삽입):
- *   01 LUNARE   (Original — 기획+브랜딩+디자인) → /work/lunare
- *   02 ONVINYL  (Original)                     → /work/lp
- *   03 KiiiKiii (Original — 팬 마케팅 프로모션) → 라이브만, 케이스스터디 준비중
+ * 순서 (CEO 결정 2026-06-27 — KiiiKiii 를 01 로 이동):
+ *   01 KiiiKiii (Original — 팬 마케팅 프로모션) → /work/kiikii
+ *   02 LUNARE   (Original — 기획+브랜딩+디자인) → /work/lunare
+ *   03 ONVINYL  (Original)                     → /work/lp
  *   04 FANCIVE  (Original)                     → /work/fancive
  *   05 MathHub  (Redesign)                     → /work/mathhub
  *   06 부자관광 (Redesign — 기존 사이트 개선)   → /work/buja
@@ -17,9 +17,34 @@ import type { Project } from '@/lib/types/project'
  */
 export const projects: Project[] = [
   {
-    // ── 01 LUNARE — 풀 채움 (2026-06-19) ─────────────────────────
-    id: 'project01',
+    // ── 01 KiiiKiii — 팬 마케팅 앨범 프로모션 (2026-06-27 → 01 로 이동) ─────
+    //   비공식 팬메이드 인터랙티브 프로모션 웹.
+    id: 'project08',
     index: '01',
+    total: '08',
+    type: 'web',
+    title: 'KiiiKiii',
+    wordmark: 'KiiiKiii',
+    date: 'Jun 2026',
+    category: '팬 마케팅 · 아티스트 프로모션 웹 · 오리지널',
+    tagline: '걸그룹 KiiiKiii의 무드를 팬덤 언어로 옮긴 인터랙티브 앨범 프로모션',
+    subline: '걸그룹 KiiiKiii의 무드를 팬덤 언어로 옮긴 인터랙티브 앨범 프로모션',
+    scale: '1인 제작',
+    role: ['팬덤 콘셉트 번역', '프로모션 IA', '인터랙션 · 모션'],
+    stack: ['Next.js', 'GSAP', 'Three.js'],
+    thumbnail: '/images/projects/08/thumbnail.webp',
+    detailAnchor: '#project08',
+    displayType: 'featured',
+    workType: 'original',
+    variant: 'left',
+    visualRatio: '16:10',
+    studyHref: '/work/kiikii',
+    siteHref: 'https://kiikii-omega.vercel.app',
+  },
+  {
+    // ── 02 LUNARE — 풀 채움 (2026-06-19) ─────────────────────────
+    id: 'project01',
+    index: '02',
     total: '07',
     type: 'web',
     title: 'LUNARE',
@@ -43,9 +68,9 @@ export const projects: Project[] = [
     skinHref: '#', // CEO 제공 예정 — 실제 URL 로 교체
   },
   {
-    // ── 02 ONVINYL — 기존 보존 + 새 필드 placeholder ──────────────
+    // ── 03 ONVINYL — 기존 보존 + 새 필드 placeholder ──────────────
     id: 'project02',
-    index: '02',
+    index: '03',
     total: '07',
     type: 'web',
     title: 'ONVINYL',
@@ -66,33 +91,6 @@ export const projects: Project[] = [
     studyHref: '/work/lp',
     siteHref: 'https://minjoo073.github.io/lp_2/',
     githubHref: 'https://github.com/minjoo073/lp_2',
-  },
-  {
-    // ── 03 KiiiKiii — 팬 마케팅 앨범 프로모션 (2026-06-26 신규) ─────
-    //   비공식 팬메이드 인터랙티브 프로모션 웹. 케이스스터디(제작과정)는
-    //   추후 추가 → 지금은 studyHref 생략 → 카드에 "제작과정 준비중" 표기,
-    //   진입점은 siteHref(실사이트)만.
-    id: 'project08',
-    index: '03',
-    total: '08',
-    type: 'web',
-    title: 'KiiiKiii',
-    wordmark: 'KiiiKiii',
-    date: 'Jun 2026',
-    category: '팬 마케팅 · 아티스트 프로모션 웹 · 오리지널',
-    tagline: '걸그룹 KiiiKiii의 무드를 팬덤 언어로 옮긴 인터랙티브 앨범 프로모션',
-    subline: '걸그룹 KiiiKiii의 무드를 팬덤 언어로 옮긴 인터랙티브 앨범 프로모션',
-    scale: '1인 제작',
-    role: ['팬덤 콘셉트 번역', '프로모션 IA', '인터랙션 · 모션'],
-    stack: ['Next.js', 'GSAP', 'Three.js'],
-    thumbnail: '/images/projects/08/thumbnail.webp',
-    detailAnchor: '#project08',
-    displayType: 'featured',
-    workType: 'original',
-    variant: 'left',
-    visualRatio: '16:10',
-    studyHref: '/work/kiikii',
-    siteHref: 'https://kiikii-omega.vercel.app',
   },
   {
     // ── 04 FANCIVE — 기존 보존 + 새 필드 placeholder ──────────────
