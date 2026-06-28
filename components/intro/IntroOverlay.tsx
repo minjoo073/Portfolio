@@ -26,15 +26,15 @@ const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
 // cubiflow 카드 직역 — 작은 가로 카드 (16:9 비율), 표면에 점점이 분포
 const COUNT = IS_MOBILE ? 100 : 180
 const GLOBE_RADIUS = 6.8
-const GLOBE_ITEM_W = 0.55
+const GLOBE_ITEM_W = 0.9  // 더 키움 (0.75 → 0.9, 약 20% 추가)
 const FIXED_RATIO = 0.6  // h/w — 0.6 = 가로형 (대략 16:10), cubiflow 매치
 // 카메라 거리 — 텍스트 사이 여백 확보하되 sphere 적당히 크게
 const CAMERA_GLOBE_Z = 17
 
-// 거의 즉시 (체감 검증용) — 0s + 0.4s + 0.6s = 1.0s
-const FORCE_LOADING_MS = 0
-const FILL_DUR = 400
-const ZOOM_DUR = 600
+// Phase 1: cursor blink → typewriter → 풀네임 인지 → Phase A1 좌우 압축 → A2 점 완성 → Phase B 뒤로 빠짐 + sphere cross
+const FORCE_LOADING_MS = 4000  // Phase B 시작 = sphere FILL 시작 (천천히, 자연 cross)
+const FILL_DUR = 850   // sphere fade in 살짝 빠르게 (1000 → 850)
+const ZOOM_DUR = 2200  // scale START_SCALE → 1 천천히 (서서히 커짐)
 
 // 구체 회전 물리
 const WHEEL_TO_VEL  = 0.0008
@@ -50,13 +50,14 @@ const EXIT_RADIANS = Math.PI
 // (cubiflow: startScale = remPx / finalDiamPx clamp(0.02~0.22))
 // → ○ fade out 과 sphere fade in 이 *같은 자리에서* 일어나며
 //    "○ 안에서 sphere 가 피어남" 인상.
-const START_SCALE = 0.04
+const START_SCALE = 0.015  // 시작 스케일 더 작게 — ○ 마커 안 점 크기 (점에서 자라남)
 
-// 박민주 캡처 — public/captures/01.png ~ 45.png (45장).
+// 박민주 캡처 — public/captures/01.webp ~ 45.webp (45장, WebP q75 width 1200).
 // COUNT(180) 슬롯에 modulo 로 반복 배치 — 한 캡처 약 4번 등장.
+// PNG 108MB → WebP 1.4MB (99% 절감, 인트로 로딩 속도 개선)
 const RAW_CAPTURES = Array.from({ length: 45 }, (_, i) => {
   const n = String(i + 1).padStart(2, '0')
-  return `/captures/${n}.png`
+  return `/captures/${n}.webp`
 })
 const demoImages = Array.from({ length: COUNT }, (_, i) => ({
   src: RAW_CAPTURES[i % RAW_CAPTURES.length],
@@ -109,17 +110,14 @@ function runTimeline(
   return () => cancelAnimationFrame(raf)
 }
 
-/* ── 로더 컴포넌트 (□ ○ + 3개 다른 SVG 아이콘, stagger 깜빡임)
- *   cubiflow 영상의 정적 인트로 마커 정확 매치.
- *   - □ : square outline
- *   - ○ : dotted/textured circle (작은 sphere 의 placeholder)
- *   - + : plus
- *   stroke = #888 (라이트 그레이 위 미세 회색), stagger 0.2s
+/* ── 로더 컴포넌트 (cursor + typewriter "PARK MINJOO")
+ *   빈 캔버스 + cursor blink → 이름 한 글자씩 천천히 입력 → 풀네임 후 자연 cross fade → sphere.
+ *   2.4s 시퀀스:
+ *     0~0.4s   cursor blink (입력 전 대기)
+ *     0.4~2.1s typewriter "PARK MINJOO" (11 글자 × ~155ms — 한 글자씩 명확)
+ *     2.1~2.4s 풀네임 → cross fade (sphere fade in 과 overlap)
  */
 function Loader({ visible }: { visible: boolean }) {
-  const STROKE = '#888888'
-  const SIZE = 16
-
   return (
     <div
       aria-hidden="true"
@@ -135,39 +133,62 @@ function Loader({ visible }: { visible: boolean }) {
         zIndex: 10,
       }}
     >
-      <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-        {/* □ square outline */}
-        <svg
-          width={SIZE} height={SIZE} viewBox="0 0 16 16"
-          fill="none"
-          style={{ animation: 'cfBlink 1.4s ease-in-out 0s infinite' }}
+      <div
+        style={{
+          position: 'relative',
+          display: 'inline-block',
+          fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+          fontSize: 18,
+          fontWeight: 500,
+          lineHeight: 1,
+          letterSpacing: '0.08em',
+          color: '#1A1A1A',
+          transformOrigin: '50% 50%',
+          animation: 'cfLoaderFade 4.6s linear forwards',
+        }}
+      >
+        <span
+          style={{
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            display: 'inline-block',
+            animation: 'cfTyping 2.5s steps(11, end) 0.4s both',
+          }}
         >
-          <rect x="1" y="1" width="14" height="14" rx="1.5" stroke={STROKE} strokeWidth="1.2" />
-        </svg>
-
-        {/* ○ empty circle outline — sphere 가 이 빈 공간에서 피어남 */}
-        <svg
-          width={SIZE} height={SIZE} viewBox="0 0 16 16"
-          fill="none"
-          style={{ animation: 'cfBlink 1.4s ease-in-out 0.2s infinite' }}
-        >
-          <circle cx="8" cy="8" r="7" stroke={STROKE} strokeWidth="1.2" />
-        </svg>
-
-        {/* + plus */}
-        <svg
-          width={SIZE} height={SIZE} viewBox="0 0 16 16"
-          fill="none"
-          style={{ animation: 'cfBlink 1.4s ease-in-out 0.4s infinite' }}
-        >
-          <line x1="8" y1="2" x2="8" y2="14" stroke={STROKE} strokeWidth="1.2" />
-          <line x1="2" y1="8" x2="14" y2="8" stroke={STROKE} strokeWidth="1.2" />
-        </svg>
+          PARK MINJOO
+        </span>
+        <span
+          style={{
+            position: 'absolute',
+            left: 'calc(100% + 4px)',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 2,
+            height: 20,
+            backgroundColor: '#1A1A1A',
+            animation: 'cfCursorBlink 0.5s steps(2) infinite',
+          }}
+        />
       </div>
       <style>{`
-        @keyframes cfBlink {
-          0%, 100% { opacity: 0.25; }
-          50%      { opacity: 1; }
+        @keyframes cfTyping {
+          from { width: 0 }
+          to   { width: 12.5ch }
+        }
+        @keyframes cfCursorBlink {
+          0%, 49%   { opacity: 1; }
+          50%, 100% { opacity: 0; }
+        }
+        @keyframes cfLoaderFade {
+          /* 0~66% (0~3.1s) typewriter + 인지 — 정적 */
+          0%, 66%   { opacity: 1; transform: scaleX(1) scaleY(1); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+          /* 66~79% (3.1~3.7s, 0.6s) Phase A1 — 좌우 수평 압축 (천천히 글자가 가운데로 모임) */
+          79%       { opacity: 1; transform: scaleX(0.02) scaleY(1); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+          /* 79~85% (3.7~4.0s, 0.3s) Phase A2 — 위아래 압축 (점 완성) */
+          85%       { opacity: 1; transform: scaleX(0.02) scaleY(0.05); animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1); }
+          /* 87~100% (4.0~4.6s, 0.6s) Phase B — 점이 뒤로 빠지며 fade out (살짝 빠르게, sphere cross) */
+          87%       { opacity: 1; transform: scaleX(0.02) scaleY(0.05); }
+          100%      { opacity: 0; transform: scaleX(0) scaleY(0); }
         }
       `}</style>
     </div>
@@ -217,42 +238,7 @@ function Chrome({ visible }: { visible: boolean }) {
         MINJOO PARK
       </div>
 
-      {/* ── 좌상단 — □ ──────────────────────────────────────────────── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 24, left: 28,
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'translateY(0)' : 'translateY(-160%)',
-          transition: `transform ${DUR}ms ${EASE}, opacity ${DUR}ms ${EASE}`,
-          willChange: 'transform, opacity',
-          zIndex: 20,
-          pointerEvents: 'none',
-        }}
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <rect x="0.5" y="0.5" width="13" height="13" stroke={STROKE} strokeWidth="1.2" />
-        </svg>
-      </div>
-
-      {/* ── 우상단 — + ──────────────────────────────────────────────── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 24, right: 28,
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'translateY(0)' : 'translateY(-160%)',
-          transition: `transform ${DUR}ms ${EASE}, opacity ${DUR}ms ${EASE}`,
-          willChange: 'transform, opacity',
-          zIndex: 20,
-          pointerEvents: 'none',
-        }}
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <line x1="7" y1="1" x2="7" y2="13" stroke={STROKE} strokeWidth="1.2" />
-          <line x1="1" y1="7" x2="13" y2="7" stroke={STROKE} strokeWidth="1.2" />
-        </svg>
-      </div>
+      {/* 좌상단 □ / 우상단 + 폐기 — 박민주 포폴 무관 마커 제거 */}
 
       {/* ── 하단 좌 — GH NT IG ──────────────────────────────────────── */}
       <div
@@ -272,55 +258,9 @@ function Chrome({ visible }: { visible: boolean }) {
         <span>GH</span><span>NT</span><span>IG</span>
       </div>
 
-      {/* ── 하단 중앙 — mail / CONTACT / phone (cubiflow 직역) ───────── */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 20, left: '50%',
-          transform: visible
-            ? 'translate(-50%, 0)'
-            : 'translate(-50%, 160%)',
-          opacity: visible ? 1 : 0,
-          transition: `transform ${DUR}ms ${EASE}, opacity ${DUR}ms ${EASE}`,
-          willChange: 'transform, opacity',
-          zIndex: 20,
-          display: 'flex',
-          gap: 14,
-          alignItems: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        {/* mail icon */}
-        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-          <circle cx="13" cy="13" r="12" stroke={STROKE} strokeWidth="1" />
-          <path d="M7 10l6 4 6-4" stroke={STROKE} strokeWidth="1.1" fill="none" />
-          <rect x="7" y="9" width="12" height="8" stroke={STROKE} strokeWidth="1.1" fill="none" />
-        </svg>
+      {/* 하단 중앙 mail/CONTACT/phone 그룹 폐기 — SCROLL TO ENTER hint 가 그 자리로 이동 */}
 
-        {/* CONTACT pill */}
-        <div
-          style={{
-            ...baseTextStyle,
-            border: `1px solid ${STROKE}`,
-            borderRadius: 999,
-            padding: '6px 14px',
-            fontSize: 10,
-          }}
-        >
-          CONTACT
-        </div>
-
-        {/* phone icon */}
-        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-          <circle cx="13" cy="13" r="12" stroke={STROKE} strokeWidth="1" />
-          <path
-            d="M9 9.5c0 4 3.5 7.5 7.5 7.5l1-2.2-2.5-1-1 1c-1.5-.6-2.7-1.8-3.3-3.3l1-1-1-2.5L9 9.5z"
-            stroke={STROKE} strokeWidth="1.1" fill="none"
-          />
-        </svg>
-      </div>
-
-      {/* ── 하단 우 — WORK 2026 ─────────────────────────────────────── */}
+      {/* ── 하단 우 — WORK / CONTACT (페이지 main nav 동일) ─────────── */}
       <div
         style={{
           position: 'absolute',
@@ -331,12 +271,12 @@ function Chrome({ visible }: { visible: boolean }) {
           willChange: 'transform, opacity',
           zIndex: 20,
           display: 'flex',
-          gap: 8,
+          gap: 24,
           ...baseTextStyle,
         }}
       >
-        <span style={{ opacity: 0.55 }}>WORK</span>
-        <span>2026</span>
+        <span>WORK</span>
+        <span>CONTACT</span>
       </div>
 
       {/* ── 좌하단 코너 — [G] (cubiflow 디자인 매칭) ───────────────────── */}
@@ -563,7 +503,7 @@ function GlobeScene({ onZoomComplete, onExitStart, onExitComplete }: GlobeSceneP
     phaseRef.current = 'loading'
 
     const loadingTimer = window.setTimeout(() => {
-      // FILL 시작
+      // FILL + ZOOM 동시 시작 (parallel) — sphere fade in 과 scale 확대 동시 진행, 멈칫 없음.
       phaseRef.current = 'fill'
       cleanupFillRef.current = runTimeline(
         FILL_DUR,
@@ -571,21 +511,16 @@ function GlobeScene({ onZoomComplete, onExitStart, onExitComplete }: GlobeSceneP
         (t) => {
           fillOpacityRef.current = t
         },
+      )
+      cleanupZoomRef.current = runTimeline(
+        ZOOM_DUR,
+        easeOutQuint,
+        (t) => {
+          scaleRef.current = START_SCALE + (1 - START_SCALE) * t
+        },
         () => {
-          // FILL 완료 → ZOOM 시작
-          phaseRef.current = 'zoom'
-          cleanupZoomRef.current = runTimeline(
-            ZOOM_DUR,
-            easeOutQuint,
-            (t) => {
-              scaleRef.current = START_SCALE + (1 - START_SCALE) * t
-            },
-            () => {
-              // ZOOM 완료 → SCROLL phase
-              phaseRef.current = 'scroll'
-              onZoomComplete()
-            },
-          )
+          phaseRef.current = 'scroll'
+          onZoomComplete()
         },
       )
     }, FORCE_LOADING_MS)
@@ -719,6 +654,35 @@ export function IntroOverlay() {
     setVisible(false)
   }
 
+  /* ── work 페이지에서 뒤로 돌아옴 — 인트로 완전 스킵 + 해당 카드로 스크롤
+   * WorkViewer 가 saveReturnTarget() 으로 sessionStorage 에 저장 →
+   * 여기서 읽고 인트로 즉시 종료 + 카드 위치로 스크롤
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const scrollId = sessionStorage.getItem('postNavScrollId')
+    if (!scrollId) return
+    // 즉시 unmount + Hero entrance 트리거 (인트로 안 보임)
+    sessionStorage.removeItem('postNavScrollId')
+    sessionStorage.removeItem('postNavCardSlug')
+    setVisible(false)
+    window.dispatchEvent(new CustomEvent('intro:exitEnd'))
+    // RAF 후 카드 위치로 스크롤 (Hero entrance + page mount 후)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const target = document.getElementById(scrollId)
+        if (target) {
+          target.scrollIntoView({ behavior: 'instant' as ScrollBehavior, block: 'center' })
+        }
+        // body overflow 풀기 (mount useEffect 가 lock 했을 수도)
+        document.body.style.overflow = ''
+        document.documentElement.style.overflow = ''
+        lenisRef.current?.start()
+      })
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   /* ── reduced motion: 즉시 Hero ──────────────────────────────── */
   useEffect(() => {
     if (!reduced) return
@@ -804,12 +768,12 @@ export function IntroOverlay() {
       <Loader visible={showLoader} />
       <Chrome visible={chromeVisible} />
 
-      {/* 스크롤 힌트 — ZOOM 완료 후 표시. 더 prominent + 위로 살짝 (chrome 하단 메뉴와 안 겹치게) */}
+      {/* 스크롤 힌트 — ZOOM 완료 후 표시. 하단 중앙 (CONTACT 그룹 폐기 후 그 자리) */}
       {!showLoader && (
         <div
           style={{
             position: 'absolute',
-            bottom: 70,
+            bottom: 24,
             left: '50%',
             transform: 'translateX(-50%)',
             fontFamily: "'IBM Plex Mono', monospace",

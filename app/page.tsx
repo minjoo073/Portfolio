@@ -38,7 +38,7 @@ export default function Home() {
         → "PORTFOLIO 가 About 뒤로 들어가는" 리빌 효과.
       */}
       {/* 모바일: 겹침 제거(Hero 한 화면 다 흰색). md+: 기존 -30vh 리빌 연출 유지 */}
-      <div className="relative z-10 md:-mt-[30vh]">
+      <div className="relative z-10">
         {/* 솔리드 블랙이 위로 슬라이드하며 타이틀을 덮음 → 검정 여백(About paddingTop)이 "쉼" → statement 등장. */}
         <About />
       </div>

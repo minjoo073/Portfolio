@@ -101,20 +101,11 @@ export function Hero() {
          */
         const titleGroupEl = select('[data-hero-title-group]')[0] as HTMLElement | undefined
 
-        /* title-group position: fixed bottom-[4vh] — viewport 항상 고정.
-         * Hero section 끝나는 시점 fade out (About 진입 직전) — 후속 섹션 위 안 남음.
+        /* PORTFOLIO fade out 폐기 — Letter Explosion transition 이 letters 흩어짐으로 대체.
+         * title-group opacity 0 되면 letters 도 안 보여서 explosion 효과 X.
          */
-        if (titleGroupEl) {
-          ScrollTrigger.create({
-            trigger:    section,
-            start:      'bottom bottom',
-            end:        'bottom top',
-            onEnter:    () => gsap.to(titleGroupEl, { opacity: 0, duration: 0.4, ease: 'power2.out' }),
-            onLeaveBack:() => gsap.to(titleGroupEl, { opacity: 1, duration: 0.4, ease: 'power2.out' }),
-          })
-        }
 
-        /* Section transition 폐기 — 사용자 의도 재확인 후 재구현 */
+        /* Letter Explosion 일시 제거 — PORTFOLIO entrance 검증용 */
 
         /* ── E. Scroll cue fade-out ──────────────────────────────────
          * top~5% — 첫 스크롤에 즉시 소멸.
@@ -187,7 +178,7 @@ export function Hero() {
           {
             y: 0,
             opacity: 1,
-            duration: 0.55,
+            duration: 0.75,
             ease: 'power4.out',
             stagger: 0.22,
           },
@@ -206,6 +197,65 @@ export function Hero() {
     }, section)
 
     return () => ctx.revert()
+  }, [entered, reduced, isMobile])
+
+  /* ── Hero → About zoom transition (scrub 패턴) ──────────────────
+   * 사용자 스크롤 = zoom 진행도 1:1 동기화. Hero h-[200vh] 안에서 진행 → viewport 항상 Hero 안 → 다크 미리 노출 X.
+   * start: 사용자 살짝 스크롤 시작. end: Hero 끝 도달 = 검정 가득 + About 진입.
+   * Phase 1: title-group 중앙으로 이동. Phase 2: 확대. Phase 3: 검정 overlay fade in.
+   */
+  useEffect(() => {
+    if (reduced || isMobile) return
+    if (!entered) return
+    const section = sectionRef.current
+    if (!section) return
+
+    registerGsap()
+    const titleGroup = section.querySelector<HTMLElement>('[data-hero-title-group]')
+    if (!titleGroup) return
+
+    /* ── Ink Fill 복원 (Inverted Cutout SVG mask 폐기) ─────────────
+     * 글자 색 (#0a0a0a) + Hero bg 다크 트윈 → viewport 점진 다크 → about 자연 연결.
+     */
+    const tl = gsap.timeline()
+
+    tl.to(titleGroup, { y: '-38vh', ease: 'power2.inOut', duration: 0.35 }, 0)
+    tl.to(titleGroup, {
+      scale: 32,
+      ease: 'power3.in',
+      transformOrigin: '50% 50%',
+      duration: 0.55,
+    }, 0.35)
+    tl.to(section, {
+      backgroundColor: '#0A0A0A',
+      ease: 'power1.in',
+      duration: 0.48,
+    }, 0.42)
+
+    // title-group fixed 가 viewport 따라옴 → zoom 끝 후 다른 섹션 침범. 마지막에 opacity 0.
+    tl.to(titleGroup, { autoAlpha: 0, duration: 0.05 }, 0.93)
+
+    tl.to({}, {}, 1.0)
+
+    // pin 폐기 — pin 이 page height 변화 → AboutIndex 등 다른 ScrollTrigger position 캐시 깨뜨림.
+    // 대신 Hero h-[200vh] + about wrapper z-[1] -mt-[100vh] (Hero z-2 가 위 = about 가려짐) 으로
+    // viewport 안 다크 미리 노출 차단. AboutIndex 자체 효과 그대로 보존.
+    const st = ScrollTrigger.create({
+      trigger: section,
+      start: 'top top',
+      end: 'bottom top',
+      scrub: 1,
+      animation: tl,
+      onLeave: () => {
+        // zoom 완료 후 title-group 강제 hide. display:none 으로 GSAP 영향 차단 (잔상 방지).
+        titleGroup.style.display = 'none'
+        gsap.set(section, { backgroundColor: '#0A0A0A' })
+        tl.progress(1).pause()
+        st.kill()
+      },
+    })
+
+    return () => { st.kill(); tl.kill() }
   }, [entered, reduced, isMobile])
 
   /* ── entrance wrapper style ─────────────────────────────────────
@@ -261,12 +311,12 @@ export function Hero() {
           {/* 캡션 박스 — 인트로 카드와 동일 톤 (mono 3줄) */}
           <div
             data-hero-para
-            className="text-center font-mono uppercase text-ink-primary"
-            style={{ fontSize: 11, lineHeight: 1.75, letterSpacing: '0.14em' }}
+            className="text-center uppercase text-ink-primary"
+            style={{ fontSize: 11, lineHeight: 1.75, letterSpacing: '0.14em', fontFamily: "'IBM Plex Mono', 'Pretendard Variable', sans-serif" }}
           >
-            <div style={{ fontWeight: 600 }}>PARK MINJOO</div>
-            <div style={{ opacity: 0.7 }}>UX/UI Designer &amp; Web Publisher</div>
-            <div style={{ opacity: 0.4 }}>Seoul · 2026</div>
+            <div style={{ fontWeight: 600 }}>박민주 / PARK MINJOO</div>
+            <div style={{ opacity: 0.7 }}>UX/UI 디자이너 &amp; 웹 퍼블리셔</div>
+            <div style={{ opacity: 0.4 }}>2026</div>
           </div>
         </div>
 
@@ -282,6 +332,7 @@ export function Hero() {
   }
 
   return (
+    <>
     <div style={entranceStyle}>
     {/* 별가루 — Hero 진입 후 PORTFOLIO 글자 뒤로 떠다님 (cubiflow 톤) */}
     <ParticlesBg />
@@ -291,7 +342,7 @@ export function Hero() {
       className={
         reduced
           ? 'relative z-[2] h-screen-dvh bg-hero-bg'
-          : 'relative z-[2] h-[240vh] bg-hero-bg overflow-visible'
+          : 'relative z-[2] h-[200vh] bg-hero-bg overflow-visible'
       }
       data-section="intro"
     >
@@ -334,12 +385,12 @@ export function Hero() {
       */}
       <div
         data-hero-para
-        className="absolute z-[31] inset-x-0 top-[28%] text-center font-mono uppercase text-ink-primary"
-        style={{ fontSize: 12, lineHeight: 1.75, letterSpacing: '0.14em' }}
+        className="absolute z-[31] inset-x-0 top-[28%] text-center uppercase text-ink-primary"
+        style={{ fontSize: 12, lineHeight: 1.75, letterSpacing: '0.14em', fontFamily: "'IBM Plex Mono', 'Pretendard Variable', sans-serif" }}
       >
-        <div style={{ fontWeight: 600 }}>PARK MINJOO</div>
-        <div style={{ opacity: 0.7 }}>UX/UI Designer &amp; Web Publisher</div>
-        <div style={{ opacity: 0.4 }}>Seoul · 2026</div>
+        <div style={{ fontWeight: 600 }}>박민주 / PARK MINJOO</div>
+        <div style={{ opacity: 0.7 }}>UX/UI 디자이너 &amp; 웹 퍼블리셔</div>
+        <div style={{ opacity: 0.4 }}>2026</div>
       </div>
 
       {/*
@@ -361,8 +412,8 @@ export function Hero() {
         About 진입 후 자동 fade out (z-[28] PORTFOLIO z-30 아래, 캡션 z-31 아래).
         position fixed — viewport bottom 14vh 에 sticky, 잡지 챕터 표지 어휘.
       */}
-      {/* Section transition — 사용자 의도 재확인 후 재설계 */}
     </section>
     </div>
+    </>
   )
 }

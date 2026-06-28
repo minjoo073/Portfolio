@@ -2,7 +2,6 @@ import { about } from '@/data/about'
 import { SectionLabel } from '@/components/primitives/SectionLabel'
 import { StatementText } from './StatementText'
 import { AboutIndex } from './AboutIndex'
-import { WaveEdge } from './WaveEdge'
 
 /**
  * About Me — 2단 구조 (다크 배경):
@@ -16,14 +15,7 @@ export function About() {
       className="bg-dark text-ink-inverse relative"
       data-section="about"
     >
-      {/* 검정 윗 경계 — 살짝 출렁이는 물결. 텍스트는 이 뒤로 내려감(기존 리빌). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[170px] md:h-[230px]"
-        style={{ transform: 'translateY(calc(-100% + 1px))' }}
-      >
-        <WaveEdge />
-      </div>
+      {/* WaveEdge 폐기 — 출렁이는 물결 경계 제거 (사용자 요청) */}
 
       {/* 모바일: 상단 여백 축소(검정 빈공간 제거) / md+: 95vh (PORTFOLIO 리빌 여백) */}
       <div
