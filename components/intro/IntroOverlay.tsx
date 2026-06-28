@@ -620,8 +620,16 @@ export function IntroOverlay() {
     window.addEventListener('touchmove', blockScroll, { capture: true, passive: false })
 
     return () => {
-      window.removeEventListener('wheel',     blockScroll, { capture: true } as EventListenerOptions)
-      window.removeEventListener('touchmove', blockScroll, { capture: true } as EventListenerOptions)
+      // Hero entrance 완료 이벤트 listener (정확 동기) + 안전 fallback 5000ms
+      let removed = false
+      const safeRemove = () => {
+        if (removed) return
+        removed = true
+        window.removeEventListener('wheel',     blockScroll, { capture: true } as EventListenerOptions)
+        window.removeEventListener('touchmove', blockScroll, { capture: true } as EventListenerOptions)
+      }
+      window.addEventListener('hero:entranceEnd', safeRemove, { once: true })
+      window.setTimeout(safeRemove, 5000)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -632,20 +640,22 @@ export function IntroOverlay() {
 
   /* ── helpers ────────────────────────────────────────────────── */
   function unlock() {
-    // 1) overflow 풀기 *전* 에 scroll 위치 강제 0 — wheel 누적 무효화
+    // Lenis 내부 velocity/target 강제 0 reset (private API) — wheel 누적 사전 차단.
+    // RAF 후 scrollTo 폐기 — 사용자 첫 wheel 직후 호출 시 누적 reset 으로 "위로 올라감" 발생.
+    const lenis = lenisRef.current as unknown as {
+      velocity?: number; animatedScroll?: number; targetScroll?: number;
+    } | null
+    if (lenis) {
+      if (typeof lenis.velocity === 'number') lenis.velocity = 0
+      if (typeof lenis.animatedScroll === 'number') lenis.animatedScroll = 0
+      if (typeof lenis.targetScroll === 'number') lenis.targetScroll = 0
+    }
     lenisRef.current?.scrollTo(0, { immediate: true, force: true, lock: true, duration: 0 })
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
 
-    // 2) overflow 풀림 + Lenis 재개
     document.body.style.overflow    = ''
     document.documentElement.style.overflow = ''
     lenisRef.current?.start()
-
-    // 3) 안전망 — RAF 후 한 번 더 강제 0 (Lenis 내부 누적 방지)
-    requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
-      lenisRef.current?.scrollTo(0, { immediate: true, force: true, lock: true, duration: 0 })
-    })
   }
 
   function exitNow() {
@@ -702,11 +712,19 @@ export function IntroOverlay() {
 
   /* (별가루는 page 레벨 <ParticlesBg /> 가 담당 — 인트로 unmount 후에도 영구 유지) */
 
-  /* ── ZOOM 완료 콜백 — 로더 숨기고 chrome slide-in ───────────── */
+  /* ── ZOOM 완료 콜백 — 로더 숨김 (chrome 는 setTimeout 으로 별도 미리 표시) */
   const handleZoomComplete = useCallback(() => {
     setShowLoader(false)
-    setChromeVisible(true)
   }, [])
+
+  /* ── Chrome 시점 분리 — ZOOM 끝 (6.2s) 까지 기다리지 않고 ZOOM 진행 중반(5s)에 미리 slide-in
+   * → 사용자 체감 "원 등장 후 텍스트 빠르게" + 마지막 chrome transition 900ms 가 sphere 자라는 동안 진행
+   */
+  useEffect(() => {
+    if (reduced) return
+    const t = window.setTimeout(() => setChromeVisible(true), 5000)
+    return () => window.clearTimeout(t)
+  }, [reduced])
 
   /* ── sphere exit 시작
    * 0) 누적 wheel 무효화 — page scroll 강제 최상단 (사용자가 wheel 한 양이
@@ -733,10 +751,15 @@ export function IntroOverlay() {
    */
   const handleExitComplete = useCallback(() => {
     setVisible(false)
-    // Hero entrance 거의 끝날 때까지 lock 유지 (총 ~1.2s)
-    window.setTimeout(() => {
+    // Hero entrance 완료 이벤트 listener (정확 동기) + 안전 fallback setTimeout 5000ms
+    let unlocked = false
+    const safeUnlock = () => {
+      if (unlocked) return
+      unlocked = true
       unlock()
-    }, 500)
+    }
+    window.addEventListener('hero:entranceEnd', safeUnlock, { once: true })
+    window.setTimeout(safeUnlock, 5000)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

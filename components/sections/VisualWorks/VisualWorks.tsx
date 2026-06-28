@@ -28,46 +28,42 @@ export function VisualWorks() {
   const transitionRef = useRef<HTMLDivElement>(null)
   const labelRef = useRef<HTMLDivElement>(null)
 
-  // hairline sweep transition (03 → 04) — sticky 로 *제자리에서 그려지는* 챕터 전환
-  // outer 180vh / sticky 100vh → 잡힘 80vh. 선이 화면 가운데 머문 채 좌→우로 그려지고
-  // 라벨이 페이드 → 다 그려진 뒤 짧게 hold 후 풀림. (단순 scrub 1개 — 핀+스냅 조합 아님)
+  // (Visual ─── Works) — Content&Marketing 동일 패턴: 가운데 선이 좌우로 벌어지면서
+  // 좌/우 텍스트가 양쪽으로 밀려나는 효과. sticky scrub.
+  const lineWidth = isMobile ? '30vw' : '60vw'
   useEffect(() => {
     const el = transitionRef.current
     if (!el) return
 
     registerGsap()
     const line = el.querySelector<HTMLElement>('[data-vw-sweep]')
-    const label = el.querySelector<HTMLElement>('[data-vw-sweep-label]')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     if (reduced) {
-      if (line) gsap.set(line, { scaleX: 1 })
-      if (label) gsap.set(label, { opacity: 1, y: 0 })
+      if (line) gsap.set(line, { width: lineWidth })
       return
     }
 
     const ctx = gsap.context(() => {
       if (!line) return
-      gsap.set(line, { scaleX: 0, transformOrigin: 'left center' })
-      if (label) gsap.set(label, { opacity: 0, y: 8 })
+      gsap.set(line, { width: 0 })
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: el,
           start: 'top top',
-          end: '+=80%',
-          scrub: 0.8,
+          end: '+=70%',
+          scrub: 0.6,
           invalidateOnRefresh: true,
         },
       })
-      tl.to(line, { scaleX: 1, ease: 'power2.inOut', duration: 0.7 }, 0)
-      if (label) tl.to(label, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.3 }, 0.45)
+      tl.to(line, { width: lineWidth, ease: 'power3.inOut', duration: 0.55 }, 0)
 
       gsap.delayedCall(0.4, () => ScrollTrigger.refresh())
     }, el)
 
     return () => ctx.revert()
-  }, [])
+  }, [isMobile, lineWidth])
 
   // 라벨 stagger fade-in (onEnter 1회)
   useEffect(() => {
@@ -176,19 +172,16 @@ export function VisualWorks() {
         style={{ height: '180vh' }}
         aria-hidden
       >
-        <div className="sticky top-0 flex h-screen flex-col items-center justify-center gap-5 px-side-m md:px-side-t xl:px-side-d">
-          <span
-            data-vw-sweep-label
-            className="font-mono text-label uppercase tracking-[0.2em] text-ink-inverse/55"
-            style={{ opacity: 0 }}
-          >
-            04 — Visual Works
-          </span>
+        <div className="sticky top-0 h-screen w-full">
+          {/* (Visual ─── Works) — Content&Marketing 동일 패턴: viewport 전체 width 안 가운데 정렬 */}
           <div
-            data-vw-sweep
-            className="h-[2px] w-full bg-ink-inverse/45"
-            style={{ transform: 'scaleX(0)', transformOrigin: 'left center' }}
-          />
+            className="absolute left-0 right-0 flex items-center justify-center font-mono text-base md:text-lg uppercase tracking-[0.08em] text-ink-inverse/95"
+            style={{ top: '50%', transform: 'translateY(-50%)' }}
+          >
+            <span className="whitespace-nowrap">(Visual&nbsp;</span>
+            <div data-vw-sweep className="h-px bg-ink-inverse/60" style={{ width: 0 }} />
+            <span className="whitespace-nowrap">&nbsp;Works)</span>
+          </div>
         </div>
       </div>
 

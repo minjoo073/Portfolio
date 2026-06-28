@@ -47,6 +47,7 @@ export function Hero() {
    * 인트로 없이 직접 진입(새로고침·해시 진입)이면 즉시 entered=true.
    */
   const [entered, setEntered] = useState(false)
+  const darkOverlayRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     if (reduced) {
       setEntered(true)
@@ -167,6 +168,8 @@ export function Hero() {
               }
             )
           }
+          // entrance 완료 이벤트 — IntroOverlay 의 unlock listener 가 정확한 시점에 lock 해제
+          window.dispatchEvent(new CustomEvent('hero:entranceEnd'))
         },
       })
 
@@ -214,23 +217,23 @@ export function Hero() {
     const titleGroup = section.querySelector<HTMLElement>('[data-hero-title-group]')
     if (!titleGroup) return
 
-    /* ── Ink Fill 복원 (Inverted Cutout SVG mask 폐기) ─────────────
-     * 글자 색 (#0a0a0a) + Hero bg 다크 트윈 → viewport 점진 다크 → about 자연 연결.
-     */
+    /* ── Ink Fill 복원 — scrub 0.3 자체 smoothing + monotonic guard 조합 */
     const tl = gsap.timeline()
 
     tl.to(titleGroup, { y: '-38vh', ease: 'power2.inOut', duration: 0.35 }, 0)
     tl.to(titleGroup, {
       scale: 32,
-      ease: 'power3.in',
+      ease: 'none',
       transformOrigin: '50% 50%',
-      duration: 0.55,
+      duration: 0.7,
     }, 0.35)
-    tl.to(section, {
-      backgroundColor: '#0A0A0A',
-      ease: 'power1.in',
-      duration: 0.48,
-    }, 0.42)
+    // backgroundColor 트윈 폐기 — 매 frame paint 비용 → 주춤 원인.
+    // 별도 fixed dark div 의 opacity 트윈 (GPU composite, paint X)
+    const darkOverlay = darkOverlayRef.current
+    if (darkOverlay) {
+      gsap.set(darkOverlay, { autoAlpha: 0 })
+      tl.to(darkOverlay, { autoAlpha: 1, ease: 'power1.in', duration: 0.48 }, 0.42)
+    }
 
     // title-group fixed 가 viewport 따라옴 → zoom 끝 후 다른 섹션 침범. 마지막에 opacity 0.
     tl.to(titleGroup, { autoAlpha: 0, duration: 0.05 }, 0.93)
@@ -240,20 +243,45 @@ export function Hero() {
     // pin 폐기 — pin 이 page height 변화 → AboutIndex 등 다른 ScrollTrigger position 캐시 깨뜨림.
     // 대신 Hero h-[200vh] + about wrapper z-[1] -mt-[100vh] (Hero z-2 가 위 = about 가려짐) 으로
     // viewport 안 다크 미리 노출 차단. AboutIndex 자체 효과 그대로 보존.
+    // scrub 0.3 (자체 smoothing) + onUpdate monotonic guard (reverse delta 차단)
+    let lastProgress = 0
     const st = ScrollTrigger.create({
       trigger: section,
       start: 'top top',
       end: 'bottom top',
-      scrub: 1,
+      scrub: 0.3,
       animation: tl,
+      onUpdate: (self) => {
+        // scrub 가 자동 progress set. reverse 감지 시 lastProgress 유지 (timeline 안 reverse)
+        if (self.progress < lastProgress) {
+          tl.progress(lastProgress)
+        } else {
+          lastProgress = self.progress
+        }
+      },
       onLeave: () => {
-        // zoom 완료 후 title-group 강제 hide. display:none 으로 GSAP 영향 차단 (잔상 방지).
         titleGroup.style.display = 'none'
-        gsap.set(section, { backgroundColor: '#0A0A0A' })
         tl.progress(1).pause()
         st.kill()
+        // darkOverlay z-20 가 about wrapper(z-10) 가림 → fade out 후 display:none 완전 제거 → AboutIndex 정상 노출
+        if (darkOverlay) {
+          gsap.set(darkOverlay, { autoAlpha: 1 })
+          gsap.to(darkOverlay, {
+            autoAlpha: 0, duration: 0.2, ease: 'power2.out',
+            onComplete: () => {
+              darkOverlay.style.display = 'none'
+              // ScrollTrigger.refresh() 제거 — 사용자 scroll 도중 모든 trigger 재측정 = CPU 스파이크 + 버벅임
+            },
+          })
+        }
+      },
+      onEnterBack: () => {
+        titleGroup.style.display = ''
+        lastProgress = 0
+        tl.progress(0).pause()
       },
     })
+    // ScrollTrigger.refresh() 폐기 — 사용자 scroll 도중 호출 시 CPU 스파이크
 
     return () => { st.kill(); tl.kill() }
   }, [entered, reduced, isMobile])
@@ -333,6 +361,21 @@ export function Hero() {
 
   return (
     <>
+    {/* dark overlay — backgroundColor 트윈 대체 (GPU 가속 opacity, paint 비용 X) */}
+    <div
+      ref={darkOverlayRef}
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: '#0A0A0A',
+        opacity: 0,
+        visibility: 'hidden',
+        zIndex: 20,  // Hero section z-2 위 (색 변화 visible) + title-group z-30 아래 (글자가 위)
+        pointerEvents: 'none',
+        willChange: 'opacity',
+      }}
+    />
     <div style={entranceStyle}>
     {/* 별가루 — Hero 진입 후 PORTFOLIO 글자 뒤로 떠다님 (cubiflow 톤) */}
     <ParticlesBg />
