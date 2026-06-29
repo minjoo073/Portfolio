@@ -291,11 +291,10 @@ export function Hero() {
    * 인트로 카드들이 위로 흘러 사라지는 흐름의 연속 → 두 섹션 유기적 연결.
    */
   const entranceStyle: React.CSSProperties = {
-    // wrapper 는 즉시 등장 (글자 stagger 가 entrance 모션을 담당)
-    // 1.2s opacity fade 로 두면 글자 떨어지는 초반이 wrapper opacity 0 에 가려져 안 보임
     opacity: entered ? 1 : 0,
     transition: reduced ? 'none' : 'opacity 250ms ease-out',
-    willChange: entered ? 'auto' : 'opacity',
+    // willChange 제거 — layer promotion 의 활성/해제 변화 시점에 fixed child(title-group) 의
+    // containing block 이 wrapper layer ↔ viewport 변경되어 letter 위치 jump 발생.
   }
 
   /*
