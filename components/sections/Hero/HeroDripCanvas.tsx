@@ -125,8 +125,8 @@ export function HeroDripCanvas({ progressRef, visible }: Props) {
 
     /* ── resize ─────────────────────────────────────────────────── */
     function onResize() {
-      const w = container.clientWidth
-      const h = container.clientHeight
+      const w = container!.clientWidth
+      const h = container!.clientHeight
       renderer.setSize(w, h)
       // camera frustum = container aspect 에 맞춰 plane 크기 조정
       const containerAspect = w / h

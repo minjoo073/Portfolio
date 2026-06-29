@@ -552,7 +552,7 @@ function GlobeScene({ onZoomComplete, onExitStart, onExitComplete }: GlobeSceneP
       isDragging = true
       dragLastX = e.clientX
       dragLastY = e.clientY
-      canvas.style.cursor = 'grabbing'
+      canvas!.style.cursor = 'grabbing'
     }
     function onPointerMove(e: PointerEvent) {
       if (!isDragging) return
@@ -565,9 +565,9 @@ function GlobeScene({ onZoomComplete, onExitStart, onExitComplete }: GlobeSceneP
     }
     function onPointerUp() {
       isDragging = false
-      canvas.style.cursor = 'grab'
+      canvas!.style.cursor = 'grab'
     }
-    canvas.style.cursor = 'grab'
+    canvas!.style.cursor = 'grab'
 
     window.addEventListener('wheel', onWheel, { passive: false })
     window.addEventListener('touchstart', onTouchStart, { passive: true })
