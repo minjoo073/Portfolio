@@ -37,10 +37,27 @@ export function AboutIndex() {
       const targets = gsap.utils.toArray<HTMLElement>('[data-reveal]')
       if (!targets.length) return
 
-      // 초기: 하단 100% 클립 (가림) + 살짝 내려둠
-      gsap.set(targets, { clipPath: 'inset(0% 0% 100% 0%)', y: 8 })
+      // 옵션 3: 초기 = 부드러운 opacity + y (clip-path 하드 엣지 폐기)
+      gsap.set(targets, { opacity: 0, y: 30 })
+      // sticky wrapper 진입 단계 fade-in (outer 가 viewport 진입 ~ outer top 도달 사이)
+      gsap.set(content, { opacity: 0, y: 40 })
 
-      // scrub timeline — sticky 진행률 따라 stagger reveal
+      // sticky wrapper 자체 fade-in — outer 진입 단계
+      gsap.fromTo(
+        content,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1, y: 0, ease: 'power2.out',
+          scrollTrigger: {
+            trigger: outer,
+            start: 'top bottom',
+            end: 'top top',
+            scrub: 0.6,
+          },
+        }
+      )
+
+      // 내부 data-reveal element stagger reveal — sticky 활성 후 진행
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: outer,
@@ -54,7 +71,7 @@ export function AboutIndex() {
         tl.to(
           target,
           {
-            clipPath: 'inset(0% 0% 0% 0%)',
+            opacity: 1,
             y: 0,
             ease: 'power3.out',
             duration: 0.6,

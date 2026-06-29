@@ -215,70 +215,65 @@ export function Hero() {
 
     registerGsap()
     const titleGroup = section.querySelector<HTMLElement>('[data-hero-title-group]')
-    if (!titleGroup) return
+    const titleH1 = section.querySelector<HTMLElement>('[data-hero-title]')
+    if (!titleGroup || !titleH1) return
 
-    /* ── Ink Fill 복원 — scrub 0.3 자체 smoothing + monotonic guard 조합 */
+    /* ── h1 직접 transform 시뮬 (WebGL canvas 폐기) ────────────────
+     * Phase A (0~0.3): translateY -15vh — 텍스트 위로 자연 이동 (스크롤 인지)
+     * Phase B (0.3~0.85): scaleY 1→3 + translateY 아래로 + blur — 아이스크림 녹음
+     * Phase C (0.55~1.0): darkOverlay opacity 1 — about bg-dark 합체
+     */
     const tl = gsap.timeline()
-
-    tl.to(titleGroup, { y: '-38vh', ease: 'power2.inOut', duration: 0.35 }, 0)
-    tl.to(titleGroup, {
-      scale: 32,
-      ease: 'none',
-      transformOrigin: '50% 50%',
-      duration: 0.7,
-    }, 0.35)
-    // backgroundColor 트윈 폐기 — 매 frame paint 비용 → 주춤 원인.
-    // 별도 fixed dark div 의 opacity 트윈 (GPU composite, paint X)
     const darkOverlay = darkOverlayRef.current
-    if (darkOverlay) {
-      gsap.set(darkOverlay, { autoAlpha: 0 })
-      tl.to(darkOverlay, { autoAlpha: 1, ease: 'power1.in', duration: 0.48 }, 0.42)
-    }
+    if (darkOverlay) gsap.set(darkOverlay, { autoAlpha: 0 })
+    gsap.set(titleH1, { clearProps: 'transform,filter', transformOrigin: 'top center' })
 
-    // title-group fixed 가 viewport 따라옴 → zoom 끝 후 다른 섹션 침범. 마지막에 opacity 0.
-    tl.to(titleGroup, { autoAlpha: 0, duration: 0.05 }, 0.93)
+    // letters 각각 transform 위해 selector
+    const letters = gsap.utils.toArray<HTMLElement>('[data-hero-letter]', section)
+    gsap.set(letters, { transformOrigin: 'top center', clearProps: 'filter' })
+
+    // Phase A — h1 위로 자연 이동
+    tl.to(titleH1, { y: '-15vh', ease: 'power2.inOut', duration: 0.3 }, 0)
+    // Phase B — 글자별 stagger drip (선명, blur X — scaleY stretch + 아래로 흘러내림)
+    tl.to(letters, {
+      scaleY: 3.5,
+      y: '+=28vh',
+      ease: 'power2.in',
+      duration: 0.5,
+      stagger: { each: 0.025, from: 'random' },
+    }, 0.3)
+    // 글자 자체 fade out (drip 끝)
+    tl.to(letters, { autoAlpha: 0, ease: 'power2.in', duration: 0.2, stagger: 0.02 }, 0.7)
+    // Phase C — darkOverlay
+    if (darkOverlay) tl.to(darkOverlay, { autoAlpha: 1, ease: 'power1.in', duration: 0.4 }, 0.5)
 
     tl.to({}, {}, 1.0)
 
     // pin 폐기 — pin 이 page height 변화 → AboutIndex 등 다른 ScrollTrigger position 캐시 깨뜨림.
     // 대신 Hero h-[200vh] + about wrapper z-[1] -mt-[100vh] (Hero z-2 가 위 = about 가려짐) 으로
     // viewport 안 다크 미리 노출 차단. AboutIndex 자체 효과 그대로 보존.
-    // scrub 0.3 (자체 smoothing) + onUpdate monotonic guard (reverse delta 차단)
-    let lastProgress = 0
+    // scrub 0.3 (자체 smoothing) — monotonic guard 폐기, 역스크롤 시 자연 reverse 복원
     const st = ScrollTrigger.create({
       trigger: section,
       start: 'top top',
       end: 'bottom top',
       scrub: 0.3,
       animation: tl,
-      onUpdate: (self) => {
-        // scrub 가 자동 progress set. reverse 감지 시 lastProgress 유지 (timeline 안 reverse)
-        if (self.progress < lastProgress) {
-          tl.progress(lastProgress)
-        } else {
-          lastProgress = self.progress
-        }
-      },
       onLeave: () => {
+        // forward 통과 시 — 다음 섹션 잔상 차단 (display none) + darkOverlay fade out (about 노출)
         titleGroup.style.display = 'none'
-        tl.progress(1).pause()
-        st.kill()
-        // darkOverlay z-20 가 about wrapper(z-10) 가림 → fade out 후 display:none 완전 제거 → AboutIndex 정상 노출
         if (darkOverlay) {
-          gsap.set(darkOverlay, { autoAlpha: 1 })
           gsap.to(darkOverlay, {
             autoAlpha: 0, duration: 0.2, ease: 'power2.out',
-            onComplete: () => {
-              darkOverlay.style.display = 'none'
-              // ScrollTrigger.refresh() 제거 — 사용자 scroll 도중 모든 trigger 재측정 = CPU 스파이크 + 버벅임
-            },
+            onComplete: () => { darkOverlay.style.display = 'none' },
           })
         }
+        // st.kill() / tl.progress(1).pause() 폐기 — 역스크롤 시 자연 reverse 위해 scrub 유지
       },
       onEnterBack: () => {
+        // 역스크롤 진입 시 display 만 복원. scrub timeline 이 사용자 scroll 따라 자동 갱신.
         titleGroup.style.display = ''
-        lastProgress = 0
-        tl.progress(0).pause()
+        if (darkOverlay) darkOverlay.style.display = ''
       },
     })
     // ScrollTrigger.refresh() 폐기 — 사용자 scroll 도중 호출 시 CPU 스파이크
@@ -360,7 +355,7 @@ export function Hero() {
 
   return (
     <>
-    {/* dark overlay — backgroundColor 트윈 대체 (GPU 가속 opacity, paint 비용 X) */}
+    {/* dark overlay — about 진입 직전 검정 fade in */}
     <div
       ref={darkOverlayRef}
       aria-hidden="true"
@@ -370,7 +365,7 @@ export function Hero() {
         backgroundColor: '#0A0A0A',
         opacity: 0,
         visibility: 'hidden',
-        zIndex: 20,  // Hero section z-2 위 (색 변화 visible) + title-group z-30 아래 (글자가 위)
+        zIndex: 20,
         pointerEvents: 'none',
         willChange: 'opacity',
       }}
@@ -398,10 +393,7 @@ export function Hero() {
         data-hero-title-group
         className="fixed inset-x-0 bottom-[4vh] z-[30] pointer-events-none"
       >
-        {/*
-          [h1] 글자별 span split — entrance 시 한 글자씩 위에서 떨어짐 (data-hero-letter).
-          fixed 부모 안 block — viewport 에 항상 같은 위치 (스크롤 시 따라옴).
-        */}
+        {/* filter 는 h1 (글자 element) 에만 적용 — 페이지 전체 흔들림 차단, 글자만 액체 morph */}
         <h1
           data-hero-title
           aria-label="PORTFOLIO"

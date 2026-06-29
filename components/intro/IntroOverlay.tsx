@@ -43,8 +43,10 @@ const DAMP_GLOBE    = 0.965
 const SMOOTH_LERP   = 0.08
 const MAX_VEL_GLOBE = 0.018
 
-// 반 바퀴 (180° = π) 누적 후 exit — 스크롤 더 빨리 끝남
-const EXIT_RADIANS = Math.PI
+// 스크롤 = camera z 감소 (카메라가 sphere 안으로 진입 — perspective 로 카드 vanishing point 향해 사라짐)
+// EXIT_Z = sphere 안 깊이 (radius 6.8 < EXIT_Z 1.5 → sphere 깊이 ~5 진입). Z_FACTOR 작게 = 천천히 = 공간 즐김.
+const EXIT_Z = 1.5
+const Z_FACTOR = 12
 
 // sphere 시작 스케일 — ○ 마커 크기 정도로 매우 작게
 // (cubiflow: startScale = remPx / finalDiamPx clamp(0.02~0.22))
@@ -358,14 +360,11 @@ function GlobeScene({ onZoomComplete, onExitStart, onExitComplete }: GlobeSceneP
       return
     }
     runTimeline(
-      700,  // IntroOverlay wrapper fade (700ms) 와 매치
+      700,
       easeOutQuint,
       (t) => {
-        // sphere fade out + 미세 축소 (스무스, 갑작스럽지 않게)
-        wrapper.style.transform = `scale(${1 - t * 0.15})`
+        // 사용자 의도: sphere 확대된 채 fade out. 축소 X.
         wrapper.style.opacity = String(1 - t)
-        // 안전망 — exit 진행 중 매 프레임 scroll 위치 강제 0
-        // (사용자 오버스크롤이 lenis target 에 누적되어 글자 영역 잘리는 거 방지)
         if (window.scrollY !== 0) window.scrollTo(0, 0)
       },
       () => {
@@ -469,20 +468,19 @@ function GlobeScene({ onZoomComplete, onExitStart, onExitComplete }: GlobeSceneP
       rafRef.current = requestAnimationFrame(render)
 
       if (phaseRef.current === 'scroll' || phaseRef.current === 'exit') {
-        // 관성 smoothing
         velRef.current += (targetVelRef.current - velRef.current) * SMOOTH_LERP
         targetVelRef.current *= DAMP_GLOBE
         velRef.current = Math.max(-MAX_VEL_GLOBE, Math.min(MAX_VEL_GLOBE, velRef.current))
 
-        group.rotation.y += velRef.current
-        accumulatedRef.current += Math.abs(velRef.current)
-
-        // 720° 누적 달성 → exit 트리거
-        if (
-          phaseRef.current === 'scroll' &&
-          accumulatedRef.current >= EXIT_RADIANS
-        ) {
-          startExit()
+        // 양방향 자유 조절 — forward = sphere 안으로 진입, backward = 빠져나옴. EXIT_Z 도달 시 자동 exit.
+        if (phaseRef.current === 'scroll') {
+          camera.position.z = Math.min(
+            CAMERA_GLOBE_Z,
+            Math.max(EXIT_Z, camera.position.z - velRef.current * Z_FACTOR)
+          )
+          if (camera.position.z <= EXIT_Z) {
+            startExit()
+          }
         }
       }
 
@@ -544,9 +542,39 @@ function GlobeScene({ onZoomComplete, onExitStart, onExitComplete }: GlobeSceneP
       targetVelRef.current += dy * TOUCH_TO_VEL
     }
 
+    /* ── pointer drag 핸들러 (마우스로 sphere 회전 — 3D 공간 진입 인상) ─── */
+    let isDragging = false
+    let dragLastX = 0
+    let dragLastY = 0
+    const DRAG_ROT_FACTOR = 0.005
+    function onPointerDown(e: PointerEvent) {
+      if (phaseRef.current !== 'scroll') return
+      isDragging = true
+      dragLastX = e.clientX
+      dragLastY = e.clientY
+      canvas.style.cursor = 'grabbing'
+    }
+    function onPointerMove(e: PointerEvent) {
+      if (!isDragging) return
+      const dx = e.clientX - dragLastX
+      const dy = e.clientY - dragLastY
+      dragLastX = e.clientX
+      dragLastY = e.clientY
+      group.rotation.y += dx * DRAG_ROT_FACTOR
+      group.rotation.x += dy * DRAG_ROT_FACTOR
+    }
+    function onPointerUp() {
+      isDragging = false
+      canvas.style.cursor = 'grab'
+    }
+    canvas.style.cursor = 'grab'
+
     window.addEventListener('wheel', onWheel, { passive: false })
     window.addEventListener('touchstart', onTouchStart, { passive: true })
     window.addEventListener('touchmove', onTouchMove, { passive: false })
+    canvas.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
 
     return () => {
       clearTimeout(loadingTimer)
@@ -557,6 +585,9 @@ function GlobeScene({ onZoomComplete, onExitStart, onExitComplete }: GlobeSceneP
       window.removeEventListener('wheel', onWheel)
       window.removeEventListener('touchstart', onTouchStart)
       window.removeEventListener('touchmove', onTouchMove)
+      canvas.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
       renderer.dispose()
       meshes.forEach((m) => {
         m.geometry.dispose()
