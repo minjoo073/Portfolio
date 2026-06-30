@@ -18,9 +18,18 @@ export const freelanceItems: FreelanceItem[] = [
     description:
       '직접 브랜딩한 코스메틱 브랜드 LUNARE의 커머스 사이트를 카페24 스킨으로 구축한 외주 작업.',
     thumbnail: '/images/freelance/lunare.webp',
+    thumbnailPosition: '5% 50%', // 좌측 텍스트(Light/softest) 안 잘리게 이미지를 우측으로
   },
   {
     index: '02',
+    title: 'LORVÉ',
+    category: 'Cafe24 스킨 · 패션',
+    description:
+      '룩북 형태의 브랜드 LORVÉ를 SS 시즌 겨냥 패션 쇼핑몰로 리뉴얼, 카페24 스킨으로 제작.',
+    thumbnail: '/images/freelance/lorve.webp',
+  },
+  {
+    index: '03',
     title: 'AURÉ',
     category: 'Cafe24 스킨 · 코스메틱',
     description:
@@ -28,19 +37,11 @@ export const freelanceItems: FreelanceItem[] = [
     thumbnail: '/images/freelance/aure.webp',
   },
   {
-    index: '03',
-    title: 'fancive',
-    category: 'Cafe24 스킨 · 패션',
-    description:
-      '룩북 형태의 브랜드 fancive를 SS 시즌 겨냥 패션 쇼핑몰로 리뉴얼, 카페24 스킨으로 제작.',
-    thumbnail: '/images/freelance/fancive.webp',
-  },
-  {
     index: '04',
-    title: '웹네스트',
+    title: 'WEBNEST',
     category: '웹 에이전시 · 웹사이트 구축',
     description:
-      '웹·앱 에이전시 웹네스트의 웹사이트 리뉴얼·구축 외주. 전반 디자인부터 관리자 페이지 포함 구축까지 완료.',
+      '웹·앱 에이전시 WEBNEST의 웹사이트 리뉴얼·구축 외주. 전반 디자인부터 관리자 페이지 포함 구축까지 완료.',
     thumbnail: '/images/freelance/webnest.webp',
   },
 ]

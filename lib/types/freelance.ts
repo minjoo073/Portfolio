@@ -14,6 +14,8 @@ export interface FreelanceItem {
   description: string
   /** 섬네일 경로 — 미지정 시 placeholder 박스 */
   thumbnail?: string
+  /** 섬네일 object-position (예: '20% 50%') — 미지정 시 center. 좌측 텍스트 잘림 방지 등 */
+  thumbnailPosition?: string
   /** 작업 연도 — 예: '2025' */
   year?: string
   /** 외부 링크(라이브 사이트) — 있으면 '↗' 노출 */

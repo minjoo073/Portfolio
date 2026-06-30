@@ -87,17 +87,33 @@ export function FreelanceModal({ open, onClose }: FreelanceModalProps) {
       aria-modal="true"
       aria-label="외주 작업"
       aria-hidden={!open}
-      data-modal-scroll
-      className="fixed inset-0 overflow-y-auto bg-canvas text-ink-primary [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      onClick={onClose}
+      className="fixed inset-0 flex items-center justify-center p-3 sm:p-5 md:p-7 xl:p-8"
       style={{
         zIndex: 500, // z-overlay (nav 100 위)
         opacity: open ? 1 : 0,
         pointerEvents: open ? 'auto' : 'none',
         transition: 'opacity 480ms cubic-bezier(0.16, 1, 0.3, 1)',
+        // 글래스 — 뒤 포트폴리오가 블러+딤으로 비쳐 "포트폴리오 안에 떠 있는 팝업" 느낌
+        backgroundColor: 'rgba(18, 16, 14, 0.30)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
       }}
-      data-lenis-prevent
     >
-      <div className="mx-auto min-h-full max-w-container px-side-m py-16 md:px-side-t md:py-20 xl:px-side-d">
+      {/* 팝업 패널 — 상하좌우 여백 안에 떠 있음, 내부 스크롤. 배경 클릭은 닫힘. */}
+      <div
+        data-modal-scroll
+        data-lenis-prevent
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-[1780px] overflow-y-auto rounded-2xl bg-canvas text-ink-primary [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{
+          maxHeight: '100%',
+          boxShadow: '0 40px 120px -24px rgba(0,0,0,0.5), 0 0 0 1px rgba(17,17,17,0.05)',
+          transform: open ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.985)',
+          transition: 'transform 520ms cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+      <div className="px-8 py-12 sm:px-12 md:px-14 md:py-16 xl:px-[72px] xl:py-20">
         {/* ── 헤더 ─────────────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-6">
           <div
@@ -168,6 +184,7 @@ export function FreelanceModal({ open, onClose }: FreelanceModalProps) {
                       <img
                         src={item.thumbnail}
                         alt={item.title}
+                        style={{ objectPosition: item.thumbnailPosition }}
                         className="h-full w-full object-cover transition-transform duration-500 ease-out-soft group-hover:scale-[1.02]"
                       />
                     ) : (
@@ -198,6 +215,7 @@ export function FreelanceModal({ open, onClose }: FreelanceModalProps) {
             )
           })}
         </ul>
+      </div>
       </div>
     </div>,
     document.body,
