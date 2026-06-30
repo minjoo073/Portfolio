@@ -111,12 +111,13 @@ export function FreelanceModal({ open, onClose }: FreelanceModalProps) {
             <p className="font-mono text-label uppercase tracking-[0.18em] text-ink-muted">
               External · Commissioned — {String(freelanceItems.length).padStart(2, '0')}
             </p>
-            <h2 className="mt-3 font-display text-display-m leading-[1.02]">
+            <h2 className="mt-5 font-display text-display-m leading-[1.02]">
               Client Work
             </h2>
-            <p className="mt-5 max-w-md font-kr text-body leading-relaxed text-ink-muted">
-              의뢰받아 진행한 외주 작업 — Cafe24 커머스 스킨부터 웹 에이전시 사이트
-              구축까지. 케이스 스터디가 아닌 결과물·역할 중심으로 짧게 정리했습니다.
+            <p className="mt-7 max-w-[48rem] font-kr text-body leading-relaxed text-ink-muted">
+              {/* 마침표 기준 두 문장 = 두 줄 */}
+              <span className="block">의뢰받아 진행한 외주 작업 — Cafe24 커머스 스킨부터 웹 에이전시 사이트 구축까지.</span>
+              <span className="block">케이스 스터디가 아닌 결과물·역할 중심으로 짧게 정리했습니다.</span>
             </p>
           </div>
 
