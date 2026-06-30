@@ -1,3 +1,8 @@
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -8,7 +13,11 @@ const nextConfig = {
     deviceSizes: [640, 768, 1024, 1280, 1536, 1920]
   },
   experimental: {
-    optimizePackageImports: ['gsap']
+    optimizePackageImports: ['gsap'],
+    // Next 가 워크스페이스 루트를 잘못 추론해 C:\ 드라이브 루트를 파일 감시 →
+    // pagefile.sys / System Volume Information 등 보호 파일에 Watchpack EINVAL 스팸 +
+    // 감시 범위 과다로 리빌드 저하·dev 불안정. 루트를 이 프로젝트로 고정해 차단.
+    outputFileTracingRoot: __dirname
   },
   // Windows 핫리로드 시 .next/cache/webpack 의 .pack.gz rename 실패로 캐시가 깨져
   // (JSON 매니페스트 파싱 에러 → 500 / CSS 미적용) 반복 발생 → dev 에선 메모리 캐시로 회피.
