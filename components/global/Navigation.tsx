@@ -31,6 +31,8 @@ export function Navigation() {
   const lenis = useLenis()
   const [onLight, setOnLight] = useState(true) // 배경이 밝음 → 어두운 글자
   const [clientOpen, setClientOpen] = useState(false) // 외주(CLIENT) 오버레이
+  // Hero(#intro) 위에선 네비 숨김, About 진입 시 페이드인. 초기값 true(페이지 진입=Hero).
+  const [hidden, setHidden] = useState(true)
 
   const isWork = pathname.startsWith('/work')
 
@@ -59,16 +61,24 @@ export function Navigation() {
       setOnLight(luminance(bg) > 0.5)
     }
 
+    // Hero(#intro) 가 네비 라인을 덮고 있으면 숨김 → About 진입(Hero 하단이 상단 통과) 시 노출.
+    const updateHidden = () => {
+      const intro = document.getElementById('intro')
+      if (!intro) { setHidden(false); return } // Hero 없는 페이지: 항상 노출
+      setHidden(intro.getBoundingClientRect().bottom > 64)
+    }
+
     // 짧은 주기 폴링으로 직접 샘플 — lenis scroll 이벤트 의존(정착 지연 ~2.5s)을 제거.
     // 다크↔라이트 섹션 전환 시 글자색이 120ms 내 즉시 따라감(다크-온-다크 안 보임 방지).
     // elementsFromPoint 1회 + 부모 몇 단계 = 매우 저렴, 8회/초.
+    const tick = () => { sample(); updateHidden() }
     const raf = { id: 0 }
     const schedule = () => {
       cancelAnimationFrame(raf.id)
-      raf.id = requestAnimationFrame(sample)
+      raf.id = requestAnimationFrame(tick)
     }
-    sample()
-    const interval = window.setInterval(sample, 120)
+    tick()
+    const interval = window.setInterval(tick, 120)
     window.addEventListener('resize', schedule)
 
     return () => {
@@ -90,9 +100,12 @@ export function Navigation() {
         // 모바일: flex(메뉴 폭 콘텐츠 기준 → 잘림 방지) / md+: 기존 3등분 grid
         'flex justify-between md:grid md:grid-cols-3 items-center',
         'px-side-m py-5 md:px-side-t md:py-6 xl:px-side-d xl:py-7',
-        'transition-colors duration-300',
+        // Hero 위에선 숨김(opacity 0 + 클릭 불가), About 진입 시 페이드인
+        'transition-[opacity,color] duration-500',
+        hidden ? 'pointer-events-none opacity-0' : 'opacity-100',
         onLight ? 'text-ink-primary' : 'text-ink-inverse'
       )}
+      aria-hidden={hidden}
       aria-label="Primary"
     >
       {/* 좌측 — brand 라벨 (이전 navUtilityLeft © copyright 폐기) */}
