@@ -35,6 +35,8 @@ export interface Project {
   detailAnchor: string
   /** 케이스스터디 정적 경로 — /work/<slug> */
   studyHref?: string
+  /** 케이스스터디 CTA 라벨 — 미지정 시 '제작과정'. 예: KiiiKiii 는 마케팅 기획안이라 '기획 의도' */
+  studyLabel?: string
   /** 라이브 사이트 URL — 실사이트 진입점 */
   siteHref?: string
   /** GitHub 저장소 URL — 깃허브 진입점 */

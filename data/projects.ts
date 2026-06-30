@@ -39,6 +39,7 @@ export const projects: Project[] = [
     variant: 'left',
     visualRatio: '16:10',
     studyHref: '/work/kiikii',
+    studyLabel: '기획 의도', // 제작과정이 아니라 마케팅 방향성 기획안
     siteHref: 'https://kiikii-omega.vercel.app',
   },
   {

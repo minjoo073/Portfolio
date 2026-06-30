@@ -144,7 +144,7 @@ function HeroCard({ project, total }: ProjectCardProps) {
       {project.studyHref ? (
         <a
           href={project.studyHref}
-          aria-label={`${project.title} 제작과정 보기`}
+          aria-label={`${project.title} ${project.studyLabel ?? '제작과정'} 보기`}
           className="absolute inset-0 block"
         >
           <div
@@ -303,7 +303,7 @@ function HeroCard({ project, total }: ProjectCardProps) {
               className="font-kr text-ink-inverse"
               style={{ fontSize: vw(22, 17) }}
             >
-              제작과정
+              {project.studyLabel ?? '제작과정'}
             </span>
             <span className="inline-block text-[18px] text-ink-inverse/70 transition-transform duration-300 group-hover/case:translate-x-1">
               →

@@ -161,7 +161,7 @@ function VisualPanel({ project, index }: VisualPanelProps) {
         {project.studyHref ? (
           <a
             href={project.studyHref}
-            aria-label={`${project.title} 제작과정 보기`}
+            aria-label={`${project.title} ${project.studyLabel ?? '제작과정'} 보기`}
             className="absolute inset-0 block"
           >
             {inner}
@@ -281,7 +281,7 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
               className="font-kr text-ink-inverse"
               style={{ fontSize: vw(22, 18) }}
             >
-              제작과정
+              {project.studyLabel ?? '제작과정'}
             </span>
             <span className="inline-block text-[16px] text-ink-inverse/70 transition-transform duration-300 group-hover/case:translate-x-1">
               →
@@ -449,7 +449,7 @@ function MobileFeaturedCard({ project, total }: { project: Project; total: numbe
       {/* 비주얼 */}
       <div style={{ marginTop: 'clamp(24px, 6vw, 32px)' }}>
         {project.studyHref ? (
-          <a href={project.studyHref} aria-label={`${project.title} 제작과정 보기`} className="block">
+          <a href={project.studyHref} aria-label={`${project.title} ${project.studyLabel ?? '제작과정'} 보기`} className="block">
             {visual}
           </a>
         ) : (
@@ -472,7 +472,7 @@ function MobileFeaturedCard({ project, total }: { project: Project; total: numbe
         {project.studyHref ? (
           <a href={project.studyHref} className="inline-flex w-fit items-center gap-3">
             <span className="h-px w-4 bg-ink-inverse/70" />
-            <span className="font-kr text-ink-inverse" style={{ fontSize: '18px' }}>제작과정</span>
+            <span className="font-kr text-ink-inverse" style={{ fontSize: '18px' }}>{project.studyLabel ?? '제작과정'}</span>
             <span className="text-[16px] text-ink-inverse/70">→</span>
           </a>
         ) : (
