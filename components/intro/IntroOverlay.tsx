@@ -37,16 +37,18 @@ const FILL_DUR = 850   // sphere fade in 살짝 빠르게 (1000 → 850)
 const ZOOM_DUR = 2200  // scale START_SCALE → 1 천천히 (서서히 커짐)
 
 // 구체 회전 물리
-const WHEEL_TO_VEL  = 0.0008
-const TOUCH_TO_VEL  = 0.0018
-const DAMP_GLOBE    = 0.965
+// 민감도·최대속도 낮춤 — 세게 굴려도 한 번에 쑥 들어가지 않고, 천천히 진입하며 구 안을 보게.
+const WHEEL_TO_VEL  = 0.0005   // 0.0008 → 휠 민감도 낮춤 (한 번에 덜 빨라짐)
+const TOUCH_TO_VEL  = 0.0012   // 0.0018 → 터치도 동일 비율로 낮춤
+const DAMP_GLOBE    = 0.974    // 0.965 → 관성 더 오래 — 스크롤 멈춰도 "빨려드는" 여운
 const SMOOTH_LERP   = 0.08
-const MAX_VEL_GLOBE = 0.018
+const MAX_VEL_GLOBE = 0.011    // 0.018 → 최대속도 캡 낮춤 (세게 굴려도 천천히)
 
 // 스크롤 = camera z 감소 (카메라가 sphere 안으로 진입 — perspective 로 카드 vanishing point 향해 사라짐)
-// EXIT_Z = sphere 안 깊이 (radius 6.8 < EXIT_Z 1.5 → sphere 깊이 ~5 진입). Z_FACTOR 작게 = 천천히 = 공간 즐김.
-const EXIT_Z = 1.5
-const Z_FACTOR = 12
+// EXIT_Z 더 깊게(0) — 구 표면만 스치지 않고 중심까지 통과하며 카드가 사방으로 흐르는 vanishing/터널 인상.
+// Z_FACTOR 작게 = 천천히 = 공간 즐김 (같은 속도로 전진 거리 ↓ → 진입 시간 ↑).
+const EXIT_Z = 0.0   // 1.5 → 0 : 구 중심까지 진입 (radius 6.8 전부 통과, 빨려드는 느낌 강화)
+const Z_FACTOR = 7   // 12 → 7 : 전진 속도 늦춤 (진입 거리 길어져 천천히)
 
 // sphere 시작 스케일 — ○ 마커 크기 정도로 매우 작게
 // (cubiflow: startScale = remPx / finalDiamPx clamp(0.02~0.22))
@@ -140,8 +142,8 @@ function Loader({ visible }: { visible: boolean }) {
           position: 'relative',
           display: 'inline-block',
           fontFamily: 'ui-sans-serif, system-ui, sans-serif',
-          fontSize: 18,
-          fontWeight: 500,
+          fontSize: 20,
+          fontWeight: 600,
           lineHeight: 1,
           letterSpacing: '0.08em',
           color: '#1A1A1A',
@@ -166,7 +168,7 @@ function Loader({ visible }: { visible: boolean }) {
             top: '50%',
             transform: 'translateY(-50%)',
             width: 2,
-            height: 20,
+            height: 22,
             backgroundColor: '#1A1A1A',
             animation: 'cfCursorBlink 0.5s steps(2) infinite',
           }}
@@ -175,7 +177,9 @@ function Loader({ visible }: { visible: boolean }) {
       <style>{`
         @keyframes cfTyping {
           from { width: 0 }
-          to   { width: 12.5ch }
+          /* 13.5ch — 텍스트(~11.9ch)보다 넉넉히 커서 배율/줌 반올림에도 마지막 O 안 잘림.
+             12.5ch 는 여유 ~8px 뿐이라 1920 등 일부 배율에서 잘렸음. */
+          to   { width: 13.5ch }
         }
         @keyframes cfCursorBlink {
           0%, 49%   { opacity: 1; }
