@@ -30,6 +30,11 @@ const SLUG_OVERRIDES: Record<string, string> = {
   lp: `.wrap{max-width: 1440px !important; margin-inline: auto !important}`,
   buja: `.wrap{max-width: 1440px !important; margin-inline: auto !important}`,
   // fancive, lunare 는 자체 scale 메커니즘 사용 — 캡 X
+  // kiikii: 한국어 섹션 부제 h2 가 글자 단위로 끊겨 외톨이 음절이 다음 줄로 떨어짐
+  //   (예: 04 CAMPAIGN "…실제 캠페인으로" 의 "로"만 둘째 줄). keep-all 로 어절 단위
+  //   줄바꿈(한 줄로, 공간 부족하면 어절 경계에서 균형 두 줄) + balance 로 줄 길이 조정.
+  //   정적 export 라 소스 수정 대신 부모에서 주입.
+  kiikii: `h2[class*="clamp(1.55rem"]{word-break:keep-all;text-wrap:balance}`,
 }
 
 /**
