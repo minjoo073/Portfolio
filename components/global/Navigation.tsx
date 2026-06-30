@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { navUtilityCenter, navLinks } from '@/data/nav'
 import { useLenis } from '@/lib/hooks/useLenis'
 import { cn } from '@/lib/utils/cn'
+import { FreelanceModal } from '@/components/global/FreelanceModal'
 
 /**
  * 상단 utility bar — 3분할 grid.
@@ -29,6 +30,7 @@ export function Navigation() {
   const pathname = usePathname()
   const lenis = useLenis()
   const [onLight, setOnLight] = useState(true) // 배경이 밝음 → 어두운 글자
+  const [clientOpen, setClientOpen] = useState(false) // 외주(CLIENT) 오버레이
 
   const isWork = pathname.startsWith('/work')
 
@@ -57,39 +59,30 @@ export function Navigation() {
       setOnLight(luminance(bg) > 0.5)
     }
 
-    let raf = 0
+    // 짧은 주기 폴링으로 직접 샘플 — lenis scroll 이벤트 의존(정착 지연 ~2.5s)을 제거.
+    // 다크↔라이트 섹션 전환 시 글자색이 120ms 내 즉시 따라감(다크-온-다크 안 보임 방지).
+    // elementsFromPoint 1회 + 부모 몇 단계 = 매우 저렴, 8회/초.
+    const raf = { id: 0 }
     const schedule = () => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(sample)
+      cancelAnimationFrame(raf.id)
+      raf.id = requestAnimationFrame(sample)
     }
-
-    let detach: (() => void) | null = null
-    if (lenis) {
-      lenis.on('scroll', schedule)
-      detach = () => lenis.off('scroll', schedule)
-    } else {
-      window.addEventListener('scroll', schedule, { passive: true })
-      detach = () => window.removeEventListener('scroll', schedule)
-    }
-    window.addEventListener('resize', schedule)
     sample()
-    // Lenis transform 모드 등 이벤트 누락 대비 가벼운 폴백
-    const t1 = setTimeout(sample, 400)
-    const t2 = setTimeout(sample, 1200)
+    const interval = window.setInterval(sample, 120)
+    window.addEventListener('resize', schedule)
 
     return () => {
-      detach?.()
+      window.clearInterval(interval)
       window.removeEventListener('resize', schedule)
-      cancelAnimationFrame(raf)
-      clearTimeout(t1)
-      clearTimeout(t2)
+      cancelAnimationFrame(raf.id)
     }
-  }, [lenis, isWork])
+  }, [isWork])
 
   // /work/* 경로에서는 케이스스터디 뷰어 자체 헤더를 쓰므로 숨김
   if (isWork) return null
 
   return (
+    <>
     <nav
       ref={ref}
       className={cn(
@@ -116,24 +109,49 @@ export function Navigation() {
 
       {/* 우측 메뉴 */}
       <ul className="flex items-center gap-6 justify-self-end md:gap-8">
-        {navLinks.map(link => (
-          <li key={link.href}>
-            <a
-              href={link.href}
-              className={cn(
-                'font-mono text-label uppercase tracking-[0.08em]',
-                'relative inline-block',
-                'after:absolute after:bottom-[-4px] after:left-0',
-                'after:h-[1px] after:w-0 after:bg-current',
-                'after:transition-all after:duration-300 after:ease-out',
-                'hover:after:w-full'
+        {navLinks.map(link => {
+          const linkClass = cn(
+            'font-mono text-label uppercase tracking-[0.08em]',
+            'relative inline-block',
+            'after:absolute after:bottom-[-4px] after:left-0',
+            'after:h-[1px] after:w-0 after:bg-current',
+            'after:transition-all after:duration-300 after:ease-out',
+            'hover:after:w-full'
+          )
+          return (
+            <li key={link.href}>
+              {link.modal ? (
+                <button
+                  type="button"
+                  onClick={() => setClientOpen(true)}
+                  className={cn(linkClass, 'cursor-pointer')}
+                >
+                  {link.label}
+                </button>
+              ) : (
+                <a
+                  href={link.href}
+                  onClick={(e) => {
+                    // 섹션 top 으로 정확히 정렬 → sticky/horizontal 섹션이 항상 첫 작품부터 보임.
+                    // 네이티브 해시 점프는 위치가 어긋날 수 있어 lenis 로 top 정렬.
+                    if (!link.href.startsWith('#')) return
+                    const target = document.querySelector(link.href)
+                    if (!target) return
+                    e.preventDefault()
+                    if (lenis) lenis.scrollTo(target as HTMLElement, { offset: 0 })
+                    else (target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }}
+                  className={linkClass}
+                >
+                  {link.label}
+                </a>
               )}
-            >
-              {link.label}
-            </a>
-          </li>
-        ))}
+            </li>
+          )
+        })}
       </ul>
     </nav>
+    <FreelanceModal open={clientOpen} onClose={() => setClientOpen(false)} />
+    </>
   )
 }

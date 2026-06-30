@@ -7,7 +7,12 @@ export const navUtilityLeft = '© 2026 PARK MINJOO'
 export const navUtilityCenter = 'PARK MINJOO — UX/UI DESIGNER'
 
 export const navLinks: NavLink[] = [
-  { label: 'WORK', href: '#work' },
+  { label: 'ABOUT', href: '#about-bio' }, // 72vh 리빌 패딩 건너뛰고 이력(스테이트먼트)부터
+  { label: 'WEB', href: '#work' },
+  { label: 'MOBILE', href: '#mobile' },
+  { label: 'MARKETING', href: '#content' },
+  // 외주 — 메인 섹션 X, 클릭 시 풀스크린 오버레이로만 노출
+  { label: 'CLIENT', href: '#client', modal: true },
   { label: 'CONTACT', href: '#contact' }
 ]
 
