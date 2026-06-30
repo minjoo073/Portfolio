@@ -33,6 +33,7 @@ import { registerGsap, gsap, ScrollTrigger } from '@/lib/gsap/config'
 import { useReducedMotionContext } from '@/components/global/ReducedMotionProvider'
 import { useIsMobile } from '@/lib/hooks/useMediaQuery'
 import { ParticlesBg } from '@/components/global/ParticlesBg'
+import { useLenis } from '@/lib/hooks/useLenis'
 
 const TITLE = 'PORTFOLIO'
 
@@ -40,6 +41,9 @@ export function Hero() {
   const reduced  = useReducedMotionContext()
   const isMobile = useIsMobile()
   const sectionRef = useRef<HTMLElement>(null)
+  const lenis = useLenis()
+  const lenisRef = useRef(lenis)
+  lenisRef.current = lenis
 
   /* ── entrance ─────────────────────────────────────────────────────
    * 인트로(IntroOverlay) 가 떠있는 동안에는 Hero 가 가려져 있다가,
@@ -144,6 +148,30 @@ export function Hero() {
     const section = sectionRef.current
     if (!section) return
 
+    /* ── 드롭 중 스크롤 잠금 ─────────────────────────────────────────
+     * PORTFOLIO 글자가 다 떨어지기 전에 스크롤하면 Hero→About zoom transition 이
+     * 동시 발동해 "중간까지 떨어졌다 다시 하단으로" 더블드롭/버퍼링처럼 보임.
+     * → 글자 다 떨어진 뒤(timeline onComplete)에만 스크롤 허용.
+     */
+    const l = lenisRef.current
+    l?.stop()
+    document.body.style.overflow = 'hidden'
+    if (!window.location.hash) window.scrollTo(0, 0) // 해시 진입(딥링크)은 위치 보존
+    const blockScroll = (e: Event) => e.preventDefault()
+    window.addEventListener('wheel', blockScroll, { passive: false })
+    window.addEventListener('touchmove', blockScroll, { passive: false })
+    let unlocked = false
+    const unlockScroll = () => {
+      if (unlocked) return
+      unlocked = true
+      window.removeEventListener('wheel', blockScroll)
+      window.removeEventListener('touchmove', blockScroll)
+      document.body.style.overflow = ''
+      lenisRef.current?.start()
+    }
+    // 안전 폴백 — 어떤 이유로 onComplete 누락 시에도 4s 후 잠금 해제
+    const failSafe = window.setTimeout(unlockScroll, 4000)
+
     registerGsap()
     const ctx = gsap.context(() => {
       const letters = gsap.utils.toArray<HTMLElement>('[data-hero-letter]', section)
@@ -151,6 +179,7 @@ export function Hero() {
 
       const tl = gsap.timeline({
         onComplete: () => {
+          unlockScroll() // 글자 다 떨어진 후 스크롤 허용
           if (para) {
             gsap.fromTo(
               para,
@@ -199,7 +228,11 @@ export function Hero() {
       }
     }, section)
 
-    return () => ctx.revert()
+    return () => {
+      window.clearTimeout(failSafe)
+      unlockScroll()
+      ctx.revert()
+    }
   }, [entered, reduced, isMobile])
 
   /* ── Hero → About zoom transition (scrub 패턴) ──────────────────

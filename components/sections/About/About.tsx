@@ -22,6 +22,9 @@ export function About() {
         className="flex min-h-screen-dvh flex-col px-side-m md:px-side-t xl:px-side-d pt-[14vh] md:pt-[72vh]"
         style={{ paddingBottom: '6vh', rowGap: '4vh' }}
       >
+        {/* 네비 ABOUT 클릭 스크롤 타깃 — 72vh 리빌 패딩을 건너뛰고 이력(스테이트먼트)부터 보이게.
+            섹션 id="about" 는 ScrollProgress 용으로 유지, 네비는 이 앵커로 이동. */}
+        <div id="about-bio" aria-hidden="true" style={{ height: 0 }} />
         <SectionLabel className="self-center text-ink-inverse/70">About Me</SectionLabel>
 
         <StatementText text={about.statement.join(' ')} />
