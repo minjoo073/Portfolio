@@ -90,7 +90,7 @@ export function Experience() {
               <div className="flex items-center gap-5">
                 <span
                   data-ex-label
-                  className="font-mono font-medium uppercase tracking-[0.18em] text-accent"
+                  className="font-mono font-medium uppercase tracking-[0.18em] text-ink-inverse"
                   style={{ fontSize: 'clamp(13px, 0.95vw, 15px)' }}
                 >
                   {group.category}

@@ -199,7 +199,7 @@ export function VisualWorks() {
           <div className="flex flex-col gap-2">
             <span
               data-vw-label-line
-              className="font-mono text-[13px] uppercase tracking-[0.18em] text-accent"
+              className="font-mono text-[13px] uppercase tracking-[0.18em] text-ink-inverse/55"
             >
               04
             </span>
