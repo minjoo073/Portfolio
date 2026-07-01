@@ -207,7 +207,7 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
       <div className="flex justify-end" style={{ marginBottom: vw(8, 6) }}>
         <div style={{ perspective: '600px' }}>
           <span
-            className="font-mono text-ink-inverse/40"
+            className="font-mono text-accent/70"
             style={{
               fontSize: vw(13, 11),
               letterSpacing: '0.16em',
@@ -417,7 +417,7 @@ function MobileFeaturedCard({ project, total }: { project: Project; total: numbe
     >
       {/* 회차 */}
       <span
-        className="font-mono text-ink-inverse/40"
+        className="font-mono text-accent/70"
         style={{ fontSize: '12px', letterSpacing: '0.16em' }}
       >
         {project.index} / {totalStr}

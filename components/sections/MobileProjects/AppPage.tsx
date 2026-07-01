@@ -31,6 +31,9 @@ const INK_55  = 'rgba(248,247,244,0.55)'
 const INK_45  = 'rgba(248,247,244,0.45)'
 const INK_30  = 'rgba(248,247,244,0.30)'
 const HAIR_STR = 'rgba(248,247,244,0.14)'
+// 포인트 컬러 — index eyebrow 전용. tailwind accent 토큰(#D8A9A5)과 동일 값,
+// 이 파일은 인라인 style(INK_* 상수) 패턴이라 로컬 상수로 미러링.
+const ACCENT  = '#D8A9A5'
 
 const MONO = 'var(--font-mono), var(--font-pretendard), monospace'
 const KR = 'var(--font-pretendard), sans-serif'
@@ -276,7 +279,7 @@ function ProjectBody({
           color: INK_55,
         }}
       >
-        <span style={{ color: INK_80 }}>{project.index}</span>
+        <span style={{ color: ACCENT }}>{project.index}</span>
         <span style={{ color: INK_30 }}>—</span>
         <span>{project.category}</span>
         {project.releaseDate && (
@@ -484,7 +487,7 @@ export function AppPage({
             color: INK_55,
           }}
         >
-          <span style={{ color: INK_80 }}>{project.index}</span>
+          <span style={{ color: ACCENT }}>{project.index}</span>
           <span style={{ color: INK_30 }}>—</span>
           <span>{project.category}</span>
           {project.releaseDate && (

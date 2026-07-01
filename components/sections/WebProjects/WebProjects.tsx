@@ -75,7 +75,7 @@ export function WebProjects() {
             }}
           >
             <span
-              className="font-mono text-ink-inverse/25"
+              className="font-mono text-accent/70"
               style={{ fontSize: '12px', letterSpacing: '0.16em' }}
             >
               ARCHIVE

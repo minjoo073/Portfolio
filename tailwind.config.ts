@@ -15,6 +15,10 @@ const config: Config = {
         'dark-soft': '#1A1A1A',
         // Hero 전용 배경 — 쿨 라이트 그레이. canvas(#F8F7F4 웜톤)와 구분, RayRayLab 레퍼런스 톤 근사.
         'hero-bg': '#EBEBEB',
+        // 포인트 컬러 — 다크 섹션(Experience~하단)의 카테고리/섹션 eyebrow 라벨 전용.
+        // muted dusty rose(연한 핑크). quiet luxury 유지 — 저채도 파스텔, 형광 아님.
+        // #0A0A0A 대비 약 10:1(WCAG AA 이상). mono·uppercase·소형 라벨에만 절제 사용.
+        accent: '#D8A9A5',
         ink: {
           primary: '#111111',
           muted: '#6B6B6B',
