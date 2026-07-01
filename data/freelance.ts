@@ -43,5 +43,6 @@ export const freelanceItems: FreelanceItem[] = [
     description:
       '웹·앱 에이전시 WEBNEST의 웹사이트 리뉴얼·구축 외주. 전반 디자인부터 관리자 페이지 포함 구축까지 완료.',
     thumbnail: '/images/freelance/webnest.webp',
+    href: 'https://webnest-6f7b7.web.app/',
   },
 ]
