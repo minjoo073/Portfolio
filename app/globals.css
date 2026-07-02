@@ -82,6 +82,19 @@
   will-change: transform;
 }
 
+/* ───────────────────────── CTA nudge (제작과정 화살표) ─────────────── */
+/* 호버 없이도 시선을 끄는 잔잔한 무한 이동 — quiet 톤, 진폭 4px 만. */
+/* reduced-motion 에서는 아래 전역 override 로 자동 정지. */
+@keyframes cta-nudge {
+  0%,
+  100% { transform: translateX(0); }
+  50%  { transform: translateX(4px); }
+}
+.cta-nudge {
+  animation: cta-nudge 1.8s ease-in-out infinite;
+  will-change: transform;
+}
+
 /* ───────────────────────── Reduced Motion ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,

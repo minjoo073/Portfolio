@@ -141,10 +141,12 @@ function HeroCard({ project, total }: ProjectCardProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      {project.studyHref ? (
+      {project.siteHref ? (
         <a
-          href={project.studyHref}
-          aria-label={`${project.title} ${project.studyLabel ?? '제작과정'} 보기`}
+          href={project.siteHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${project.title} 실사이트 새 창으로 보기`}
           className="absolute inset-0 block"
         >
           <div
@@ -296,16 +298,16 @@ function HeroCard({ project, total }: ProjectCardProps) {
             className="group/case inline-flex w-fit items-center gap-4"
           >
             <span
-              className="h-px bg-ink-inverse/70 transition-[width,background-color] duration-500 ease-out group-hover/case:bg-ink-inverse"
-              style={{ width: vw(16, 12) }}
+              className="h-px bg-ink-inverse"
+              style={{ width: vw(22, 16) }}
             />
             <span
               className="font-kr text-ink-inverse"
-              style={{ fontSize: vw(22, 17) }}
+              style={{ fontSize: vw(24, 18) }}
             >
               {project.studyLabel ?? '제작과정'}
             </span>
-            <span className="inline-block text-[18px] text-ink-inverse/70 transition-transform duration-300 group-hover/case:translate-x-1">
+            <span className="cta-nudge inline-block text-[18px] text-ink-inverse">
               →
             </span>
           </a>

@@ -158,10 +158,12 @@ function VisualPanel({ project, index }: VisualPanelProps) {
           justifySelf: 'end',
         }}
       >
-        {project.studyHref ? (
+        {project.siteHref ? (
           <a
-            href={project.studyHref}
-            aria-label={`${project.title} ${project.studyLabel ?? '제작과정'} 보기`}
+            href={project.siteHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${project.title} 실사이트 새 창으로 보기`}
             className="absolute inset-0 block"
           >
             {inner}
@@ -274,16 +276,16 @@ function BodyPanel({ project, index, total }: BodyPanelProps) {
             className="group/case inline-flex w-fit items-center gap-4"
           >
             <span
-              className="h-px bg-ink-inverse/70 transition-[width,background-color] duration-500 ease-out group-hover/case:bg-ink-inverse"
-              style={{ width: vw(16, 12) }}
+              className="h-px bg-ink-inverse"
+              style={{ width: vw(22, 16) }}
             />
             <span
               className="font-kr text-ink-inverse"
-              style={{ fontSize: vw(22, 18) }}
+              style={{ fontSize: vw(24, 19) }}
             >
               {project.studyLabel ?? '제작과정'}
             </span>
-            <span className="inline-block text-[16px] text-ink-inverse/70 transition-transform duration-300 group-hover/case:translate-x-1">
+            <span className="cta-nudge inline-block text-[18px] text-ink-inverse">
               →
             </span>
           </a>
@@ -448,8 +450,8 @@ function MobileFeaturedCard({ project, total }: { project: Project; total: numbe
 
       {/* 비주얼 */}
       <div style={{ marginTop: 'clamp(24px, 6vw, 32px)' }}>
-        {project.studyHref ? (
-          <a href={project.studyHref} aria-label={`${project.title} ${project.studyLabel ?? '제작과정'} 보기`} className="block">
+        {project.siteHref ? (
+          <a href={project.siteHref} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} 실사이트 새 창으로 보기`} className="block">
             {visual}
           </a>
         ) : (
@@ -470,10 +472,10 @@ function MobileFeaturedCard({ project, total }: { project: Project; total: numbe
       {/* CTA — 제작과정 + 보조 링크 (스택 칩은 모바일에서 생략) */}
       <div style={{ marginTop: 'clamp(24px, 6vw, 32px)' }}>
         {project.studyHref ? (
-          <a href={project.studyHref} className="inline-flex w-fit items-center gap-3">
-            <span className="h-px w-4 bg-ink-inverse/70" />
-            <span className="font-kr text-ink-inverse" style={{ fontSize: '18px' }}>{project.studyLabel ?? '제작과정'}</span>
-            <span className="text-[16px] text-ink-inverse/70">→</span>
+          <a href={project.studyHref} className="group/case inline-flex w-fit items-center gap-3">
+            <span className="h-px w-6 bg-ink-inverse" />
+            <span className="font-kr text-ink-inverse" style={{ fontSize: '19px' }}>{project.studyLabel ?? '제작과정'}</span>
+            <span className="cta-nudge text-[17px] text-ink-inverse">→</span>
           </a>
         ) : (
           <span className="inline-flex items-center gap-3">
