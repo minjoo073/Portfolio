@@ -55,3 +55,7 @@ scripts/pw-statement-capture.js
 scripts/test-statement.js
 scripts/verify-parallax-reveal.mjs
 scripts/verify2.mjs
+scripts/_shot.cjs
+
+# Generated portfolio PDF (built via `npm run pdf`, not source)
+public/portfolio/
