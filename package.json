@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "pdf": "node scripts/make-pdf.mjs"
+    "pdf": "node scripts/make-pdf.mjs",
+    "pdf:fan": "node scripts/make-pdf.mjs fan"
   },
   "dependencies": {
     "@types/three": "^0.184.1",
@@ -28,6 +29,7 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.35",
+    "playwright": "^1.61.1",
     "postcss": "^8.4.47",
     "pretendard": "^1.3.9",
     "prettier": "^3.3.3",
