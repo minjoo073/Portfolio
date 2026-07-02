@@ -60,11 +60,11 @@ const pdfStyle = `
   a { color: inherit; text-decoration: none; }
 `
 
-function Slide({ bg = DARK, pad = '64px 88px', watermark, children, style }: { bg?: string; pad?: string; watermark?: string; children: React.ReactNode; style?: React.CSSProperties }) {
+function Slide({ bg = DARK, pad = '64px 88px', watermark, watermarkOpacity = 0.07, children, style }: { bg?: string; pad?: string; watermark?: string; watermarkOpacity?: number; children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <section className="slide" style={{ width: `${W}px`, height: `${H}px`, background: bg, padding: pad, position: 'relative', isolation: 'isolate', display: 'flex', flexDirection: 'column', ...style }}>
       {/* 초대형 고스트 워터마크 (섹션 오프너) */}
-      {watermark && <span aria-hidden style={{ position: 'absolute', zIndex: -1, right: '-14px', bottom: '-58px', fontFamily: 'var(--font-display)', fontSize: '300px', lineHeight: 0.8, letterSpacing: '-0.03em', color: D + '0.07)', whiteSpace: 'nowrap', pointerEvents: 'none' }}>{watermark}</span>}
+      {watermark && <span aria-hidden style={{ position: 'absolute', zIndex: -1, right: '-14px', bottom: '-58px', fontFamily: 'var(--font-display)', fontSize: '300px', lineHeight: 0.8, letterSpacing: '-0.03em', color: `${D}${watermarkOpacity})`, whiteSpace: 'nowrap', pointerEvents: 'none' }}>{watermark}</span>}
       {children}
     </section>
   )
@@ -472,7 +472,7 @@ export default function PdfFanPage() {
       </Slide>
 
       {/* ═══ 8. CONTENT & MARKETING — KiiiKiii와 별개, 개인·자린고비 ═══ */}
-      <Slide bg={PAGE} watermark="CONTENT">
+      <Slide bg={PAGE} watermark="CONTENT" watermarkOpacity={0.025}>
         <SectionLabel en="CONTENT & MARKETING" kr="개인 · 자린고비 (KiiiKiii와 별개)" dark={false} />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <p style={{ fontSize: '15px', lineHeight: 1.6, color: D + '0.72)', maxWidth: '900px', marginBottom: '26px', wordBreak: 'keep-all' }}>
